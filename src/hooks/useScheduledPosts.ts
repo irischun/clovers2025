@@ -39,7 +39,7 @@ export function useScheduledPosts() {
     }
   };
 
-  const createPost = async (post: Omit<ScheduledPost, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+  const createPost = async (post: Omit<ScheduledPost, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'status'> & { status: 'scheduled' | 'draft' }) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
