@@ -136,7 +136,7 @@
   }
 
   .feature-card {
-    @apply relative overflow-hidden rounded-2xl bg-card border border-border/50 transition-all duration-500 group;
+    @apply relative overflow-hidden rounded-2xl bg-card border border-border/50 transition-all duration-500;
   }
 
   .feature-card:hover {
