@@ -68,12 +68,13 @@ const SchedulerPage = () => {
   const handleOpenDialog = (post?: ScheduledPost) => {
     if (post) {
       setEditingPost(post);
+      const statusValue = post.status === 'draft' || post.status === 'scheduled' ? post.status : 'scheduled';
       setFormData({
         title: post.title,
         content: post.content,
         platform: post.platform,
         scheduled_at: post.scheduled_at.slice(0, 16),
-        status: post.status,
+        status: statusValue,
       });
     } else {
       setEditingPost(null);
@@ -84,7 +85,6 @@ const SchedulerPage = () => {
         content: '',
         platform: 'instagram',
         scheduled_at: defaultDate.toISOString().slice(0, 16),
-        status: 'scheduled' as const,
         status: 'scheduled',
       });
     }
