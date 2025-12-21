@@ -22,7 +22,7 @@ const FeaturesSection = () => {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
 
   return (
-    <section className="py-24 bg-background">
+    <section id="features" className="py-24 bg-background">
       <div className="section-container">
         {/* Section header */}
         <div className="text-center mb-16">

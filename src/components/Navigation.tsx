@@ -43,6 +43,19 @@ const Navigation = () => {
     return name.substring(0, 2).toUpperCase();
   };
 
+  const scrollToSection = (sectionId: string) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const navLinks = [
+    { label: '功能', sectionId: 'features' },
+    { label: '定價', sectionId: 'pricing' },
+    { label: 'FAQ', sectionId: 'faq' },
+  ];
+
   return (
     <nav className="py-4 px-4 sm:px-6 lg:px-8 bg-background/80 backdrop-blur-xl sticky top-0 z-50 border-b border-border/50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -55,6 +68,19 @@ const Navigation = () => {
             <span className="text-foreground">CLOVER</span>
           </span>
         </a>
+
+        {/* Navigation Links */}
+        <div className="hidden md:flex items-center gap-6">
+          {navLinks.map((link) => (
+            <button
+              key={link.sectionId}
+              onClick={() => scrollToSection(link.sectionId)}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {link.label}
+            </button>
+          ))}
+        </div>
 
         {/* Auth buttons */}
         {user ? (
