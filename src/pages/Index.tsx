@@ -7,6 +7,8 @@ import FeaturesSection from '@/components/FeaturesSection';
 import WorkflowSection from '@/components/WorkflowSection';
 import ShowcasesSection from '@/components/ShowcasesSection';
 import GalleriesSection from '@/components/GalleriesSection';
+import PricingSection from '@/components/PricingSection';
+import FAQSection from '@/components/FAQSection';
 import Footer from '@/components/Footer';
 
 const Index = () => {
@@ -26,6 +28,8 @@ const Index = () => {
         <WorkflowSection />
         <ShowcasesSection />
         <GalleriesSection />
+        <PricingSection />
+        <FAQSection />
         <Footer />
       </div>
     </>
