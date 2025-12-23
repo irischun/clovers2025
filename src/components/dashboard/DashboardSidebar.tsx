@@ -1,5 +1,6 @@
 import { User } from '@supabase/supabase-js';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -11,7 +12,6 @@ import {
   SidebarMenuItem,
   SidebarHeader,
   SidebarFooter,
-  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { 
   LayoutDashboard, 
@@ -20,17 +20,56 @@ import {
   Image, 
   Sparkles, 
   Settings,
-  LogOut
+  LogOut,
+  ChevronDown,
+  ChevronRight,
+  ImagePlus,
+  Mic,
+  AudioLines,
+  Video,
+  Tv,
+  Youtube,
+  BookOpen,
+  Rss,
+  FolderEdit,
+  Sticker,
+  Rocket,
+  Send
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { cn } from '@/lib/utils';
 
-const menuItems = [
+const mainMenuItems = [
   { title: '儀表板', icon: LayoutDashboard, path: '/dashboard' },
-  { title: '提示詞庫', icon: FileText, path: '/dashboard/prompts' },
-  { title: '內容排程', icon: Calendar, path: '/dashboard/scheduler' },
+  { title: '提示詞管理', icon: FileText, path: '/dashboard/prompts' },
+];
+
+const aiToolsItems = [
+  { title: 'AI 文案創作', icon: Sparkles, path: '/dashboard/ai-tools' },
+  { title: '圖片生成', icon: ImagePlus, path: '/dashboard/image-generation' },
+  { title: '語音生成', icon: Mic, path: '/dashboard/voice-generation' },
+  { title: '語音轉字幕', icon: AudioLines, path: '/dashboard/speech-to-text' },
+  { title: '視頻生成', icon: Video, path: '/dashboard/video-generation' },
+  { title: 'LipSync 影片', icon: Tv, path: '/dashboard/lip-sync' },
+];
+
+const mediaToolsItems = [
+  { title: 'YouTube 搜尋', icon: Youtube, path: '/dashboard/youtube-search' },
+  { title: '小紅書搜尋', icon: BookOpen, path: '/dashboard/xiaohongshu-search' },
+  { title: 'RSS 訂閱', icon: Rss, path: '/dashboard/rss' },
   { title: '媒體庫', icon: Image, path: '/dashboard/media' },
-  { title: 'AI 工具', icon: Sparkles, path: '/dashboard/ai-tools' },
+];
+
+const publishToolsItems = [
+  { title: '內容排程', icon: Calendar, path: '/dashboard/scheduler' },
+  { title: '內容整理', icon: FolderEdit, path: '/dashboard/content-organize' },
+  { title: '貼圖製作器', icon: Sticker, path: '/dashboard/sticker-maker' },
+  { title: '智能內容發布', icon: Rocket, path: '/dashboard/smart-publish' },
+];
+
+const settingsItems = [
   { title: '設定', icon: Settings, path: '/dashboard/settings' },
 ];
 
@@ -38,9 +77,20 @@ interface DashboardSidebarProps {
   user: User;
 }
 
+interface MenuSection {
+  title: string;
+  items: typeof mainMenuItems;
+  defaultOpen?: boolean;
+}
+
 const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    'AI 內容工具': true,
+    '自媒體工具': true,
+    '發佈工具': true,
+  });
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -56,6 +106,52 @@ const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
     return name.substring(0, 2).toUpperCase();
   };
 
+  const toggleSection = (title: string) => {
+    setOpenSections(prev => ({ ...prev, [title]: !prev[title] }));
+  };
+
+  const renderMenuItem = (item: typeof mainMenuItems[0]) => (
+    <SidebarMenuItem key={item.title}>
+      <SidebarMenuButton
+        onClick={() => navigate(item.path)}
+        isActive={location.pathname === item.path}
+        className="gap-3"
+      >
+        <item.icon className="w-4 h-4" />
+        <span className="text-sm">{item.title}</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+
+  const renderCollapsibleSection = (title: string, items: typeof mainMenuItems) => (
+    <Collapsible
+      key={title}
+      open={openSections[title]}
+      onOpenChange={() => toggleSection(title)}
+      className="group/collapsible"
+    >
+      <SidebarGroup>
+        <CollapsibleTrigger className="w-full">
+          <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:text-foreground transition-colors">
+            <span>{title}</span>
+            {openSections[title] ? (
+              <ChevronDown className="w-4 h-4" />
+            ) : (
+              <ChevronRight className="w-4 h-4" />
+            )}
+          </SidebarGroupLabel>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {items.map(renderMenuItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </CollapsibleContent>
+      </SidebarGroup>
+    </Collapsible>
+  );
+
   return (
     <Sidebar className="border-r border-border">
       <SidebarHeader className="p-4 border-b border-border">
@@ -67,23 +163,31 @@ const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="overflow-y-auto">
+        {/* Main Menu */}
         <SidebarGroup>
           <SidebarGroupLabel>主選單</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    onClick={() => navigate(item.path)}
-                    isActive={location.pathname === item.path}
-                    className="gap-3"
-                  >
-                    <item.icon className="w-5 h-5" />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {mainMenuItems.map(renderMenuItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* AI Tools */}
+        {renderCollapsibleSection('AI 內容工具', aiToolsItems)}
+
+        {/* Media Tools */}
+        {renderCollapsibleSection('自媒體工具', mediaToolsItems)}
+
+        {/* Publish Tools */}
+        {renderCollapsibleSection('發佈工具', publishToolsItems)}
+
+        {/* Settings */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {settingsItems.map(renderMenuItem)}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
