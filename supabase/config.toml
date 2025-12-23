@@ -1,1 +1,22 @@
 project_id = "ejcmcjjnmmioxdibypmm"
+
+[functions.generate-content]
+verify_jwt = false
+
+[functions.generate-image]
+verify_jwt = false
+
+[functions.youtube-search]
+verify_jwt = false
+
+[functions.xiaohongshu-search]
+verify_jwt = false
+
+[functions.rss-fetch]
+verify_jwt = false
+
+[functions.ai-organize]
+verify_jwt = false
+
+[functions.sticker-generate]
+verify_jwt = false
