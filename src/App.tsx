@@ -13,6 +13,17 @@ import SchedulerPage from "./pages/dashboard/SchedulerPage";
 import MediaPage from "./pages/dashboard/MediaPage";
 import AIToolsPage from "./pages/dashboard/AIToolsPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
+import ImageGenerationPage from "./pages/dashboard/ImageGenerationPage";
+import VoiceGenerationPage from "./pages/dashboard/VoiceGenerationPage";
+import SpeechToTextPage from "./pages/dashboard/SpeechToTextPage";
+import VideoGenerationPage from "./pages/dashboard/VideoGenerationPage";
+import LipSyncPage from "./pages/dashboard/LipSyncPage";
+import YouTubeSearchPage from "./pages/dashboard/YouTubeSearchPage";
+import XiaohongshuSearchPage from "./pages/dashboard/XiaohongshuSearchPage";
+import RSSPage from "./pages/dashboard/RSSPage";
+import ContentOrganizePage from "./pages/dashboard/ContentOrganizePage";
+import StickerMakerPage from "./pages/dashboard/StickerMakerPage";
+import SmartPublishPage from "./pages/dashboard/SmartPublishPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +45,17 @@ const App = () => (
               <Route path="media" element={<MediaPage />} />
               <Route path="ai-tools" element={<AIToolsPage />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="image-generation" element={<ImageGenerationPage />} />
+              <Route path="voice-generation" element={<VoiceGenerationPage />} />
+              <Route path="speech-to-text" element={<SpeechToTextPage />} />
+              <Route path="video-generation" element={<VideoGenerationPage />} />
+              <Route path="lip-sync" element={<LipSyncPage />} />
+              <Route path="youtube-search" element={<YouTubeSearchPage />} />
+              <Route path="xiaohongshu-search" element={<XiaohongshuSearchPage />} />
+              <Route path="rss" element={<RSSPage />} />
+              <Route path="content-organize" element={<ContentOrganizePage />} />
+              <Route path="sticker-maker" element={<StickerMakerPage />} />
+              <Route path="smart-publish" element={<SmartPublishPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
