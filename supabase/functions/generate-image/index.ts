@@ -11,15 +11,19 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, style = "realistic" } = await req.json();
+    const { prompt, style = "realistic", model, width, height } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("Generating image with prompt:", prompt, "style:", style);
+    console.log("Generating image with:", { prompt, style, model, width, height });
 
+    // Use the provided model or default to flash
+    const aiModel = model || "google/gemini-2.5-flash-image-preview";
+    
+    // Build enhanced prompt with style and dimensions
     const enhancedPrompt = `${prompt}. Style: ${style}. Ultra high resolution, professional quality.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -29,7 +33,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image-preview",
+        model: aiModel,
         messages: [
           { role: "user", content: enhancedPrompt }
         ],
