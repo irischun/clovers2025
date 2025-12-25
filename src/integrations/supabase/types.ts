@@ -173,6 +173,45 @@ export type Database = {
         }
         Relationships: []
       }
+      subtitle_conversions: {
+        Row: {
+          created_at: string
+          id: string
+          languages: string[]
+          source_name: string
+          source_type: string
+          source_url: string | null
+          status: string
+          subtitle_urls: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          languages?: string[]
+          source_name: string
+          source_type?: string
+          source_url?: string | null
+          status?: string
+          subtitle_urls?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          languages?: string[]
+          source_name?: string
+          source_type?: string
+          source_url?: string | null
+          status?: string
+          subtitle_urls?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       voice_generations: {
         Row: {
           audio_url: string | null
