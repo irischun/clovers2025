@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.voice-clone]
 verify_jwt = false
+
+[functions.audio-to-subtitle]
+verify_jwt = false
