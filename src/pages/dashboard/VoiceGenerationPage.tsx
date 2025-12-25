@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Volume2, Loader2, Play, Pause, Download, Star, Trash2, RotateCcw, Upload, Mic, Settings } from 'lucide-react';
+import { Volume2, Loader2, Play, Pause, Download, Star, Trash2, RotateCcw, Upload, Mic, Settings, RefreshCw, Square, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -136,6 +136,23 @@ interface ClonedVoice {
   created_at: string;
 }
 
+// Generate a random Voice ID (starts with letter, 8+ chars, alphanumeric)
+const generateVoiceId = (): string => {
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  const alphanumeric = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = letters[Math.floor(Math.random() * letters.length)];
+  for (let i = 0; i < 11; i++) {
+    result += alphanumeric[Math.floor(Math.random() * alphanumeric.length)];
+  }
+  return result;
+};
+
+// Validate Voice ID format
+const validateVoiceId = (id: string): boolean => {
+  const regex = /^[a-zA-Z][a-zA-Z0-9]{7,}$/;
+  return regex.test(id);
+};
+
 const VoiceGenerationPage = () => {
   // Main tab state
   const [mainTab, setMainTab] = useState<'generate' | 'clone'>('generate');
@@ -164,6 +181,7 @@ const VoiceGenerationPage = () => {
   
   // Voice cloning state
   const [cloneVoiceName, setCloneVoiceName] = useState('');
+  const [cloneVoiceId, setCloneVoiceId] = useState(generateVoiceId());
   const [cloneAudioFile, setCloneAudioFile] = useState<File | null>(null);
   const [cloneText, setCloneText] = useState('');
   const [isCloning, setIsCloning] = useState(false);
@@ -171,6 +189,13 @@ const VoiceGenerationPage = () => {
   const [selectedClonedVoice, setSelectedClonedVoice] = useState<string>('');
   const [isGeneratingClone, setIsGeneratingClone] = useState(false);
   const [cloneAudioUrl, setCloneAudioUrl] = useState<string | null>(null);
+  const [audioSource, setAudioSource] = useState<'upload' | 'record'>('upload');
+  const [noiseReduction, setNoiseReduction] = useState(true);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordedAudio, setRecordedAudio] = useState<Blob | null>(null);
+  const [voiceIdError, setVoiceIdError] = useState('');
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   
   // Credits display (simulated)
   const [remainingCredits] = useState(100);
@@ -363,21 +388,86 @@ const VoiceGenerationPage = () => {
     toast({ title: '已載入歷史記錄' });
   };
 
+  const handleVoiceIdChange = (value: string) => {
+    setCloneVoiceId(value);
+    if (value && !validateVoiceId(value)) {
+      setVoiceIdError('Voice ID 需以字母開頭，至少8位，且只能含字母與數字');
+    } else {
+      setVoiceIdError('');
+    }
+  };
+
+  const handleRegenerateVoiceId = () => {
+    const newId = generateVoiceId();
+    setCloneVoiceId(newId);
+    setVoiceIdError('');
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setRecordedAudio(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      toast({ title: '開始錄音...' });
+    } catch (error) {
+      console.error('Recording error:', error);
+      toast({ title: '無法訪問麥克風', variant: 'destructive' });
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      toast({ title: '錄音完成' });
+    }
+  };
+
+  const deleteClonedVoice = (id: string) => {
+    setClonedVoices(prev => prev.filter(v => v.id !== id));
+    if (clonedVoices.find(v => v.id === id)?.voice_id === selectedClonedVoice) {
+      setSelectedClonedVoice('');
+    }
+    toast({ title: '已刪除克隆聲音' });
+  };
+
   const handleCloneVoice = async () => {
     if (!cloneVoiceName.trim()) {
       toast({ title: '請輸入聲音名稱', variant: 'destructive' });
       return;
     }
 
-    if (!cloneAudioFile) {
-      toast({ title: '請上傳音頻文件', variant: 'destructive' });
+    if (!validateVoiceId(cloneVoiceId)) {
+      toast({ title: 'Voice ID 格式不正確', description: '需以字母開頭，至少8位，且只能含字母與數字', variant: 'destructive' });
+      return;
+    }
+
+    const audioData = audioSource === 'upload' ? cloneAudioFile : recordedAudio;
+    if (!audioData) {
+      toast({ title: audioSource === 'upload' ? '請上傳音頻文件' : '請先錄製音頻', variant: 'destructive' });
       return;
     }
 
     setIsCloning(true);
     
     try {
-      // Convert file to base64
+      // Convert file/blob to base64
       const reader = new FileReader();
       const base64Promise = new Promise<string>((resolve, reject) => {
         reader.onload = () => {
@@ -386,14 +476,20 @@ const VoiceGenerationPage = () => {
         };
         reader.onerror = reject;
       });
-      reader.readAsDataURL(cloneAudioFile);
+      reader.readAsDataURL(audioData);
       const audioBase64 = await base64Promise;
+
+      const audioFormat = audioSource === 'upload' && cloneAudioFile 
+        ? cloneAudioFile.type.split('/')[1] || 'mp3'
+        : 'webm';
 
       const response = await supabase.functions.invoke('voice-clone', {
         body: {
           voiceName: cloneVoiceName,
+          voiceId: cloneVoiceId,
           audioData: audioBase64,
-          audioFormat: cloneAudioFile.type.split('/')[1] || 'mp3',
+          audioFormat,
+          noiseReduction,
         },
       });
 
@@ -417,12 +513,14 @@ const VoiceGenerationPage = () => {
         setClonedVoices(prev => [newVoice, ...prev]);
         setSelectedClonedVoice(voiceId);
         setCloneVoiceName('');
+        setCloneVoiceId(generateVoiceId());
         setCloneAudioFile(null);
+        setRecordedAudio(null);
         toast({ title: '聲音克隆成功！' });
       }
     } catch (error: any) {
       console.error('Voice cloning error:', error);
-      toast({ 
+      toast({
         title: '聲音克隆失敗', 
         description: error.message || '請檢查音頻文件或稍後重試',
         variant: 'destructive' 
@@ -909,77 +1007,25 @@ const VoiceGenerationPage = () => {
         {/* 聲音克隆 Tab */}
         <TabsContent value="clone" className="space-y-6 mt-6">
           <div className="grid lg:grid-cols-2 gap-6">
-            {/* Left Column - Voice Cloning */}
+            {/* Left Column - Voice Cloning & My Voices */}
             <div className="space-y-6">
+              {/* 我的克隆聲音 Section */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Mic className="w-5 h-5 text-primary" />
-                    創建克隆聲音
+                    <Volume2 className="w-5 h-5 text-primary" />
+                    我的克隆聲音
                   </CardTitle>
-                  <CardDescription>上傳一段音頻來克隆聲音，建議使用10秒以上的清晰語音</CardDescription>
+                  <CardDescription>管理您的自定義聲音</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>聲音名稱</Label>
-                    <Input
-                      value={cloneVoiceName}
-                      onChange={(e) => setCloneVoiceName(e.target.value)}
-                      placeholder="為克隆聲音命名..."
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>上傳音頻文件</Label>
-                    <div className="border-2 border-dashed rounded-lg p-6 text-center">
-                      <input
-                        type="file"
-                        accept="audio/*"
-                        onChange={handleFileChange}
-                        className="hidden"
-                        id="audio-upload"
-                      />
-                      <label htmlFor="audio-upload" className="cursor-pointer">
-                        <Upload className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
-                        {cloneAudioFile ? (
-                          <p className="text-sm text-foreground">{cloneAudioFile.name}</p>
-                        ) : (
-                          <>
-                            <p className="text-sm text-muted-foreground">點擊上傳音頻文件</p>
-                            <p className="text-xs text-muted-foreground mt-1">支援 MP3, WAV, M4A (最大 20MB)</p>
-                          </>
-                        )}
-                      </label>
+                <CardContent>
+                  {clonedVoices.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Mic className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>還沒有克隆聲音</p>
+                      <p className="text-sm mt-1">請在下方創建新的克隆聲音</p>
                     </div>
-                  </div>
-
-                  <Button 
-                    onClick={handleCloneVoice} 
-                    disabled={isCloning || !cloneVoiceName.trim() || !cloneAudioFile}
-                    className="w-full gap-2"
-                  >
-                    {isCloning ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        克隆中...
-                      </>
-                    ) : (
-                      <>
-                        <Mic className="w-4 h-4" />
-                        創建克隆聲音
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Cloned Voices List */}
-              {clonedVoices.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">我的克隆聲音</CardTitle>
-                  </CardHeader>
-                  <CardContent>
+                  ) : (
                     <div className="space-y-2">
                       {clonedVoices.map((voice) => (
                         <div 
@@ -992,17 +1038,212 @@ const VoiceGenerationPage = () => {
                           onClick={() => setSelectedClonedVoice(voice.voice_id)}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="font-medium">{voice.name}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(voice.created_at).toLocaleDateString('zh-TW')}
-                            </span>
+                            <div>
+                              <span className="font-medium">{voice.name}</span>
+                              <p className="text-xs text-muted-foreground">ID: {voice.voice_id}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(voice.created_at).toLocaleDateString('zh-TW')}
+                              </span>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteClonedVoice(voice.id);
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       ))}
                     </div>
-                  </CardContent>
-                </Card>
-              )}
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* 克隆新聲音 Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Mic className="w-5 h-5 text-primary" />
+                    克隆新聲音
+                  </CardTitle>
+                  <CardDescription>上傳音頻文件或錄音來創建自定義聲音</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Voice ID */}
+                  <div className="space-y-2">
+                    <Label>Voice ID</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={cloneVoiceId}
+                        onChange={(e) => handleVoiceIdChange(e.target.value)}
+                        placeholder="需以字母開頭，至少8位"
+                        className={voiceIdError ? 'border-destructive' : ''}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={handleRegenerateVoiceId}
+                        title="隨機生成 Voice ID"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    {voiceIdError && (
+                      <p className="text-xs text-destructive">{voiceIdError}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground">需以字母開頭，至少8位，且只能含字母與數字</p>
+                  </div>
+
+                  {/* 聲音名稱 */}
+                  <div className="space-y-2">
+                    <Label>聲音名稱</Label>
+                    <Input
+                      value={cloneVoiceName}
+                      onChange={(e) => setCloneVoiceName(e.target.value)}
+                      placeholder="例如：My voice"
+                    />
+                  </div>
+
+                  {/* 音頻來源 */}
+                  <div className="space-y-3">
+                    <Label>音頻來源</Label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="audioSource"
+                          checked={audioSource === 'upload'}
+                          onChange={() => setAudioSource('upload')}
+                          className="w-4 h-4"
+                        />
+                        <Upload className="w-4 h-4" />
+                        <span>上傳文件</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="audioSource"
+                          checked={audioSource === 'record'}
+                          onChange={() => setAudioSource('record')}
+                          className="w-4 h-4"
+                        />
+                        <Radio className="w-4 h-4" />
+                        <span>即時錄音</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Upload or Record */}
+                  {audioSource === 'upload' ? (
+                    <div className="space-y-2">
+                      <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                        <input
+                          type="file"
+                          accept="audio/*"
+                          onChange={handleFileChange}
+                          className="hidden"
+                          id="audio-upload"
+                        />
+                        <label htmlFor="audio-upload" className="cursor-pointer">
+                          <Upload className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
+                          {cloneAudioFile ? (
+                            <p className="text-sm text-foreground">{cloneAudioFile.name}</p>
+                          ) : (
+                            <>
+                              <p className="text-sm text-muted-foreground">點擊上傳音頻文件</p>
+                              <p className="text-xs text-muted-foreground mt-1">支援 MP3, WAV, M4A (最大 20MB)</p>
+                            </>
+                          )}
+                        </label>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                        {recordedAudio ? (
+                          <div className="space-y-3">
+                            <Mic className="w-10 h-10 mx-auto text-green-500" />
+                            <p className="text-sm text-foreground">錄音已完成</p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setRecordedAudio(null)}
+                            >
+                              重新錄製
+                            </Button>
+                          </div>
+                        ) : isRecording ? (
+                          <div className="space-y-3">
+                            <div className="w-10 h-10 mx-auto rounded-full bg-red-500 animate-pulse flex items-center justify-center">
+                              <Mic className="w-6 h-6 text-white" />
+                            </div>
+                            <p className="text-sm text-foreground">錄音中...</p>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={stopRecording}
+                              className="gap-2"
+                            >
+                              <Square className="w-4 h-4" />
+                              停止錄音
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <Mic className="w-10 h-10 mx-auto text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">點擊開始錄音</p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={startRecording}
+                              className="gap-2"
+                            >
+                              <Mic className="w-4 h-4" />
+                              開始錄音
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 降噪處理 */}
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="noise-reduction">降噪處理</Label>
+                    <Switch
+                      id="noise-reduction"
+                      checked={noiseReduction}
+                      onCheckedChange={setNoiseReduction}
+                    />
+                  </div>
+
+                  <Button 
+                    onClick={handleCloneVoice} 
+                    disabled={isCloning || !cloneVoiceName.trim() || !validateVoiceId(cloneVoiceId) || (audioSource === 'upload' ? !cloneAudioFile : !recordedAudio)}
+                    className="w-full gap-2"
+                  >
+                    {isCloning ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        克隆中...
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="w-4 h-4" />
+                        開始克隆
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Right Column - Generate with Cloned Voice */}
