@@ -20,56 +20,30 @@ serve(async (req) => {
       );
     }
 
-    const { 
-      text, 
-      language, 
-      voiceId, 
-      model, 
-      speed, 
-      volume, 
-      pitch, 
-      emotion,
-      textNormalization,
-      sampleRate,
-      bitrate,
-      format,
-      channel 
-    } = await req.json();
+    const { voiceName, audioData, audioFormat } = await req.json();
 
-    if (!text || text.length > 5000) {
+    if (!voiceName || !audioData) {
       return new Response(
-        JSON.stringify({ error: 'Text is required and must be under 5000 characters' }),
+        JSON.stringify({ error: 'Voice name and audio data are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Generating voice with params:', { language, voiceId, model, speed, volume, pitch, emotion });
+    console.log('Cloning voice with name:', voiceName);
 
-    // MiniMax TTS API
-    const response = await fetch('https://api.minimax.chat/v1/t2a_v2', {
+    // MiniMax Voice Clone API
+    const response = await fetch('https://api.minimax.chat/v1/voice_clone', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${MINIMAX_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: model === 'hd' ? 'speech-01-hd' : 'speech-01-turbo',
-        text: text,
-        voice_setting: {
-          voice_id: voiceId,
-          speed: speed || 1.0,
-          vol: volume || 1.0,
-          pitch: pitch || 0,
-          emotion: emotion || 'neutral',
-        },
-        audio_setting: {
-          sample_rate: sampleRate || 44100,
-          bitrate: bitrate || 256000,
-          format: format || 'mp3',
-          channel: channel || 1,
-        },
-        language_boost: language,
-        text_normalization: textNormalization ?? true,
+        voice_id: `clone_${Date.now()}`,
+        name: voiceName,
+        audio: audioData,
+        audio_format: audioFormat || 'mp3',
+        description: `Cloned voice: ${voiceName}`,
       }),
     });
 
@@ -87,21 +61,23 @@ serve(async (req) => {
     if (data.base_resp?.status_code !== 0) {
       console.error('MiniMax API error response:', data);
       return new Response(
-        JSON.stringify({ error: data.base_resp?.status_msg || 'Voice generation failed' }),
+        JSON.stringify({ error: data.base_resp?.status_msg || 'Voice cloning failed' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    console.log('Voice cloned successfully:', data);
+
     return new Response(
       JSON.stringify({ 
-        audioContent: data.data?.audio,
-        extraInfo: data.extra_info 
+        voiceId: data.voice_id || `clone_${Date.now()}`,
+        message: 'Voice cloned successfully'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: unknown) {
-    console.error('Voice generation error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to generate voice';
+    console.error('Voice cloning error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to clone voice';
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
