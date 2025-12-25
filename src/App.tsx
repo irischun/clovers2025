@@ -17,6 +17,7 @@ import ImageGenerationPage from "./pages/dashboard/ImageGenerationPage";
 import VoiceGenerationPage from "./pages/dashboard/VoiceGenerationPage";
 import SpeechToTextPage from "./pages/dashboard/SpeechToTextPage";
 import VideoGenerationPage from "./pages/dashboard/VideoGenerationPage";
+import VideoGeneration2Page from "./pages/dashboard/VideoGeneration2Page";
 import LipSyncPage from "./pages/dashboard/LipSyncPage";
 import YouTubeSearchPage from "./pages/dashboard/YouTubeSearchPage";
 import XiaohongshuSearchPage from "./pages/dashboard/XiaohongshuSearchPage";
@@ -49,6 +50,7 @@ const App = () => (
               <Route path="voice-generation" element={<VoiceGenerationPage />} />
               <Route path="speech-to-text" element={<SpeechToTextPage />} />
               <Route path="video-generation" element={<VideoGenerationPage />} />
+              <Route path="video-generation-2" element={<VideoGeneration2Page />} />
               <Route path="lip-sync" element={<LipSyncPage />} />
               <Route path="youtube-search" element={<YouTubeSearchPage />} />
               <Route path="xiaohongshu-search" element={<XiaohongshuSearchPage />} />

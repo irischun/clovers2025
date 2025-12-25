@@ -52,6 +52,7 @@ const aiToolsItems = [
   { title: '語音生成', icon: Mic, path: '/dashboard/voice-generation' },
   { title: '語音轉字幕', icon: AudioLines, path: '/dashboard/speech-to-text' },
   { title: '視頻生成', icon: Video, path: '/dashboard/video-generation' },
+  { title: '視頻生成 2.0', icon: Video, path: '/dashboard/video-generation-2' },
   { title: 'LipSync 影片', icon: Tv, path: '/dashboard/lip-sync' },
 ];
 
