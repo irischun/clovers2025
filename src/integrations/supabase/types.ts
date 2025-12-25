@@ -173,6 +173,66 @@ export type Database = {
         }
         Relationships: []
       }
+      voice_generations: {
+        Row: {
+          audio_url: string | null
+          bitrate: number | null
+          created_at: string
+          emotion: string | null
+          format: string | null
+          id: string
+          is_favorite: boolean | null
+          language: string
+          model: string
+          pitch: number | null
+          sample_rate: number | null
+          speed: number | null
+          text_content: string
+          user_id: string
+          voice_id: string
+          voice_name: string
+          volume: number | null
+        }
+        Insert: {
+          audio_url?: string | null
+          bitrate?: number | null
+          created_at?: string
+          emotion?: string | null
+          format?: string | null
+          id?: string
+          is_favorite?: boolean | null
+          language: string
+          model: string
+          pitch?: number | null
+          sample_rate?: number | null
+          speed?: number | null
+          text_content: string
+          user_id: string
+          voice_id: string
+          voice_name: string
+          volume?: number | null
+        }
+        Update: {
+          audio_url?: string | null
+          bitrate?: number | null
+          created_at?: string
+          emotion?: string | null
+          format?: string | null
+          id?: string
+          is_favorite?: boolean | null
+          language?: string
+          model?: string
+          pitch?: number | null
+          sample_rate?: number | null
+          speed?: number | null
+          text_content?: string
+          user_id?: string
+          voice_id?: string
+          voice_name?: string
+          volume?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
