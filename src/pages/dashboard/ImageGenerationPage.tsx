@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { Image, Loader2, Download, Wand2, Camera, Film, Palette, ShoppingBag, Share2, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Image, Loader2, Download, Wand2, Camera, Film, Palette, ShoppingBag, Share2, ChevronDown, ChevronUp, Sparkles, Upload, X, Languages, Shirt, Zap, ImagePlus, Type, Grid3X3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
@@ -10,123 +11,205 @@ import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
-// Category definitions with all styles
-const categories = {
-  product: {
-    label: '產品或主角圖片',
-    icon: Camera,
-    description: '產品展示與人物攝影',
-    styles: [
-      { id: 'product-hero', label: '產品主角圖', description: '突出產品特色' },
-      { id: 'portrait-hero', label: '人物主角圖', description: '專業人像攝影' },
-      { id: 'lifestyle', label: '生活場景', description: '產品融入生活' },
-    ],
-    cameraAngles: [
-      { id: 'eye-level', label: '平視角', prompt: 'eye level shot' },
-      { id: 'high-angle', label: '俯視角', prompt: 'high angle shot, bird\'s eye view' },
-      { id: 'low-angle', label: '仰視角', prompt: 'low angle shot, heroic perspective' },
-      { id: 'dutch-angle', label: '傾斜角', prompt: 'dutch angle, tilted frame' },
-      { id: 'close-up', label: '特寫', prompt: 'extreme close-up, macro shot' },
-      { id: 'wide-shot', label: '廣角', prompt: 'wide shot, establishing shot' },
-      { id: 'over-shoulder', label: '過肩鏡頭', prompt: 'over the shoulder shot' },
-      { id: 'bokeh', label: '散景', prompt: 'shallow depth of field, beautiful bokeh' },
-    ],
+// Camera angle presets - comprehensive list from reference
+const cameraAngles = [
+  { id: 'medium-half-eye', label: '中景半身平視鏡頭', prompt: 'medium shot, half-body, eye level view' },
+  { id: 'closeup-look-camera', label: '特寫鏡頭望向鏡頭', prompt: 'close-up shot, looking at camera' },
+  { id: 'jungle-atv-action', label: '叢林騎沙灘車動作鏡頭', prompt: 'jungle ATV action shot, dynamic movement' },
+  { id: 'shoulder-bat', label: '肩扛棒球棒', prompt: 'shoulder carrying baseball bat, confident pose' },
+  { id: 'junkyard-closeup', label: '廢車場特寫', prompt: 'junkyard closeup, gritty environment' },
+  { id: 'desert-reach', label: '沙漠伸手特寫', prompt: 'desert reaching hand close-up, dramatic' },
+  { id: 'front-fullbody', label: '正面全身鏡頭', prompt: 'front full body shot' },
+  { id: 'half-camera-view', label: '半身攝影機視圖', prompt: 'half body camera view' },
+  { id: 'low-angle-action', label: '低角度動態動作', prompt: 'low angle dynamic action shot' },
+  { id: 'medium-shot', label: '中景鏡頭', prompt: 'medium shot' },
+  { id: 'angry-expression', label: '憤怒表情', prompt: 'angry expression, intense emotion' },
+  { id: 'high-angle-overhead', label: '高角度俯視', prompt: 'high angle overhead shot' },
+  { id: 'rotating-shot', label: '旋轉鏡頭', prompt: 'rotating camera shot' },
+  { id: 'rotate-other-side', label: '旋轉展示另一侧', prompt: 'rotating to show other side' },
+  { id: 'show-other-side', label: '顯示另一側', prompt: 'showing the other side' },
+  { id: 'extreme-closeup', label: '特寫鏡頭', prompt: 'extreme close-up shot' },
+  { id: 'over-shoulder-behind', label: '背後越肩鏡頭', prompt: 'over the shoulder shot from behind' },
+  { id: 'dialogue-ots', label: '對話過肩鏡頭', prompt: 'dialogue over the shoulder shot' },
+  { id: 'ots-face-focus', label: '過肩聚焦臉部', prompt: 'over the shoulder focus on face' },
+  { id: 'side-profile-sky', label: '側臉望天空', prompt: 'side profile looking at sky' },
+  { id: 'elbow-lean-camera', label: '靠手肘望鏡頭', prompt: 'leaning on elbow looking at camera' },
+  { id: 'drone-overhead', label: '無人機俯視鏡頭', prompt: 'drone overhead shot, aerial view' },
+  { id: 'extreme-low-angry', label: '極低角度憤怒', prompt: 'extreme low angle, angry expression' },
+  { id: 'extreme-high-look', label: '極高角度望鏡頭', prompt: 'extreme high angle looking at camera' },
+  { id: 'extreme-closeup-eyes', label: '極端特寫眼睛', prompt: 'extreme close-up on eyes' },
+  { id: 'extreme-wide', label: '極端廣角鏡頭', prompt: 'extreme wide angle shot' },
+  { id: 'subject-right', label: '主角位於右側', prompt: 'subject positioned on the right side' },
+];
+
+// Style tags organized by category
+const styleTags = {
+  basic: {
+    label: '基本選項',
+    tags: [
+      { id: 'none', label: '無', description: '不使用任何風格標籤' },
+    ]
   },
-  poster: {
-    label: '海報風格選擇器',
-    icon: Film,
-    description: '雜誌封面與復古報紙',
-    styles: [
-      { id: 'magazine-cover', label: '雜誌封面', description: '高端時尚雜誌風格' },
-      { id: 'retro-newspaper-80s', label: '80-90年代復古報紙', description: '懷舊報紙版面設計' },
-      { id: 'business-magazine', label: '高端商業評論雜誌', description: '專業商業雜誌風格' },
-      { id: 'tai-kung-pao', label: '太公報惡搞風格', description: '經典報章惡搞' },
-      { id: 'lemon-daily', label: '檸檬日報風格', description: '趣味日報設計' },
-      { id: 'hk-manga-4panel', label: '港漫四格打鬥', description: '香港漫畫打鬥場面' },
-    ],
+  photography: {
+    label: '攝影風格',
+    tags: [
+      { id: 'professional-photo', label: '專業攝影', description: '商業級專業攝影效果' },
+      { id: 'natural-light', label: '自然光照', description: '柔和自然光線' },
+      { id: 'dramatic-lighting', label: '戲劇化光影', description: '強烈明暗對比' },
+      { id: 'product-closeup', label: '產品特寫', description: '細節突出的近距離拍攝' },
+    ]
+  },
+  artistic: {
+    label: '藝術風格',
+    tags: [
+      { id: 'watercolor', label: '水彩畫', description: '柔和水彩藝術風格' },
+      { id: 'manga', label: '漫畫風格', description: '日式動漫繪畫風格' },
+      { id: 'sticker', label: '貼紙風格', description: '可愛貼紙設計風格' },
+      { id: 'oil-painting', label: '油畫質感', description: '經典油畫藝術效果' },
+      { id: 'pixar', label: 'PIXAR Style', description: '皮克斯動畫電影風格' },
+      { id: 'ghibli', label: '吉卜力', description: '宮崎駿經典動畫風格' },
+      { id: 'american-cartoon', label: '美國卡通', description: '美式卡通動畫風格' },
+      { id: 'clay', label: 'Clay Style', description: '黏土定格動畫風格' },
+    ]
+  },
+  render3d: {
+    label: '3D渲染',
+    tags: [
+      { id: '3d-render', label: '3D Render', description: '專業3D渲染效果' },
+      { id: 'unreal-engine', label: 'Unreal Engine', description: '虛幻引擎渲染風格' },
+    ]
+  },
+  scene: {
+    label: '場景氛圍',
+    tags: [
+      { id: 'indoor', label: '室內場景', description: '溫馨室內環境' },
+      { id: 'outdoor', label: '戶外環境', description: '自然戶外場景' },
+      { id: 'futuristic', label: '未來科技', description: '科技未來感設計' },
+      { id: 'vintage', label: '復古風格', description: '懷舊復古氛圍' },
+    ]
+  },
+  color: {
+    label: '色彩調性',
+    tags: [
+      { id: 'warm-tone', label: '溫暖色調', description: '暖色系溫馨感覺' },
+      { id: 'cool-tone', label: '冷色調', description: '藍調冷色清新效果' },
+      { id: 'high-contrast', label: '高對比', description: '強烈明暗對比' },
+      { id: 'minimalist', label: '極簡主義', description: '簡潔純淨設計' },
+    ]
   },
   social: {
     label: '社交媒體',
-    icon: Share2,
-    description: '貼紙生成與封面圖',
-    styles: [
-      { id: 'whatsapp-sticker', label: 'WhatsApp Sticker', description: '可愛表情貼紙' },
-      { id: 'youtube-thumbnail', label: 'YouTube火爆封面圖', description: '吸睛YouTube縮圖' },
-      { id: 'instagram-post', label: 'Instagram 貼文', description: 'IG風格正方圖' },
-      { id: 'facebook-cover', label: 'Facebook 封面', description: 'FB橫幅封面' },
-    ],
+    tags: [
+      { id: 'youtube-cover', label: 'YouTube Cover', description: 'YouTube高點擊標題設計' },
+    ]
+  },
+};
+
+// Poster style categories - comprehensive list
+const posterCategories = {
+  creative: {
+    label: '創意設計',
+    subCategories: {
+      poster: {
+        label: '海報設計',
+        styles: [
+          { id: 'magazine-retro', label: '雜誌封面×復古報紙', prompt: 'vintage magazine cover with retro newspaper elements' },
+          { id: 'retro-80s-90s', label: '80-90年代復古報紙', prompt: '1980s 1990s retro newspaper style, vintage typography' },
+          { id: 'business-magazine', label: '高端商業評論雜誌', prompt: 'high-end business magazine cover, Forbes Bloomberg style' },
+          { id: 'tai-kung-pao', label: '太公報惡搞風格', prompt: 'Chinese newspaper parody, sensational headlines' },
+          { id: 'lemon-daily', label: '檸檬日報風格', prompt: 'quirky newspaper design, yellow tones, playful' },
+          { id: 'hk-manga-fight', label: '港漫四格打鬥', prompt: 'Hong Kong manga 4-panel fight scene, dynamic action' },
+        ]
+      }
+    }
+  },
+  social: {
+    label: '社交媒體',
+    subCategories: {
+      sticker: {
+        label: '貼紙生成',
+        styles: [
+          { id: 'whatsapp-sticker', label: 'WhatsApp Sticker', prompt: 'cute sticker design, transparent background, expressive, kawaii' },
+        ]
+      },
+      youtube: {
+        label: 'YouTube火爆封面圖',
+        styles: [
+          { id: 'youtube-thumbnail', label: 'Youtube封面', prompt: 'eye-catching YouTube thumbnail, bold text, vibrant colors, high contrast' },
+        ]
+      }
+    }
   },
   movie: {
     label: '電影海報',
-    icon: Film,
-    description: '荷里活到亞洲電影',
     subCategories: {
-      hollywood: {
+      mainstream: {
         label: '主流商業電影',
         styles: [
-          { id: 'hollywood-blockbuster', label: '荷里活大片', description: '好萊塢商業大片風格' },
-          { id: 'marvel-superhero', label: 'Marvel 超級英雄', description: '漫威英雄風格' },
-          { id: 'dc-dark', label: 'DC 暗黑風格', description: 'DC黑暗風格' },
-        ],
+          { id: 'hollywood', label: '荷里活大片', prompt: 'Hollywood blockbuster movie poster, epic scale, dramatic lighting' },
+          { id: 'marvel', label: 'Marvel 超級英雄', prompt: 'Marvel superhero movie poster, dynamic poses, power effects' },
+          { id: 'dc-dark', label: 'DC 暗黑風格', prompt: 'DC dark and gritty style, noir lighting, intense atmosphere' },
+        ]
       },
       asian: {
         label: '亞洲電影',
         styles: [
-          { id: 'japanese-movie', label: '日本電影', description: '日式電影海報' },
-          { id: 'korean-movie', label: '韓國電影', description: '韓式電影風格' },
-          { id: 'hk-movie', label: '香港電影', description: '港片經典風格' },
-          { id: 'inachu', label: '稻中兵團', description: '搞笑漫畫風格' },
-          { id: 'hk-kam-manga', label: '香港甘小文四格漫畫', description: '本土四格漫畫' },
-        ],
-      },
-    },
+          { id: 'japanese-film', label: '日本電影', prompt: 'Japanese movie poster aesthetic, artistic, subtle colors' },
+          { id: 'korean-film', label: '韓國電影', prompt: 'Korean cinema style poster, realistic drama, emotional impact' },
+          { id: 'hk-film', label: '香港電影', prompt: 'Classic Hong Kong movie poster, action-oriented, bold colors' },
+          { id: 'inachu', label: '稻中兵團', prompt: 'Inachu manga parody style, exaggerated comedy, crude humor' },
+          { id: 'hk-kam-manga', label: '香港甘小文四格漫畫', prompt: 'Hong Kong 4-panel manga style, local humor, satirical' },
+        ]
+      }
+    }
   },
-  art: {
+  artStyle: {
     label: '藝術風格',
-    icon: Palette,
-    description: '藝術與獨立電影風格',
     subCategories: {
-      artistic: {
+      artIndependent: {
         label: '藝術與獨立電影',
         styles: [
-          { id: 'minimalist', label: '極簡主義', description: '簡約設計風格' },
-          { id: 'retro-illustration', label: '復古懷舊手繪插畫', description: '手繪復古風' },
-        ],
+          { id: 'minimalist-art', label: '極簡主義', prompt: 'minimalist design, clean lines, negative space, modern' },
+          { id: 'retro-illustration', label: '復古懷舊手繪插畫', prompt: 'vintage hand-drawn illustration, nostalgic, warm colors' },
+        ]
       },
       genre: {
         label: '特定類型',
         styles: [
-          { id: 'scifi-futuristic', label: '科幻未來', description: '未來科技感' },
-          { id: 'horror-thriller', label: '恐怖驚悚', description: '暗黑恐怖風格' },
-          { id: 'romance', label: '浪漫愛情', description: '浪漫唯美風格' },
-        ],
-      },
-    },
+          { id: 'scifi', label: '科幻未來', prompt: 'sci-fi futuristic design, neon lights, cyberpunk, high-tech' },
+          { id: 'horror', label: '恐怖驚悚', prompt: 'horror movie style, dark atmosphere, suspenseful, eerie' },
+          { id: 'romance', label: '浪漫愛情', prompt: 'romantic movie poster, soft lighting, dreamy, warm tones' },
+        ]
+      }
+    }
   },
   commercial: {
     label: '商業應用',
-    icon: ShoppingBag,
-    description: '電商海報與促銷',
     subCategories: {
       ecommerce: {
         label: '電商海報',
         styles: [
-          { id: 'product-showcase', label: '產品展示', description: '專業產品展示' },
-          { id: 'promo-campaign', label: '促銷活動', description: '促銷廣告設計' },
-          { id: 'fashion-style', label: '時尚風格', description: '時尚潮流設計' },
-          { id: 'festival-theme', label: '節慶主題', description: '節日慶典風格' },
-          { id: 'flash-sale', label: '限時優惠', description: '限時搶購設計' },
-        ],
-      },
-    },
-  },
+          { id: 'product-display', label: '產品展示', prompt: 'e-commerce product showcase, clean background, professional' },
+          { id: 'promo', label: '促銷活動', prompt: 'promotional campaign design, bold graphics, call to action' },
+          { id: 'fashion', label: '時尚風格', prompt: 'high fashion advertising, editorial style, luxury branding' },
+          { id: 'festival', label: '節慶主題', prompt: 'festive holiday theme, celebratory, seasonal decorations' },
+          { id: 'flash-sale', label: '限時優惠', prompt: 'flash sale banner, urgent design, countdown aesthetic' },
+        ]
+      }
+    }
+  }
 };
 
-// Model options
+// Model options with points
 const models = [
-  { id: 'nano-banana', label: 'Nano Banana', description: '快速生成，適合大部分需求', model: 'google/gemini-2.5-flash-image-preview' },
-  { id: 'nano-banana-pro', label: 'Nano Banana Pro', description: '更高質量，適合專業需求', model: 'google/gemini-3-pro-image-preview' },
+  { id: 'nano-banana', label: 'Nano Banana', description: '快速生成，適合大部分需求', model: 'google/gemini-2.5-flash-image-preview', points: 1 },
+  { id: 'nano-banana-pro', label: 'Nano Banana Pro', description: '更高質量，適合專業需求', model: 'google/gemini-3-pro-image-preview', points: 2 },
+  { id: 'seedream', label: 'Seedream', description: '創意夢境風格', model: 'google/gemini-2.5-flash-image-preview', points: 1 },
 ];
 
 // Aspect ratio options
@@ -137,84 +220,142 @@ const aspectRatios = [
   { id: '4:3', label: '4:3 傳統', description: '傳統相片比例', width: 1024, height: 768 },
 ];
 
-// Style prompt mappings
-const stylePrompts: Record<string, string> = {
-  // Product styles
-  'product-hero': 'professional product photography, studio lighting, clean white background, commercial quality',
-  'portrait-hero': 'professional portrait photography, soft lighting, shallow depth of field, high-end fashion',
-  'lifestyle': 'lifestyle product photography, natural setting, warm lighting, authentic atmosphere',
-  
-  // Poster styles
-  'magazine-cover': 'high fashion magazine cover, Vogue style, elegant typography, professional layout',
-  'retro-newspaper-80s': '1980s retro newspaper layout, vintage printing style, old paper texture, classic typography',
-  'business-magazine': 'Forbes or Bloomberg Businessweek style cover, corporate, professional, authoritative',
-  'tai-kung-pao': 'Chinese newspaper parody style, traditional Chinese typography, sensational headlines',
-  'lemon-daily': 'quirky newspaper design, yellow tones, fun headlines, playful layout',
-  'hk-manga-4panel': 'Hong Kong martial arts manga style, dynamic action, speed lines, dramatic poses',
-  
-  // Social media styles
-  'whatsapp-sticker': 'cute sticker design, transparent background, expressive character, simple bold lines, kawaii style',
-  'youtube-thumbnail': 'eye-catching YouTube thumbnail, bold text, shocked expression, vibrant colors, high contrast',
-  'instagram-post': 'Instagram aesthetic, warm tones, lifestyle photography, trendy composition',
-  'facebook-cover': 'Facebook cover banner, wide format, professional branding, engaging visual',
-  
-  // Movie poster styles
-  'hollywood-blockbuster': 'Hollywood blockbuster movie poster, dramatic lighting, epic scale, professional typography',
-  'marvel-superhero': 'Marvel superhero movie poster style, dynamic poses, power effects, comic book inspired',
-  'dc-dark': 'DC dark and gritty style, noir lighting, dramatic shadows, intense atmosphere',
-  'japanese-movie': 'Japanese movie poster aesthetic, artistic composition, subtle colors, emotional depth',
-  'korean-movie': 'Korean cinema style poster, realistic drama, emotional impact, sophisticated design',
-  'hk-movie': 'Classic Hong Kong movie poster, action-oriented, bold colors, martial arts aesthetic',
-  'inachu': 'Inachu manga parody style, exaggerated comedy, crude humor, simple art style',
-  'hk-kam-manga': 'Hong Kong 4-panel manga style, local humor, simple drawings, satirical',
-  
-  // Art styles
-  'minimalist': 'minimalist design, clean lines, negative space, simple color palette, modern aesthetic',
-  'retro-illustration': 'vintage hand-drawn illustration, nostalgic, warm colors, textured paper feel',
-  'scifi-futuristic': 'sci-fi futuristic design, neon lights, cyberpunk, high-tech, dystopian',
-  'horror-thriller': 'horror movie style, dark atmosphere, suspenseful, eerie lighting, unsettling',
-  'romance': 'romantic movie poster, soft lighting, dreamy atmosphere, warm tones, emotional',
-  
-  // Commercial styles
-  'product-showcase': 'e-commerce product showcase, clean background, professional lighting, commercial quality',
-  'promo-campaign': 'promotional campaign design, bold graphics, call to action, sale aesthetics',
-  'fashion-style': 'high fashion advertising, editorial style, luxury branding, sophisticated',
-  'festival-theme': 'festive holiday theme, celebratory, seasonal decorations, joyful atmosphere',
-  'flash-sale': 'flash sale banner, urgent design, countdown aesthetic, eye-catching colors, promotional',
-};
-
 const ImageGenerationPage = () => {
+  // Generation mode
+  const [generationMode, setGenerationMode] = useState<'image-to-image' | 'text-to-image'>('image-to-image');
+  
+  // Image upload states
+  const [uploadedImages, setUploadedImages] = useState<Array<{ file: File; preview: string }>>([]);
+  const [selectedGalleryImage, setSelectedGalleryImage] = useState<string | null>(null);
+  const [showGalleryDialog, setShowGalleryDialog] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Prompt states
   const [prompt, setPrompt] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('product');
-  const [selectedStyle, setSelectedStyle] = useState<string>('product-hero');
+  const [title, setTitle] = useState('');
+  
+  // Camera angle
   const [selectedCameraAngle, setSelectedCameraAngle] = useState<string>('');
+  
+  // Enhancement options
+  const [translateToEnglish, setTranslateToEnglish] = useState(false);
+  const [tryOnMode, setTryOnMode] = useState(false);
+  const [aiEnhance, setAiEnhance] = useState(false);
+  const [preserveFace, setPreserveFace] = useState(false);
+  
+  // Style tags
+  const [selectedStyleTags, setSelectedStyleTags] = useState<string[]>([]);
+  
+  // Poster style
+  const [showPosterSelector, setShowPosterSelector] = useState(false);
+  const [selectedPosterStyle, setSelectedPosterStyle] = useState<string>('');
+  const [expandedPosterCategory, setExpandedPosterCategory] = useState<string | null>(null);
+  
+  // Generation options
   const [selectedModel, setSelectedModel] = useState('nano-banana');
   const [selectedAspectRatio, setSelectedAspectRatio] = useState('1:1');
   const [quantity, setQuantity] = useState(1);
+  
+  // Results
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [history, setHistory] = useState<Array<{ prompt: string; imageUrl: string }>>([]);
-  const [expandedSubCategory, setExpandedSubCategory] = useState<string | null>(null);
+  
+  // Points (mock for now)
+  const [remainingPoints] = useState(400);
+  
   const { toast } = useToast();
-
-  const currentCategory = categories[selectedCategory as keyof typeof categories];
   const aspectRatio = aspectRatios.find(ar => ar.id === selectedAspectRatio);
+  const currentModel = models.find(m => m.id === selectedModel);
+  const totalPoints = quantity * (currentModel?.points || 1);
 
+  // Handle file upload
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    
+    const newImages = Array.from(files).map(file => ({
+      file,
+      preview: URL.createObjectURL(file)
+    }));
+    
+    setUploadedImages(prev => [...prev, ...newImages].slice(0, 5)); // Max 5 images
+    toast({ title: `已上傳 ${files.length} 張圖片` });
+  };
+
+  const removeUploadedImage = (index: number) => {
+    setUploadedImages(prev => {
+      const newImages = [...prev];
+      URL.revokeObjectURL(newImages[index].preview);
+      newImages.splice(index, 1);
+      return newImages;
+    });
+  };
+
+  // Toggle style tag
+  const toggleStyleTag = (tagId: string) => {
+    if (tagId === 'none') {
+      setSelectedStyleTags([]);
+      return;
+    }
+    setSelectedStyleTags(prev => 
+      prev.includes(tagId) 
+        ? prev.filter(t => t !== tagId)
+        : [...prev, tagId]
+    );
+  };
+
+  // Get style tag prompt
+  const getStyleTagPrompts = () => {
+    const prompts: string[] = [];
+    Object.values(styleTags).forEach(category => {
+      category.tags.forEach(tag => {
+        if (selectedStyleTags.includes(tag.id)) {
+          prompts.push(tag.label);
+        }
+      });
+    });
+    return prompts.join(', ');
+  };
+
+  // Get poster style prompt
+  const getPosterStylePrompt = () => {
+    for (const category of Object.values(posterCategories)) {
+      for (const subCat of Object.values(category.subCategories)) {
+        const style = subCat.styles.find(s => s.id === selectedPosterStyle);
+        if (style) return style.prompt;
+      }
+    }
+    return '';
+  };
+
+  // Build full prompt
   const buildFullPrompt = () => {
     const parts = [prompt];
     
-    // Add style prompt
-    if (stylePrompts[selectedStyle]) {
-      parts.push(stylePrompts[selectedStyle]);
+    // Add camera angle
+    if (selectedCameraAngle) {
+      const angle = cameraAngles.find(a => a.id === selectedCameraAngle);
+      if (angle) parts.push(angle.prompt);
     }
     
-    // Add camera angle if product category
-    if (selectedCategory === 'product' && selectedCameraAngle) {
-      const angle = categories.product.cameraAngles.find(a => a.id === selectedCameraAngle);
-      if (angle) {
-        parts.push(angle.prompt);
-      }
+    // Add style tags
+    const styleTagPrompt = getStyleTagPrompts();
+    if (styleTagPrompt) parts.push(styleTagPrompt);
+    
+    // Add poster style
+    const posterPrompt = getPosterStylePrompt();
+    if (posterPrompt) parts.push(posterPrompt);
+    
+    // Add face preservation
+    if (preserveFace && uploadedImages.length > 0) {
+      parts.push('preserve all facial features from the reference image');
+    }
+    
+    // Add AI enhance
+    if (aiEnhance) {
+      parts.push('AI enhanced, high detail, professional quality');
     }
     
     // Add aspect ratio hint
@@ -226,8 +367,18 @@ const ImageGenerationPage = () => {
   };
 
   const handleGenerate = async () => {
-    if (!prompt.trim()) {
+    if (!prompt.trim() && generationMode === 'text-to-image') {
       toast({ title: '請輸入圖片描述', variant: 'destructive' });
+      return;
+    }
+    
+    if (generationMode === 'image-to-image' && uploadedImages.length === 0 && !selectedGalleryImage) {
+      toast({ title: '請先上傳或選擇圖片', variant: 'destructive' });
+      return;
+    }
+
+    if (totalPoints > remainingPoints) {
+      toast({ title: '點數不足', description: `需要 ${totalPoints} 點但只剩 ${remainingPoints} 點`, variant: 'destructive' });
       return;
     }
 
@@ -238,14 +389,13 @@ const ImageGenerationPage = () => {
       const fullPrompt = buildFullPrompt();
       const model = models.find(m => m.id === selectedModel)?.model || 'google/gemini-2.5-flash-image-preview';
       
-      // Generate images (simulating multiple generations)
       const images: string[] = [];
       
       for (let i = 0; i < quantity; i++) {
         const { data, error } = await supabase.functions.invoke('generate-image', {
           body: { 
             prompt: fullPrompt, 
-            style: selectedStyle,
+            style: selectedPosterStyle || selectedStyleTags[0] || 'default',
             model,
             width: aspectRatio?.width,
             height: aspectRatio?.height,
@@ -264,7 +414,6 @@ const ImageGenerationPage = () => {
       
       if (images.length > 0) {
         setSelectedImage(images[0]);
-        // Add to history
         images.forEach(imageUrl => {
           setHistory(prev => [{ prompt, imageUrl }, ...prev.slice(0, 19)]);
         });
@@ -299,153 +448,164 @@ const ImageGenerationPage = () => {
     }
   };
 
-  const renderCategoryStyles = () => {
-    const cat = currentCategory;
-    
-    // Check if category has subCategories
-    if ('subCategories' in cat) {
-      return (
-        <div className="space-y-3">
-          {Object.entries(cat.subCategories).map(([key, subCat]) => (
-            <Collapsible 
-              key={key} 
-              open={expandedSubCategory === key}
-              onOpenChange={(open) => setExpandedSubCategory(open ? key : null)}
-            >
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors">
-                <span className="font-medium">{subCat.label}</span>
-                {expandedSubCategory === key ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-2">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {subCat.styles.map((style) => (
-                    <button
-                      key={style.id}
-                      onClick={() => setSelectedStyle(style.id)}
-                      className={`p-3 rounded-lg border text-left transition-all ${
-                        selectedStyle === style.id 
-                          ? 'border-primary bg-primary/10' 
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <div className="font-medium text-sm">{style.label}</div>
-                      <div className="text-xs text-muted-foreground mt-1">{style.description}</div>
-                    </button>
-                  ))}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          ))}
-        </div>
-      );
-    }
-    
-    // Regular styles without subCategories
-    return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {cat.styles?.map((style) => (
-          <button
-            key={style.id}
-            onClick={() => setSelectedStyle(style.id)}
-            className={`p-3 rounded-lg border text-left transition-all ${
-              selectedStyle === style.id 
-                ? 'border-primary bg-primary/10' 
-                : 'border-border hover:border-primary/50'
-            }`}
-          >
-            <div className="font-medium text-sm">{style.label}</div>
-            <div className="text-xs text-muted-foreground mt-1">{style.description}</div>
-          </button>
-        ))}
-      </div>
-    );
-  };
+  // Cleanup preview URLs on unmount
+  useEffect(() => {
+    return () => {
+      uploadedImages.forEach(img => URL.revokeObjectURL(img.preview));
+    };
+  }, []);
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="heading-display text-2xl mb-1">AI 圖片生成</h1>
-        <p className="text-muted-foreground">使用 AI 根據文字描述生成精美圖片</p>
+      {/* Header with points info */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="heading-display text-2xl mb-1">AI 圖像生成</h1>
+          <p className="text-muted-foreground">選擇生成模式並創建精美圖像</p>
+        </div>
+        <Badge variant="outline" className="text-base px-4 py-2">
+          剩餘點數: {remainingPoints}
+        </Badge>
       </div>
+
+      {/* Generation Mode Tabs */}
+      <Tabs value={generationMode} onValueChange={(val) => setGenerationMode(val as 'image-to-image' | 'text-to-image')}>
+        <TabsList className="grid grid-cols-2 w-full max-w-md">
+          <TabsTrigger value="image-to-image" className="gap-2">
+            <ImagePlus className="w-4 h-4" />
+            產品/主角圖片生成
+          </TabsTrigger>
+          <TabsTrigger value="text-to-image" className="gap-2">
+            <Type className="w-4 h-4" />
+            文字生成圖片
+          </TabsTrigger>
+        </TabsList>
+        
+        <p className="text-sm text-muted-foreground mt-2">
+          {generationMode === 'image-to-image' 
+            ? '📸 上傳圖片作為參考，生成風格化的新圖片'
+            : '✨ 純文字描述生成全新圖片'}
+        </p>
+      </Tabs>
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Left Panel - Controls */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Category Selection */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">選擇圖片類型</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Tabs value={selectedCategory} onValueChange={(val) => {
-                setSelectedCategory(val);
-                // Reset style when category changes
-                const cat = categories[val as keyof typeof categories];
-                if ('styles' in cat && cat.styles.length > 0) {
-                  setSelectedStyle(cat.styles[0].id);
-                } else if ('subCategories' in cat) {
-                  const firstSubCat = Object.values(cat.subCategories)[0];
-                  if (firstSubCat.styles.length > 0) {
-                    setSelectedStyle(firstSubCat.styles[0].id);
-                  }
-                }
-                setExpandedSubCategory(null);
-              }}>
-                <TabsList className="grid grid-cols-3 lg:grid-cols-6 h-auto gap-2 bg-transparent p-0">
-                  {Object.entries(categories).map(([key, cat]) => {
-                    const Icon = cat.icon;
-                    return (
-                      <TabsTrigger 
-                        key={key} 
-                        value={key}
-                        className="flex flex-col items-center gap-1 p-3 data-[state=active]:bg-primary/10 data-[state=active]:border-primary border border-border rounded-lg"
-                      >
-                        <Icon className="w-5 h-5" />
-                        <span className="text-xs text-center leading-tight">{cat.label}</span>
-                      </TabsTrigger>
-                    );
-                  })}
-                </TabsList>
-
-                {Object.entries(categories).map(([key, cat]) => (
-                  <TabsContent key={key} value={key} className="mt-4">
-                    <p className="text-sm text-muted-foreground mb-3">{cat.description}</p>
-                    {renderCategoryStyles()}
-                  </TabsContent>
-                ))}
-              </Tabs>
-            </CardContent>
-          </Card>
-
-          {/* Camera Angles (only for product category) */}
-          {selectedCategory === 'product' && (
+          {/* Image Upload Section (only for image-to-image mode) */}
+          {generationMode === 'image-to-image' && (
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Camera className="w-5 h-5" />
-                  快速選擇鏡頭提示詞
-                </CardTitle>
-                <CardDescription>選擇攝影角度增強效果</CardDescription>
+                <CardTitle className="text-lg">產品或主角圖片</CardTitle>
+                <CardDescription>
+                  上傳或選擇產品或主角圖片，或從圖庫選擇已生成的圖片 (支援各種圖片格式，最大 5MB)
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {categories.product.cameraAngles.map((angle) => (
-                    <Badge
-                      key={angle.id}
-                      variant={selectedCameraAngle === angle.id ? 'default' : 'outline'}
-                      className="cursor-pointer hover:bg-primary/20 transition-colors"
-                      onClick={() => setSelectedCameraAngle(
-                        selectedCameraAngle === angle.id ? '' : angle.id
-                      )}
-                    >
-                      {angle.label}
-                    </Badge>
-                  ))}
+              <CardContent className="space-y-4">
+                {/* Upload Area */}
+                <div 
+                  className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+                  <p className="text-sm text-muted-foreground">點擊或拖拽產品/主角圖片到此處上傳</p>
+                  <p className="text-xs text-muted-foreground mt-1">支援各種圖片格式，最大 5MB。第一張圖片將作為主角</p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleFileUpload}
+                  />
                 </div>
+
+                {/* Gallery Selection Button */}
+                <Dialog open={showGalleryDialog} onOpenChange={setShowGalleryDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full gap-2">
+                      <Grid3X3 className="w-4 h-4" />
+                      從圖庫選擇圖片
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>從圖庫選擇圖片</DialogTitle>
+                    </DialogHeader>
+                    <ScrollArea className="h-[400px]">
+                      {history.length > 0 ? (
+                        <div className="grid grid-cols-4 gap-3 p-2">
+                          {history.map((item, index) => (
+                            <button
+                              key={index}
+                              onClick={() => {
+                                setSelectedGalleryImage(item.imageUrl);
+                                setShowGalleryDialog(false);
+                                toast({ title: '已選擇圖片' });
+                              }}
+                              className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                                selectedGalleryImage === item.imageUrl ? 'border-primary' : 'border-transparent hover:border-primary/50'
+                              }`}
+                            >
+                              <img src={item.imageUrl} alt="" className="w-full h-full object-cover" />
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                          <Image className="w-12 h-12 mb-2 opacity-50" />
+                          <p>尚未生成任何圖像</p>
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Uploaded Images Preview */}
+                {(uploadedImages.length > 0 || selectedGalleryImage) && (
+                  <Collapsible defaultOpen>
+                    <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium">
+                      已上傳的圖片：
+                      <ChevronDown className="w-4 h-4" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pt-3">
+                      <div className="flex flex-wrap gap-3">
+                        {uploadedImages.map((img, index) => (
+                          <div key={index} className="relative group">
+                            <img 
+                              src={img.preview} 
+                              alt={`Uploaded ${index + 1}`}
+                              className="w-20 h-20 object-cover rounded-lg border"
+                            />
+                            <button
+                              onClick={() => removeUploadedImage(index)}
+                              className="absolute -top-2 -right-2 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                            {index === 0 && (
+                              <Badge className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] px-1">主角</Badge>
+                            )}
+                          </div>
+                        ))}
+                        {selectedGalleryImage && (
+                          <div className="relative group">
+                            <img 
+                              src={selectedGalleryImage} 
+                              alt="Selected from gallery"
+                              className="w-20 h-20 object-cover rounded-lg border border-primary"
+                            />
+                            <button
+                              onClick={() => setSelectedGalleryImage(null)}
+                              className="absolute -top-2 -right-2 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                )}
               </CardContent>
             </Card>
           )}
@@ -455,11 +615,40 @@ const ImageGenerationPage = () => {
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Wand2 className="w-5 h-5 text-primary" />
-                圖片描述
+                提示詞
               </CardTitle>
-              <CardDescription>描述您想要的圖片內容</CardDescription>
+              <CardDescription>描述您想要生成的圖像風格和內容</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              {/* Optional Title */}
+              <div className="space-y-2">
+                <Label>標題（可選）</Label>
+                <Input 
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="為您的創作命名..."
+                />
+              </div>
+
+              {/* Camera Angle Quick Select */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>快速選擇鏡頭提示詞</Label>
+                  <Select value={selectedCameraAngle} onValueChange={setSelectedCameraAngle}>
+                    <SelectTrigger className="w-[250px]">
+                      <SelectValue placeholder="選擇預設鏡頭提示詞" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[300px]">
+                      <SelectItem value="none">無</SelectItem>
+                      {cameraAngles.map(angle => (
+                        <SelectItem key={angle.id} value={angle.id}>{angle.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Main Prompt */}
               <Textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
@@ -467,7 +656,148 @@ const ImageGenerationPage = () => {
                 rows={4}
                 className="resize-none"
               />
+
+              {/* Enhancement Options */}
+              <div className="flex flex-wrap gap-4">
+                <div className="flex items-center gap-2">
+                  <Switch 
+                    id="translate" 
+                    checked={translateToEnglish}
+                    onCheckedChange={setTranslateToEnglish}
+                  />
+                  <Label htmlFor="translate" className="flex items-center gap-1 cursor-pointer">
+                    <Languages className="w-4 h-4" />
+                    翻譯英文
+                  </Label>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Switch 
+                    id="tryon" 
+                    checked={tryOnMode}
+                    onCheckedChange={setTryOnMode}
+                    disabled={uploadedImages.length === 0 && !selectedGalleryImage}
+                  />
+                  <Label htmlFor="tryon" className="flex items-center gap-1 cursor-pointer">
+                    <Shirt className="w-4 h-4" />
+                    試衣 {(uploadedImages.length === 0 && !selectedGalleryImage) && '(請先選擇圖片)'}
+                  </Label>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Switch 
+                    id="enhance" 
+                    checked={aiEnhance}
+                    onCheckedChange={setAiEnhance}
+                  />
+                  <Label htmlFor="enhance" className="flex items-center gap-1 cursor-pointer">
+                    <Zap className="w-4 h-4" />
+                    AI增強
+                  </Label>
+                </div>
+              </div>
+
+              {/* Preserve Face Option */}
+              {generationMode === 'image-to-image' && (uploadedImages.length > 0 || selectedGalleryImage) && (
+                <div className="flex items-center gap-2 pt-2 border-t">
+                  <Switch 
+                    id="preserve-face" 
+                    checked={preserveFace}
+                    onCheckedChange={setPreserveFace}
+                  />
+                  <Label htmlFor="preserve-face" className="cursor-pointer">
+                    上傳圖是我的主角，要保留所有面部特徵
+                  </Label>
+                </div>
+              )}
             </CardContent>
+          </Card>
+
+          {/* Style Tags */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">風格標籤</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {Object.entries(styleTags).map(([key, category]) => (
+                <div key={key} className="space-y-2">
+                  <Label className="text-muted-foreground">{category.label}</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {category.tags.map(tag => (
+                      <Badge
+                        key={tag.id}
+                        variant={selectedStyleTags.includes(tag.id) || (tag.id === 'none' && selectedStyleTags.length === 0) ? 'default' : 'outline'}
+                        className="cursor-pointer hover:bg-primary/20 transition-colors"
+                        onClick={() => toggleStyleTag(tag.id)}
+                      >
+                        {tag.label}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Poster Style Selector */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">海報風格選擇器</CardTitle>
+                  <CardDescription>選擇以下風格，自動生成AI提示詞</CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="poster-toggle">切換</Label>
+                  <Switch 
+                    id="poster-toggle" 
+                    checked={showPosterSelector}
+                    onCheckedChange={setShowPosterSelector}
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            {showPosterSelector && (
+              <CardContent className="space-y-4">
+                {Object.entries(posterCategories).map(([catKey, category]) => (
+                  <Collapsible 
+                    key={catKey}
+                    open={expandedPosterCategory === catKey}
+                    onOpenChange={(open) => setExpandedPosterCategory(open ? catKey : null)}
+                  >
+                    <CollapsibleTrigger className="flex items-center justify-between w-full p-3 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors">
+                      <span className="font-medium">{category.label}</span>
+                      {expandedPosterCategory === catKey ? (
+                        <ChevronUp className="w-4 h-4" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" />
+                      )}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pt-3 space-y-3">
+                      {Object.entries(category.subCategories).map(([subKey, subCat]) => (
+                        <div key={subKey} className="space-y-2">
+                          <Label className="text-sm text-muted-foreground">{subCat.label}</Label>
+                          <div className="flex flex-wrap gap-2">
+                            {subCat.styles.map(style => (
+                              <Badge
+                                key={style.id}
+                                variant={selectedPosterStyle === style.id ? 'default' : 'outline'}
+                                className="cursor-pointer hover:bg-primary/20 transition-colors"
+                                onClick={() => setSelectedPosterStyle(
+                                  selectedPosterStyle === style.id ? '' : style.id
+                                )}
+                              >
+                                {style.label}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
+                ))}
+              </CardContent>
+            )}
           </Card>
 
           {/* Generation Options */}
@@ -482,7 +812,7 @@ const ImageGenerationPage = () => {
               {/* Model Selection */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">生成模型選擇</label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   {models.map((model) => (
                     <button
                       key={model.id}
@@ -495,6 +825,7 @@ const ImageGenerationPage = () => {
                     >
                       <div className="font-medium text-sm">{model.label}</div>
                       <div className="text-xs text-muted-foreground mt-1">{model.description}</div>
+                      <Badge variant="secondary" className="mt-2 text-xs">{model.points} 點</Badge>
                     </button>
                   ))}
                 </div>
@@ -537,14 +868,21 @@ const ImageGenerationPage = () => {
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>1</span>
+                  <span>最多可生成 10 張圖片</span>
                   <span>10</span>
                 </div>
+              </div>
+
+              {/* Points Info */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                <span className="text-sm">剩餘點數:</span>
+                <span className="font-medium">{remainingPoints}</span>
               </div>
 
               {/* Generate Button */}
               <Button 
                 onClick={handleGenerate} 
-                disabled={isGenerating || !prompt.trim()}
+                disabled={isGenerating || totalPoints > remainingPoints}
                 className="w-full gap-2 h-12 text-lg"
                 size="lg"
               >
@@ -556,10 +894,16 @@ const ImageGenerationPage = () => {
                 ) : (
                   <>
                     <Wand2 className="w-5 h-5" />
-                    生成圖片
+                    生成 {quantity} 張圖像 ({totalPoints} 點數)
                   </>
                 )}
               </Button>
+              
+              {totalPoints > remainingPoints && (
+                <p className="text-sm text-destructive text-center">
+                  點數不足，需要 {totalPoints} 點但只剩 {remainingPoints} 點
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -570,13 +914,17 @@ const ImageGenerationPage = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>生成結果</CardTitle>
-                {selectedImage && (
-                  <Button size="sm" variant="outline" onClick={() => handleDownload()}>
-                    <Download className="w-4 h-4 mr-1" />
-                    下載
-                  </Button>
-                )}
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => setHistory([])}
+                  disabled={history.length === 0}
+                >
+                  <Grid3X3 className="w-4 h-4 mr-1" />
+                  圖庫
+                </Button>
               </div>
+              <CardDescription>您生成的圖像將顯示在這裡</CardDescription>
             </CardHeader>
             <CardContent>
               {selectedImage ? (
@@ -588,6 +936,11 @@ const ImageGenerationPage = () => {
                       className="w-full h-full object-cover"
                     />
                   </div>
+                  
+                  <Button className="w-full gap-2" onClick={() => handleDownload()}>
+                    <Download className="w-4 h-4" />
+                    下載
+                  </Button>
                   
                   {/* Thumbnails for multiple images */}
                   {generatedImages.length > 1 && (
@@ -619,18 +972,18 @@ const ImageGenerationPage = () => {
               ) : (
                 <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
                   <Image className="w-16 h-16 mb-4 opacity-50" />
-                  <p>輸入描述後點擊生成</p>
-                  <p className="text-sm mt-1">AI 將為您創建圖片</p>
+                  <p>尚未生成任何圖像</p>
+                  <p className="text-sm mt-1">完成設定後點擊生成按鈕開始</p>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* History */}
+          {/* History / Gallery */}
           {history.length > 0 && (
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg">歷史記錄</CardTitle>
+                <CardTitle className="text-lg">圖庫</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-2 max-h-[400px] overflow-y-auto">
