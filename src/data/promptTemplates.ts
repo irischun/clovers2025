@@ -765,6 +765,301 @@ export const promptTemplates: PromptTemplate[] = [
     category: 'marketing',
     tags: ['玻璃', '小狗', '雙重曝光'],
   },
+
+  // 觀看教學相關
+  {
+    id: 'tutorial-prompt-library',
+    title: '觀看教學 - 提示詞庫',
+    content: '學習如何有效使用提示詞庫。包含：分類瀏覽、關鍵詞搜索、收藏管理、自定義提示詞創建、提示詞組合技巧和最佳實踐指南。',
+    category: 'general',
+    tags: ['教學', '提示詞庫', '入門'],
+  },
+
+  // 產品與主角圖片
+  {
+    id: 'product-hero-image',
+    title: '產品或主角圖片',
+    content: 'Create a professional product or hero image with optimal lighting, clean composition, and commercial quality. Include options for various camera angles and lens effects.',
+    category: 'marketing',
+    tags: ['產品', '主角', '攝影'],
+  },
+  {
+    id: 'quick-lens-prompts',
+    title: '快速選擇鏡頭提示詞',
+    content: 'Quick reference lens prompts: Wide angle (14mm), Standard (50mm), Portrait (85mm), Telephoto (200mm), Macro (100mm), Fisheye (8mm). Each with corresponding depth of field and perspective effects.',
+    category: 'video',
+    tags: ['鏡頭', '快速選擇', '參考'],
+  },
+
+  // 海報風格選擇器
+  {
+    id: 'poster-magazine-cover',
+    title: '海報風格選擇器 - 雜誌封面×復古報紙',
+    content: 'Create a hybrid magazine cover and vintage newspaper design. Blend modern editorial aesthetics with retro newsprint textures, combining elegant typography with nostalgic halftone patterns.',
+    category: 'marketing',
+    tags: ['海報', '雜誌', '報紙'],
+  },
+  {
+    id: 'poster-80s-90s-newspaper',
+    title: '80-90年代復古報紙',
+    content: '設計80-90年代風格的復古報紙版面。使用泛黃紙張質感、經典報紙字體、大標題排版、黑白照片配半調網點效果、懷舊色調。',
+    category: 'marketing',
+    tags: ['海報', '復古', '80-90年代'],
+  },
+  {
+    id: 'poster-business-review',
+    title: '高端商業評論雜誌',
+    content: 'Design a prestigious business review magazine cover. Use minimalist layout, sophisticated serif typography, professional color scheme (deep navy, burgundy, gold accents), and authoritative imagery.',
+    category: 'marketing',
+    tags: ['雜誌', '商業', '高端'],
+  },
+  {
+    id: 'poster-takungpao-parody',
+    title: '太公報惡搞風格',
+    content: '以《太公報》經典版面風格製作惡搞報紙。使用傳統中文直排、經典報頭設計、黑白配圖、諷刺幽默的頭條新聞。保持報紙的嚴肅外觀但內容搞笑。',
+    category: 'marketing',
+    tags: ['報紙', '太公報', '惡搞'],
+  },
+  {
+    id: 'poster-lemon-daily',
+    title: '檸檬日報風格',
+    content: '創建檸檬日報獨特風格的報紙版面。使用鮮明的黃綠配色、活潑的現代字體、趣味檸檬元素裝飾、創意版面設計和親切幽默的語調。',
+    category: 'marketing',
+    tags: ['報紙', '檸檬', '日報'],
+  },
+  {
+    id: 'poster-hk-manga-fight',
+    title: '港漫四格打鬥',
+    content: '創作香港武打漫畫風格的四格打鬥場景。使用誇張的動作線、力量感十足的姿態、經典港漫陰影技法、震撼的視覺效果和中文音效字（轟！砰！嘭！）。',
+    category: 'social',
+    tags: ['港漫', '四格', '打鬥'],
+  },
+
+  // 社交媒體
+  {
+    id: 'sticker-whatsapp',
+    title: '貼紙生成: WhatsApp Sticker',
+    content: 'Generate WhatsApp sticker set with transparent background. Create expressive characters, bold outlines, vibrant colors, and common expressions in Cantonese/Chinese. Size: 512x512px.',
+    category: 'social',
+    tags: ['貼紙', 'WhatsApp', '表情'],
+  },
+  {
+    id: 'youtube-viral-thumbnail',
+    title: 'YouTube火爆封面圖: Youtube封面',
+    content: 'Create a viral YouTube thumbnail that maximizes click-through rate. Use contrasting colors, shocked expressions, bold Chinese text with glow effects, strategic arrows, and 1280x720 dimensions.',
+    category: 'social',
+    tags: ['YouTube', '封面', '病毒'],
+  },
+
+  // 電影海報 - 主流商業電影
+  {
+    id: 'movie-hollywood-blockbuster',
+    title: '荷里活大片',
+    content: 'Create a Hollywood blockbuster style movie poster. Feature dramatic lighting, epic scale, hero pose, explosive action elements, bold metallic title treatment, and professional credits block.',
+    category: 'marketing',
+    tags: ['電影', '荷里活', '大片'],
+  },
+  {
+    id: 'movie-marvel-superhero',
+    title: 'Marvel 超級英雄',
+    content: 'Design a Marvel superhero movie poster. Dynamic character poses, cosmic energy effects, team composition, chrome/metallic title treatment, signature Marvel red and gold palette.',
+    category: 'marketing',
+    tags: ['電影', 'Marvel', '英雄'],
+  },
+  {
+    id: 'movie-dc-dark-style',
+    title: 'DC 暗黑風格',
+    content: 'Create a DC Comics dark style poster. Moody desaturated colors with blue/teal accents, gritty urban environment, dramatic shadows, intense close-ups, gothic title typography.',
+    category: 'marketing',
+    tags: ['電影', 'DC', '暗黑'],
+  },
+
+  // 電影海報 - 亞洲電影
+  {
+    id: 'movie-japanese',
+    title: '日本電影',
+    content: 'Design a Japanese film poster. Elegant minimalist composition, atmospheric lighting, artistic negative space, bilingual title treatment, subtle emotional undertones.',
+    category: 'marketing',
+    tags: ['電影', '日本', '藝術'],
+  },
+  {
+    id: 'movie-korean',
+    title: '韓國電影',
+    content: 'Create a Korean cinema style poster. Distinctive teal and orange color grading, emotional character portraits, stylish Korean typography, cinematic atmosphere and composition.',
+    category: 'marketing',
+    tags: ['電影', '韓國', '劇情'],
+  },
+  {
+    id: 'movie-hongkong',
+    title: '香港電影',
+    content: '創建經典香港電影海報。大頭照構圖、動作剪影、霓虹燈色調、中英雙語片名、經典粵語金句引用、80-90年代懷舊質感。',
+    category: 'marketing',
+    tags: ['電影', '香港', '經典'],
+  },
+  {
+    id: 'movie-inachu-style',
+    title: '稻中兵團',
+    content: '以《稻中兵團》風格創作搞笑漫畫場景。誇張變形的面部表情、粗線條風格、動態荒謬姿勢、日式無厘頭幽默視覺效果。',
+    category: 'social',
+    tags: ['漫畫', '稻中兵團', '搞笑'],
+  },
+  {
+    id: 'movie-kam-siu-man-4panel',
+    title: '香港甘小文四格漫畫',
+    content: '以香港漫畫家甘小文風格創作四格漫畫。粗獷有力的線條、誇張諷刺的表情、典型香港市井人物、黑色幽默和社會諷刺元素。',
+    category: 'social',
+    tags: ['甘小文', '四格', '香港'],
+  },
+
+  // 藝術風格 - 藝術與獨立電影
+  {
+    id: 'art-minimalist',
+    title: '極簡主義',
+    content: 'Create minimalist art composition. Clean geometric lines, limited 2-3 color palette, generous negative space, essential elements only, sophisticated simplicity.',
+    category: 'marketing',
+    tags: ['藝術', '極簡', '現代'],
+  },
+  {
+    id: 'art-retro-handdrawn',
+    title: '復古懷舊手繪插畫',
+    content: 'Create nostalgic hand-drawn illustration. Warm sepia tones, cross-hatching techniques, aged paper texture, vintage 1950s-60s aesthetic, classic illustration style.',
+    category: 'marketing',
+    tags: ['藝術', '復古', '手繪'],
+  },
+
+  // 藝術風格 - 特定類型
+  {
+    id: 'art-scifi-future',
+    title: '科幻未來',
+    content: 'Design futuristic sci-fi scene. Neon lights, holographic displays, cyberpunk architecture, advanced technology, cyan/magenta/electric blue color palette, dystopian atmosphere.',
+    category: 'marketing',
+    tags: ['科幻', '未來', '賽博龐克'],
+  },
+  {
+    id: 'art-horror-thriller',
+    title: '恐怖驚悚',
+    content: 'Create horror/thriller atmosphere. Dark shadows, unsettling imagery, fog effects, distorted perspectives, ominous lighting, psychological tension, desaturated with red accents.',
+    category: 'marketing',
+    tags: ['恐怖', '驚悚', '黑暗'],
+  },
+  {
+    id: 'art-romantic-love',
+    title: '浪漫愛情',
+    content: 'Design romantic love-themed visual. Soft warm lighting, pink/gold/white palette, dreamy bokeh effects, elegant typography, intimate emotional atmosphere.',
+    category: 'marketing',
+    tags: ['浪漫', '愛情', '夢幻'],
+  },
+
+  // 商業應用 - 電商海報
+  {
+    id: 'ecommerce-product-display',
+    title: '產品展示',
+    content: 'Create professional e-commerce product display. Clean white background, soft shadows, multiple angles, lifestyle context, emphasis on quality and features, studio lighting.',
+    category: 'marketing',
+    tags: ['電商', '產品', '展示'],
+  },
+  {
+    id: 'ecommerce-promotion',
+    title: '促銷活動',
+    content: 'Design promotional campaign visual. Eye-catching sale badges, countdown graphics, discount percentages, urgency elements, red and gold colors for Asian markets.',
+    category: 'marketing',
+    tags: ['電商', '促銷', '優惠'],
+  },
+  {
+    id: 'ecommerce-fashion',
+    title: '時尚風格',
+    content: 'Create high-fashion e-commerce visual. Editorial quality, avant-garde composition, sophisticated color grading, luxury brand aesthetics, aspirational lifestyle.',
+    category: 'marketing',
+    tags: ['電商', '時尚', '奢華'],
+  },
+  {
+    id: 'ecommerce-festival',
+    title: '節慶主題',
+    content: 'Design festival-themed promotional materials. Traditional elements (lanterns, flowers, cultural symbols), festive colors, celebratory typography, seasonal decorations.',
+    category: 'marketing',
+    tags: ['電商', '節慶', '活動'],
+  },
+  {
+    id: 'ecommerce-flash-sale',
+    title: '限時優惠',
+    content: 'Create flash sale graphics with urgency. Countdown elements, lightning bolt motifs, bold "限時" text, FOMO-inducing design, red/yellow/orange high-energy palette.',
+    category: 'marketing',
+    tags: ['電商', '限時', '搶購'],
+  },
+
+  // 生成選項相關
+  {
+    id: 'model-nano-banana',
+    title: '生成模型選擇: Nano Banana',
+    content: 'Optimized prompts for Nano Banana model. Best for: detailed textures, natural lighting, photorealistic results. Keywords: sharp focus, professional photography, high detail.',
+    category: 'general',
+    tags: ['模型', 'Nano Banana', '生成'],
+  },
+  {
+    id: 'model-nano-banana-pro',
+    title: '生成模型選擇: Nana Banana Pro',
+    content: 'Optimized prompts for Nano Banana Pro model. Enhanced capabilities for complex scenes, better color accuracy, improved detail rendering. Professional-grade output.',
+    category: 'general',
+    tags: ['模型', 'Nano Banana Pro', '專業'],
+  },
+  {
+    id: 'model-seedream',
+    title: '生成模型選擇: Seedream',
+    content: 'Optimized prompts for Seedream model. Excellent for artistic styles, creative interpretations, and unique visual effects. Best for conceptual and abstract imagery.',
+    category: 'general',
+    tags: ['模型', 'Seedream', '藝術'],
+  },
+  {
+    id: 'aspect-16-9',
+    title: '長寬比: 16:9 橫向',
+    content: 'Aspect ratio 16:9 horizontal format. Ideal for: YouTube thumbnails, desktop wallpapers, cinematic scenes, presentation slides. Widescreen format for maximum visual impact.',
+    category: 'general',
+    tags: ['長寬比', '16:9', '橫向'],
+  },
+  {
+    id: 'aspect-1-1',
+    title: '長寬比: 1:1 正方形',
+    content: 'Aspect ratio 1:1 square format. Ideal for: Instagram posts, profile pictures, product images, social media thumbnails. Balanced symmetrical composition.',
+    category: 'general',
+    tags: ['長寬比', '1:1', '正方形'],
+  },
+  {
+    id: 'aspect-9-16',
+    title: '長寬比: 9:16 直向',
+    content: 'Aspect ratio 9:16 vertical format. Ideal for: Instagram Stories, TikTok, Pinterest pins, mobile wallpapers. Portrait orientation for mobile-first content.',
+    category: 'general',
+    tags: ['長寬比', '9:16', '直向'],
+  },
+  {
+    id: 'aspect-4-3',
+    title: '長寬比: 4:3 傳統',
+    content: 'Aspect ratio 4:3 traditional format. Ideal for: presentations, traditional photos, tablets, classic film look. Balanced format between square and widescreen.',
+    category: 'general',
+    tags: ['長寬比', '4:3', '傳統'],
+  },
+
+  // 更多鏡頭和攝影提示詞
+  {
+    id: 'nano-banana-emotional',
+    title: 'Nano Banana 模型對此關鍵詞反應良好 - 情緒揭示',
+    content: 'Emotional reveal shot optimized for Nano Banana. Keywords: subtle emotion, authentic expression, psychological depth, intimate moment, human connection visible.',
+    category: 'video',
+    tags: ['Nano Banana', '情緒', '表情'],
+  },
+  {
+    id: 'extreme-high-angle',
+    title: '用於創建極端高角度鏡頭 (extreme high angle shot)',
+    content: 'Extreme high angle shot looking down from above. Bird\'s eye perspective, subject appears small, vast environment visible, dramatic sense of scale, powerful composition.',
+    category: 'video',
+    tags: ['鏡頭', '高角度', '極端'],
+  },
+  {
+    id: 'aerial-shot-keyword',
+    title: '用於創建空拍鏡頭 - "change"關鍵詞',
+    content: 'Aerial shot with dynamic angle changes. Keyword "change" important for complex angles. Drone perspective, smooth transitions, landscape revelation, cinematic movement.',
+    category: 'video',
+    tags: ['空拍', '無人機', 'change'],
+  },
 ];
 
 export const templateCategories = [
