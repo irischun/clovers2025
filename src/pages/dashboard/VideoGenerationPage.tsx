@@ -129,7 +129,7 @@ const VideoGenerationPage = () => {
           {/* Frame Images */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">幀圖片設定</CardTitle>
+              <CardTitle className="text-lg">首幀圖片設定</CardTitle>
               <CardDescription>設定視頻的首幀和尾幀圖片（可選）</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
