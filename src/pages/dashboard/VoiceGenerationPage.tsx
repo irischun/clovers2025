@@ -194,8 +194,11 @@ const VoiceGenerationPage = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordedAudio, setRecordedAudio] = useState<Blob | null>(null);
   const [voiceIdError, setVoiceIdError] = useState('');
+  const [previewAudioUrl, setPreviewAudioUrl] = useState<string | null>(null);
+  const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
   
   // Credits display (simulated)
   const [remainingCredits] = useState(100);
@@ -436,6 +439,46 @@ const VoiceGenerationPage = () => {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       toast({ title: '錄音完成' });
+    }
+  };
+
+  // Create preview URL when recorded audio or file changes
+  useEffect(() => {
+    if (recordedAudio) {
+      const url = URL.createObjectURL(recordedAudio);
+      setPreviewAudioUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else if (cloneAudioFile) {
+      const url = URL.createObjectURL(cloneAudioFile);
+      setPreviewAudioUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreviewAudioUrl(null);
+    }
+  }, [recordedAudio, cloneAudioFile]);
+
+  const handlePlayPreview = () => {
+    if (!previewAudioUrl) return;
+    
+    if (!previewAudioRef.current || previewAudioRef.current.src !== previewAudioUrl) {
+      previewAudioRef.current = new Audio(previewAudioUrl);
+      previewAudioRef.current.onended = () => setIsPlayingPreview(false);
+    }
+
+    if (isPlayingPreview) {
+      previewAudioRef.current.pause();
+      setIsPlayingPreview(false);
+    } else {
+      previewAudioRef.current.play();
+      setIsPlayingPreview(true);
+    }
+  };
+
+  const handleStopPreview = () => {
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current.currentTime = 0;
+      setIsPlayingPreview(false);
     }
   };
 
@@ -1164,6 +1207,30 @@ const VoiceGenerationPage = () => {
                           )}
                         </label>
                       </div>
+                      {/* Audio Preview for uploaded file */}
+                      {cloneAudioFile && previewAudioUrl && (
+                        <div className="flex items-center justify-center gap-2 p-3 bg-muted rounded-lg">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handlePlayPreview}
+                            className="gap-2"
+                          >
+                            {isPlayingPreview ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                            {isPlayingPreview ? '暫停' : '試聽'}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              handleStopPreview();
+                              setCloneAudioFile(null);
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -1172,13 +1239,28 @@ const VoiceGenerationPage = () => {
                           <div className="space-y-3">
                             <Mic className="w-10 h-10 mx-auto text-green-500" />
                             <p className="text-sm text-foreground">錄音已完成</p>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setRecordedAudio(null)}
-                            >
-                              重新錄製
-                            </Button>
+                            {/* Audio Preview for recorded audio */}
+                            <div className="flex items-center justify-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={handlePlayPreview}
+                                className="gap-2"
+                              >
+                                {isPlayingPreview ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                                {isPlayingPreview ? '暫停' : '試聽'}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  handleStopPreview();
+                                  setRecordedAudio(null);
+                                }}
+                              >
+                                重新錄製
+                              </Button>
+                            </div>
                           </div>
                         ) : isRecording ? (
                           <div className="space-y-3">
