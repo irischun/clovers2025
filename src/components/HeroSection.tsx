@@ -1,8 +1,10 @@
 import { Facebook, Instagram, Linkedin, Twitter, Youtube } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import cloverMascot from '@/assets/clover-mascot.png';
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   const socialLinks = [
     { icon: Facebook, href: '#', label: 'Facebook' },
     { icon: Instagram, href: '#', label: 'Instagram' },
@@ -40,7 +42,7 @@ const HeroSection = () => {
               turns scattered tools into a clean single, intelligent workspace.
             </p>
 
-            <Button className="btn-primary text-lg mb-10 group">
+            <Button className="btn-primary text-lg mb-10 group" onClick={() => navigate('/auth')}>
               <span>開始使用 Start Now</span>
               <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
             </Button>
