@@ -243,6 +243,7 @@ const ImageGenerationPage = () => {
   const [tryOnMode, setTryOnMode] = useState(false);
   const [aiEnhance, setAiEnhance] = useState(false);
   const [preserveFace, setPreserveFace] = useState(false);
+  const [avatarGeneration, setAvatarGeneration] = useState(false);
   
   // Style tags
   const [selectedStyleTags, setSelectedStyleTags] = useState<string[]>([]);
@@ -334,6 +335,11 @@ const ImageGenerationPage = () => {
   // Build full prompt
   const buildFullPrompt = () => {
     const parts = [prompt];
+    
+    // Add avatar generation prefix
+    if (avatarGeneration && generationMode === 'text-to-image') {
+      parts.unshift('portrait avatar, profile picture style, centered face composition');
+    }
     
     // Add camera angle
     if (selectedCameraAngle) {
@@ -697,18 +703,34 @@ const ImageGenerationPage = () => {
                   </Label>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  <Switch 
-                    id="tryon" 
-                    checked={tryOnMode}
-                    onCheckedChange={setTryOnMode}
-                    disabled={uploadedImages.length === 0 && !selectedGalleryImage}
-                  />
-                  <Label htmlFor="tryon" className="flex items-center gap-1 cursor-pointer">
-                    <Shirt className="w-4 h-4" />
-                    試衣 {(uploadedImages.length === 0 && !selectedGalleryImage) && '(請先選擇圖片)'}
-                  </Label>
-                </div>
+                {generationMode === 'image-to-image' && (
+                  <div className="flex items-center gap-2">
+                    <Switch 
+                      id="tryon" 
+                      checked={tryOnMode}
+                      onCheckedChange={setTryOnMode}
+                      disabled={uploadedImages.length === 0 && !selectedGalleryImage}
+                    />
+                    <Label htmlFor="tryon" className="flex items-center gap-1 cursor-pointer">
+                      <Shirt className="w-4 h-4" />
+                      試衣 {(uploadedImages.length === 0 && !selectedGalleryImage) && '(請先選擇圖片)'}
+                    </Label>
+                  </div>
+                )}
+
+                {generationMode === 'text-to-image' && (
+                  <div className="flex items-center gap-2">
+                    <Switch 
+                      id="avatar-gen" 
+                      checked={avatarGeneration}
+                      onCheckedChange={setAvatarGeneration}
+                    />
+                    <Label htmlFor="avatar-gen" className="flex items-center gap-1 cursor-pointer">
+                      <Camera className="w-4 h-4" />
+                      頭像生成
+                    </Label>
+                  </div>
+                )}
                 
                 <div className="flex items-center gap-2">
                   <Switch 
