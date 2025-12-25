@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Image, Loader2, Download, Wand2, Camera, Film, Palette, ShoppingBag, Share2, ChevronDown, ChevronUp, Sparkles, Upload, X, Languages, Shirt, Zap, ImagePlus, Type, Grid3X3 } from 'lucide-react';
+import { Image, Loader2, Download, Wand2, Camera, Film, Palette, ShoppingBag, Share2, ChevronDown, ChevronUp, Sparkles, Upload, X, Languages, Shirt, Zap, ImagePlus, Type, Grid3X3, User, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -262,7 +262,8 @@ const ImageGenerationPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [history, setHistory] = useState<Array<{ prompt: string; imageUrl: string }>>([]);
+  const [history, setHistory] = useState<Array<{ prompt: string; imageUrl: string; isAvatar: boolean }>>([]);
+  const [activeGalleryTab, setActiveGalleryTab] = useState<'all' | 'avatars'>('all');
   
   // Points (mock for now)
   const [remainingPoints] = useState(400);
@@ -421,8 +422,9 @@ const ImageGenerationPage = () => {
       
       if (images.length > 0) {
         setSelectedImage(images[0]);
+        const isAvatarImage = avatarGeneration && generationMode === 'text-to-image';
         images.forEach(imageUrl => {
-          setHistory(prev => [{ prompt, imageUrl }, ...prev.slice(0, 19)]);
+          setHistory(prev => [{ prompt, imageUrl, isAvatar: isAvatarImage }, ...prev.slice(0, 49)]);
         });
         toast({ title: `成功生成 ${images.length} 張圖片！` });
       }
@@ -1031,33 +1033,90 @@ const ImageGenerationPage = () => {
           {history.length > 0 && (
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg">圖庫</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">圖庫</CardTitle>
+                  <div className="flex gap-1 bg-muted rounded-lg p-1">
+                    <button
+                      onClick={() => setActiveGalleryTab('all')}
+                      className={`px-3 py-1 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        activeGalleryTab === 'all' 
+                          ? 'bg-background shadow-sm' 
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      <Grid3X3 className="w-3 h-3" />
+                      全部
+                    </button>
+                    <button
+                      onClick={() => setActiveGalleryTab('avatars')}
+                      className={`px-3 py-1 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        activeGalleryTab === 'avatars' 
+                          ? 'bg-background shadow-sm' 
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      <User className="w-3 h-3" />
+                      頭像
+                      {history.filter(h => h.isAvatar).length > 0 && (
+                        <Badge variant="secondary" className="ml-1 text-xs px-1.5 py-0">
+                          {history.filter(h => h.isAvatar).length}
+                        </Badge>
+                      )}
+                    </button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-3 gap-2 max-h-[400px] overflow-y-auto">
-                  {history.map((item, index) => (
-                    <button 
-                      key={index} 
-                      className="relative aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-primary transition-all group"
-                      onClick={() => setSelectedImage(item.imageUrl)}
-                    >
-                      <img 
-                        src={item.imageUrl} 
-                        alt={item.prompt} 
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Download 
-                          className="w-5 h-5 text-white cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDownload(item.imageUrl);
-                          }}
-                        />
+                {(() => {
+                  const filteredHistory = activeGalleryTab === 'avatars' 
+                    ? history.filter(h => h.isAvatar) 
+                    : history;
+                  
+                  if (filteredHistory.length === 0) {
+                    return (
+                      <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                        <User className="w-12 h-12 mb-3 opacity-50" />
+                        <p className="text-sm">尚未生成任何頭像</p>
+                        <p className="text-xs mt-1">開啟「頭像生成」選項來生成頭像</p>
                       </div>
-                    </button>
-                  ))}
-                </div>
+                    );
+                  }
+                  
+                  return (
+                    <div className="grid grid-cols-3 gap-2 max-h-[400px] overflow-y-auto">
+                      {filteredHistory.map((item, index) => (
+                        <button 
+                          key={index} 
+                          className="relative aspect-square rounded-lg overflow-hidden hover:ring-2 hover:ring-primary transition-all group"
+                          onClick={() => setSelectedImage(item.imageUrl)}
+                        >
+                          <img 
+                            src={item.imageUrl} 
+                            alt={item.prompt} 
+                            className="w-full h-full object-cover"
+                          />
+                          {item.isAvatar && (
+                            <div className="absolute top-1 left-1">
+                              <Badge variant="secondary" className="text-[10px] px-1 py-0 bg-background/80">
+                                <User className="w-2.5 h-2.5 mr-0.5" />
+                                頭像
+                              </Badge>
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                            <Download 
+                              className="w-5 h-5 text-white cursor-pointer hover:scale-110 transition-transform"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDownload(item.imageUrl);
+                              }}
+                            />
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
               </CardContent>
             </Card>
           )}
