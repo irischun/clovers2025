@@ -105,6 +105,7 @@ const styleTags = {
   social: {
     label: '社交媒體',
     tags: [
+      { id: 'whatsapp-sticker', label: 'WhatsApp Sticker', description: '可愛貼紙設計，透明背景' },
       { id: 'youtube-cover', label: 'YouTube Cover', description: 'YouTube高點擊標題設計' },
     ]
   },
@@ -620,9 +621,34 @@ const ImageGenerationPage = () => {
               <CardDescription>描述您想要生成的圖像風格和內容</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Optional Title */}
+              {/* Optional Title with Generated Content Selection */}
               <div className="space-y-2">
-                <Label>標題（可選）</Label>
+                <div className="flex items-center justify-between">
+                  <Label>標題（可選）</Label>
+                  {history.length > 0 && (
+                    <Select 
+                      value="" 
+                      onValueChange={(value) => {
+                        const selected = history.find(h => h.prompt === value);
+                        if (selected) {
+                          setTitle(selected.prompt.slice(0, 50));
+                          setPrompt(selected.prompt);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="選擇已生成內容" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {history.map((item, index) => (
+                          <SelectItem key={index} value={item.prompt}>
+                            {item.prompt.slice(0, 30)}{item.prompt.length > 30 ? '...' : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
                 <Input 
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
