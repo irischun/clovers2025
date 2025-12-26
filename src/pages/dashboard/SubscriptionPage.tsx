@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { Check, Zap, AlertCircle, Sparkles } from 'lucide-react';
+import { Check, Zap, AlertCircle, Sparkles, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useUserPoints } from '@/hooks/useUserPoints';
 
 const monthlyPlans = [
   {
@@ -112,17 +115,40 @@ const yearlyPlans = [
 
 const SubscriptionPage = () => {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+  const { points, isLoading, addPoints, isAddingPoints } = useUserPoints();
   
   const plans = billingPeriod === 'monthly' ? monthlyPlans : yearlyPlans;
 
-  const handleSubscribe = (planName: string) => {
-    toast.info(`即將訂閱 ${planName}`, {
-      description: '付款功能即將推出',
+  const handleSubscribe = (planName: string, pointsAmount: number) => {
+    // Demo: directly add points without payment
+    addPoints(pointsAmount);
+    toast.success(`已訂閱 ${planName}`, {
+      description: `已發放 ${pointsAmount} 點數到您的帳戶`,
     });
   };
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
+      {/* Points Balance Display */}
+      <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+        <CardContent className="py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center">
+                <Wallet className="w-7 h-7 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">目前點數餘額</p>
+                {isLoading ? (
+                  <Skeleton className="h-8 w-24 mt-1" />
+                ) : (
+                  <p className="text-3xl font-bold text-primary">{points} 點</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
       {/* Important Notice */}
       <Alert className="bg-primary/10 border-primary/30">
         <div className="flex items-start gap-3">
@@ -272,7 +298,8 @@ const SubscriptionPage = () => {
 
             {/* Subscribe Button */}
             <Button
-              onClick={() => handleSubscribe(plan.name)}
+              onClick={() => handleSubscribe(plan.name, plan.pointsPerMonth)}
+              disabled={isAddingPoints}
               className={cn(
                 "w-full",
                 plan.popular
@@ -281,7 +308,7 @@ const SubscriptionPage = () => {
               )}
               variant={plan.popular ? "secondary" : "outline"}
             >
-              立即訂閱
+              {isAddingPoints ? "處理中..." : "立即訂閱"}
             </Button>
           </div>
         ))}
