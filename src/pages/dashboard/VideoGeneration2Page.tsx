@@ -39,6 +39,7 @@ const VideoGeneration2Page = () => {
   const [enablePromptExpansion, setEnablePromptExpansion] = useState(false);
   const [enableMultiShot, setEnableMultiShot] = useState(false);
   const [enableSafetyCheck, setEnableSafetyCheck] = useState(true);
+  const [generationQuantity, setGenerationQuantity] = useState("1");
   
   // Points
   const userPoints = 100;
@@ -54,7 +55,7 @@ const VideoGeneration2Page = () => {
     if (resolution === "1080p") basePoints += 5;
     if (enablePromptExpansion) basePoints += 3;
     if (enableMultiShot) basePoints += 5;
-    return basePoints;
+    return basePoints * parseInt(generationQuantity);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -407,6 +408,33 @@ const VideoGeneration2Page = () => {
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="1:1" id="ratio-11" />
                     <Label htmlFor="ratio-11" className="cursor-pointer">1:1 (正方形)</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {/* Generation Quantity */}
+              <div className="space-y-3">
+                <Label>生成數量</Label>
+                <RadioGroup
+                  value={generationQuantity}
+                  onValueChange={setGenerationQuantity}
+                  className="flex gap-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="1" id="qty-1" />
+                    <Label htmlFor="qty-1" className="cursor-pointer">1條</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="2" id="qty-2" />
+                    <Label htmlFor="qty-2" className="cursor-pointer">2條</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="3" id="qty-3" />
+                    <Label htmlFor="qty-3" className="cursor-pointer">3條</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="4" id="qty-4" />
+                    <Label htmlFor="qty-4" className="cursor-pointer">4條</Label>
                   </div>
                 </RadioGroup>
               </div>
