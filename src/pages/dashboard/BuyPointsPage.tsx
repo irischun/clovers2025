@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Coins, Check, Zap } from "lucide-react";
-import { toast } from "sonner";
+import { Coins, Check, Zap, Wallet } from "lucide-react";
+import { useUserPoints } from "@/hooks/useUserPoints";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const pointPackages = [
   {
@@ -25,12 +26,36 @@ const pointPackages = [
 ];
 
 const BuyPointsPage = () => {
-  const handlePurchase = (points: number, price: number) => {
-    toast.info(`購買 ${points} 點數 ($${price}) - 功能即將推出`);
+  const { points, isLoading, addPoints, isAddingPoints } = useUserPoints();
+
+  const handlePurchase = (pointsAmount: number, price: number) => {
+    // Demo: directly add points without payment
+    addPoints(pointsAmount);
   };
 
   return (
     <div className="p-6 space-y-8 max-w-4xl mx-auto">
+      {/* Points Balance Display */}
+      <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+        <CardContent className="py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center">
+                <Wallet className="w-7 h-7 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">目前點數餘額</p>
+                {isLoading ? (
+                  <Skeleton className="h-8 w-24 mt-1" />
+                ) : (
+                  <p className="text-3xl font-bold text-primary">{points} 點</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Header */}
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-3 mb-4">
@@ -94,8 +119,9 @@ const BuyPointsPage = () => {
                 className="w-full"
                 variant={index === 2 ? "default" : "outline"}
                 onClick={() => handlePurchase(pkg.points, pkg.price)}
+                disabled={isAddingPoints}
               >
-                立即購買
+                {isAddingPoints ? "處理中..." : "立即購買"}
               </Button>
             </CardContent>
           </Card>
