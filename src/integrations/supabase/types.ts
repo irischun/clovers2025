@@ -134,6 +134,42 @@ export type Database = {
         }
         Relationships: []
       }
+      publishing_history: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          image_url: string | null
+          platform: string
+          published_url: string | null
+          status: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          platform?: string
+          published_url?: string | null
+          status?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          platform?: string
+          published_url?: string | null
+          status?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       scheduled_posts: {
         Row: {
           content: string
@@ -269,6 +305,39 @@ export type Database = {
           voice_id?: string
           voice_name?: string
           volume?: number | null
+        }
+        Relationships: []
+      }
+      wordpress_connections: {
+        Row: {
+          app_password: string
+          created_at: string
+          id: string
+          is_connected: boolean | null
+          site_url: string
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          app_password: string
+          created_at?: string
+          id?: string
+          is_connected?: boolean | null
+          site_url: string
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          app_password?: string
+          created_at?: string
+          id?: string
+          is_connected?: boolean | null
+          site_url?: string
+          updated_at?: string
+          user_id?: string
+          username?: string
         }
         Relationships: []
       }
