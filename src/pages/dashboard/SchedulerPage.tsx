@@ -121,7 +121,7 @@ const SchedulerPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="heading-display text-2xl mb-1">內容排程</h1>
+          <h1 className="heading-display text-2xl mb-1">自媒體發佈工具</h1>
           <p className="text-muted-foreground">計劃和排程您的社交媒體內容</p>
         </div>
         <Button onClick={() => handleOpenDialog()} className="gap-2">
