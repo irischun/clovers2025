@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { Send, Globe, Share2, Play, Coins } from 'lucide-react';
+import { Globe, Share2, Play, Coins } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { WordPressSettings } from '@/components/publishing/WordPressSettings';
 import { ArticlePublisher } from '@/components/publishing/ArticlePublisher';
 import { ScheduledPostsManager } from '@/components/publishing/ScheduledPostsManager';
 import { PublishingHistory } from '@/components/publishing/PublishingHistory';
+import { UploadPostSettings } from '@/components/publishing/UploadPostSettings';
+import { SocialMediaPublisher } from '@/components/publishing/SocialMediaPublisher';
 
 const SchedulerPage = () => {
   const [activeTab, setActiveTab] = useState('wordpress');
@@ -33,7 +34,7 @@ const SchedulerPage = () => {
         <span className="text-lg font-semibold">📺 觀看教學：如何一鍵發佈到不同Social Media平台</span>
       </Button>
 
-      {/* Tutorial Video Modal - Add your YouTube video ID below */}
+      {/* Tutorial Video Modal */}
       <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
         <DialogContent className="max-w-4xl p-6">
           <div className="text-center space-y-4">
@@ -76,16 +77,17 @@ const SchedulerPage = () => {
 
         {/* Social Media Tab */}
         <TabsContent value="social" className="space-y-6">
-          <div className="bg-card border border-border rounded-xl p-12 text-center">
-            <Share2 className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-            <h3 className="text-lg font-semibold mb-2">社交媒體發佈</h3>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              連接您的社交媒體帳號，實現一鍵發佈到 Instagram、Facebook、Twitter 等平台
-            </p>
-            <Button variant="outline" disabled>
-              即將推出
-            </Button>
-          </div>
+          {/* Upload-Post Settings */}
+          <UploadPostSettings />
+
+          {/* Social Media Publisher */}
+          <SocialMediaPublisher />
+
+          {/* Scheduled Posts Manager */}
+          <ScheduledPostsManager />
+
+          {/* Publishing History */}
+          <PublishingHistory />
         </TabsContent>
       </Tabs>
     </div>
