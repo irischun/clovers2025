@@ -366,7 +366,7 @@ export function SocialMediaPublisher() {
 
       {/* Gallery Dialog */}
       <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>從圖庫選擇</DialogTitle>
           </DialogHeader>
@@ -403,7 +403,7 @@ export function SocialMediaPublisher() {
 
       {/* History Dialog */}
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>選擇內容記錄</DialogTitle>
           </DialogHeader>

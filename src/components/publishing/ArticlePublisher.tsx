@@ -280,7 +280,7 @@ export function ArticlePublisher() {
 
       {/* Gallery Dialog */}
       <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>從圖庫選擇</DialogTitle>
           </DialogHeader>

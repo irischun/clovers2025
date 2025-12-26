@@ -250,7 +250,7 @@ export function ScheduledPostsManager() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>{editingPost ? '編輯排程' : '新增排程'}</DialogTitle>
           </DialogHeader>
