@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, Trash2, ExternalLink, Clock, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { usePublishingHistory } from '@/hooks/usePublishingHistory';
@@ -39,9 +38,9 @@ export function PublishingHistory() {
               <CardTitle className="flex items-center gap-2">
                 <Clock className="w-5 h-5" />
                 發佈歷史記錄
-                <Badge variant="secondary" className="ml-2">
+                <span className="ml-2 inline-flex items-center justify-center rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
                   {records.length}
-                </Badge>
+                </span>
               </CardTitle>
               {isOpen ? (
                 <ChevronUp className="w-5 h-5 text-muted-foreground" />
@@ -83,9 +82,9 @@ export function PublishingHistory() {
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge className={statusColors[record.status]} variant="secondary">
+                        <span className={`inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[record.status]}`}>
                           {statusLabels[record.status] || record.status}
-                        </Badge>
+                        </span>
                         <Button
                           size="icon"
                           variant="ghost"
