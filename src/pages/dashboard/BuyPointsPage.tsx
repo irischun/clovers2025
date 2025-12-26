@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Coins, Check, Zap, Wallet } from "lucide-react";
+import { Coins, Check, Zap, Wallet, Sparkles } from "lucide-react";
 import { useUserPoints } from "@/hooks/useUserPoints";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -55,6 +55,15 @@ const BuyPointsPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Animated Limited Offer Badge */}
+      <div className="flex justify-center">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 animate-pulse">
+          <Sparkles className="w-5 h-5 text-amber-500 animate-bounce" />
+          <span className="text-amber-600 dark:text-amber-400 font-semibold">限時優惠</span>
+          <Sparkles className="w-5 h-5 text-amber-500 animate-bounce" style={{ animationDelay: '0.2s' }} />
+        </div>
+      </div>
 
       {/* Header */}
       <div className="text-center space-y-2">
