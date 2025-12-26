@@ -50,6 +50,7 @@ const mainMenuItems = [
   { title: '購買點數', icon: Coins, path: '/dashboard/buy-points' },
   { title: '作品畫廊', icon: GalleryHorizontalEnd, path: '/dashboard/gallery' },
   { title: '提示詞管理', icon: FileText, path: '/dashboard/prompts' },
+  { title: '設定', icon: Settings, path: '/dashboard/settings' },
 ];
 
 const aiToolsItems = [
@@ -76,9 +77,6 @@ const publishToolsItems = [
   { title: '智能內容發布', icon: Rocket, path: '/dashboard/smart-publish' },
 ];
 
-const settingsItems = [
-  { title: '設定', icon: Settings, path: '/dashboard/settings' },
-];
 
 interface DashboardSidebarProps {
   user: User;
@@ -189,15 +187,6 @@ const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
 
         {/* Publish Tools */}
         {renderCollapsibleSection('發佈工具', publishToolsItems)}
-
-        {/* Settings */}
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {settingsItems.map(renderMenuItem)}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-border">
