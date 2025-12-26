@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { 
   Video, Loader2, Copy, Check, Trash2, RefreshCw, 
-  Link2, FileText, Clock, ChevronRight, PlayCircle, X
+  Link2, FileText, Clock, ChevronRight, PlayCircle, X,
+  FileSearch, PenLine, List, Languages, Tag
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -66,6 +67,7 @@ const ContentRewriterPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState('');
   const [copied, setCopied] = useState(false);
+  const [isActionProcessing, setIsActionProcessing] = useState<string | null>(null);
 
   // Batch state
   const [batchUrls, setBatchUrls] = useState('');
@@ -260,6 +262,79 @@ const ContentRewriterPage = () => {
 
   const getStyleLabel = (value: string) => {
     return rewriteStyles.find(s => s.value === value)?.label || value;
+  };
+
+  // Action button handlers
+  const handleContentAction = async (action: string) => {
+    if (!result) {
+      toast({ title: '請先生成改寫結果', variant: 'destructive' });
+      return;
+    }
+
+    setIsActionProcessing(action);
+
+    try {
+      let actionPrompt = '';
+      switch (action) {
+        case 'summarize':
+          actionPrompt = `請將以下內容進行總結，提取核心要點，保持簡潔清晰：\n\n${result}`;
+          break;
+        case 'condense':
+          actionPrompt = `請將以下內容進行撮寫，精簡內容但保留關鍵信息：\n\n${result}`;
+          break;
+        case 'outline':
+          actionPrompt = `請為以下內容生成詳細大綱，包含主要標題和子標題：\n\n${result}`;
+          break;
+        case 'translate-en':
+          actionPrompt = `請將以下內容翻譯成英文，保持原文的風格和語氣：\n\n${result}`;
+          break;
+        case 'translate-zh':
+          actionPrompt = `請將以下內容翻譯成繁體中文，保持原文的風格和語氣：\n\n${result}`;
+          break;
+        case 'keywords':
+          actionPrompt = `請從以下內容中提取5-10個關鍵字/關鍵詞，以逗號分隔：\n\n${result}`;
+          break;
+        default:
+          throw new Error('未知操作');
+      }
+
+      const { data, error } = await supabase.functions.invoke('content-rewrite', {
+        body: {
+          directPrompt: actionPrompt,
+          outputLanguage,
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.success && data?.results?.content) {
+        setResult(data.results.content);
+        toast({ title: `${getActionLabel(action)}完成！` });
+      } else if (data?.results?.status === 'rate_limited') {
+        toast({ title: '請求過於頻繁，請稍後再試', variant: 'destructive' });
+      } else if (data?.results?.status === 'credits_exhausted') {
+        toast({ title: 'AI 額度已用完，請充值', variant: 'destructive' });
+      } else {
+        throw new Error('處理失敗');
+      }
+    } catch (error) {
+      console.error('Action error:', error);
+      toast({ title: '處理失敗，請重試', variant: 'destructive' });
+    } finally {
+      setIsActionProcessing(null);
+    }
+  };
+
+  const getActionLabel = (action: string): string => {
+    const labels: Record<string, string> = {
+      'summarize': '總結',
+      'condense': '撮寫',
+      'outline': '生成大綱',
+      'translate-en': '翻譯成英文',
+      'translate-zh': '翻譯成中文',
+      'keywords': '提取關鍵字',
+    };
+    return labels[action] || action;
   };
 
   return (
@@ -469,7 +544,91 @@ const ContentRewriterPage = () => {
                     </Button>
                   )}
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
+                  {/* Action Buttons */}
+                  {result && (
+                    <div className="flex flex-wrap gap-2 pb-3 border-b">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleContentAction('summarize')}
+                        disabled={isActionProcessing !== null}
+                      >
+                        {isActionProcessing === 'summarize' ? (
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        ) : (
+                          <FileSearch className="w-3 h-3 mr-1" />
+                        )}
+                        總結
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleContentAction('condense')}
+                        disabled={isActionProcessing !== null}
+                      >
+                        {isActionProcessing === 'condense' ? (
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        ) : (
+                          <PenLine className="w-3 h-3 mr-1" />
+                        )}
+                        撮寫
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleContentAction('outline')}
+                        disabled={isActionProcessing !== null}
+                      >
+                        {isActionProcessing === 'outline' ? (
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        ) : (
+                          <List className="w-3 h-3 mr-1" />
+                        )}
+                        生成大綱
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleContentAction('translate-en')}
+                        disabled={isActionProcessing !== null}
+                      >
+                        {isActionProcessing === 'translate-en' ? (
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        ) : (
+                          <Languages className="w-3 h-3 mr-1" />
+                        )}
+                        翻譯成英文
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleContentAction('translate-zh')}
+                        disabled={isActionProcessing !== null}
+                      >
+                        {isActionProcessing === 'translate-zh' ? (
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        ) : (
+                          <Languages className="w-3 h-3 mr-1" />
+                        )}
+                        翻譯成中文
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleContentAction('keywords')}
+                        disabled={isActionProcessing !== null}
+                      >
+                        {isActionProcessing === 'keywords' ? (
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        ) : (
+                          <Tag className="w-3 h-3 mr-1" />
+                        )}
+                        提取關鍵字
+                      </Button>
+                    </div>
+                  )}
+                  
                   {result ? (
                     <div className="bg-muted/50 rounded-lg p-4 whitespace-pre-wrap text-sm max-h-[600px] overflow-y-auto">
                       {result}
