@@ -36,7 +36,8 @@ import {
   Sticker,
   Rocket,
   Send,
-  CreditCard
+  CreditCard,
+  Coins
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -46,6 +47,7 @@ import { cn } from '@/lib/utils';
 const mainMenuItems = [
   { title: '儀表板', icon: LayoutDashboard, path: '/dashboard' },
   { title: '訂閱方案', icon: CreditCard, path: '/dashboard/subscription' },
+  { title: '購買點數', icon: Coins, path: '/dashboard/buy-points' },
   { title: '作品畫廊', icon: GalleryHorizontalEnd, path: '/dashboard/gallery' },
   { title: '提示詞管理', icon: FileText, path: '/dashboard/prompts' },
 ];
