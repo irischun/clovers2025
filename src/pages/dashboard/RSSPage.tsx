@@ -32,7 +32,12 @@ const RSSPage = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="heading-display text-2xl mb-1">RSS 訂閱</h1>
+        <div className="flex items-center gap-3 mb-1">
+          <h1 className="heading-display text-2xl">RSS 訂閱</h1>
+          <span className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-primary/20 text-primary border border-primary/30">
+            Coming Soon
+          </span>
+        </div>
         <p className="text-muted-foreground">訂閱並追蹤您喜愛的內容來源</p>
       </div>
 
