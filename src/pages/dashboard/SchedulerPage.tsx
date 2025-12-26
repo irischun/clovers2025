@@ -15,26 +15,23 @@ const SchedulerPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="heading-display text-2xl mb-1 flex items-center gap-3">
-            <Send className="w-7 h-7 text-primary" />
-            自媒體發佈工具
-          </h1>
-          <p className="text-muted-foreground">一鍵發佈到不同 Social Media 平台</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1">
-            <Coins className="w-3.5 h-3.5" />
-            點數消耗：1 點/次
-          </Badge>
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowTutorial(true)}>
-            <Play className="w-4 h-4" />
-            觀看教學
-          </Button>
+      {/* Points Banner */}
+      <div className="w-full rounded-lg border border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20 p-4">
+        <div className="flex items-center gap-2">
+          <Coins className="h-4 w-4 text-yellow-600" />
+          <span className="font-semibold text-yellow-700 dark:text-yellow-400">點數消耗：1 點/次</span>
         </div>
       </div>
+
+      {/* Tutorial Button Banner */}
+      <Button 
+        variant="outline" 
+        className="w-full h-11 border-2 border-primary/50 hover:border-primary hover:bg-primary/10 group"
+        onClick={() => setShowTutorial(true)}
+      >
+        <Play className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
+        <span className="text-lg font-semibold">📺 觀看教學：如何一鍵發佈到不同Social Media平台</span>
+      </Button>
 
       {/* Tutorial Video Modal */}
       <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
@@ -43,7 +40,7 @@ const SchedulerPage = () => {
             <iframe
               width="100%"
               height="100%"
-              src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+              src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
               title="如何一鍵發佈到不同 Social Media 平台"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
