@@ -776,177 +776,236 @@ const ContentOrganizePage = () => {
 
           {/* Batch Mode */}
           {mode === 'batch' && (
-            <div className="grid lg:grid-cols-2 gap-6">
-              {/* Batch Settings */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>批量處理選項</CardTitle>
-                  <p className="text-sm text-muted-foreground">設定批量生成的參數</p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Output Language */}
-                  <div className="space-y-2">
-                    <Label>輸出語言</Label>
-                    <Select value={batchOutputLanguage} onValueChange={setBatchOutputLanguage}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {outputLanguages.map(lang => (
-                          <SelectItem key={lang.value} value={lang.value}>
-                            {lang.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Rewrite Style */}
-                  <div className="space-y-2">
-                    <Label>改寫風格</Label>
-                    <Select value={batchStyle} onValueChange={setBatchStyle}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {rewriteStyles.map(s => (
-                          <SelectItem key={s.value} value={s.value}>
-                            {s.icon} {s.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Custom Style Input */}
-                  {batchStyle === 'custom' && (
+            <div className="space-y-6">
+              <div className="grid lg:grid-cols-2 gap-6">
+                {/* Batch Settings */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>批量處理選項</CardTitle>
+                    <p className="text-sm text-muted-foreground">設定批量生成的參數</p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Output Language */}
                     <div className="space-y-2">
-                      <Label>自訂風格描述</Label>
-                      <Textarea
-                        value={batchCustomStyle}
-                        onChange={(e) => setBatchCustomStyle(e.target.value)}
-                        placeholder="描述您想要的改寫風格..."
-                        rows={3}
+                      <Label>輸出語言</Label>
+                      <Select value={batchOutputLanguage} onValueChange={setBatchOutputLanguage}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {outputLanguages.map(lang => (
+                            <SelectItem key={lang.value} value={lang.value}>
+                              {lang.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Rewrite Style */}
+                    <div className="space-y-2">
+                      <Label>改寫風格</Label>
+                      <Select value={batchStyle} onValueChange={setBatchStyle}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {rewriteStyles.map(s => (
+                            <SelectItem key={s.value} value={s.value}>
+                              {s.icon} {s.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Custom Style Input */}
+                    {batchStyle === 'custom' && (
+                      <div className="space-y-2">
+                        <Label>自訂風格描述</Label>
+                        <Textarea
+                          value={batchCustomStyle}
+                          onChange={(e) => setBatchCustomStyle(e.target.value)}
+                          placeholder="描述您想要的改寫風格..."
+                          rows={3}
+                        />
+                      </div>
+                    )}
+
+                    {/* Target Word Count */}
+                    <div className="space-y-2">
+                      <Label>目標字數（選填）</Label>
+                      <Input
+                        type="number"
+                        value={batchTargetWordCount}
+                        onChange={(e) => setBatchTargetWordCount(e.target.value)}
+                        placeholder="例如：500"
                       />
                     </div>
-                  )}
 
-                  {/* Target Word Count */}
-                  <div className="space-y-2">
-                    <Label>目標字數（選填）</Label>
-                    <Input
-                      type="number"
-                      value={batchTargetWordCount}
-                      onChange={(e) => setBatchTargetWordCount(e.target.value)}
-                      placeholder="例如：500"
+                    {/* GEO Optimization */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>文章格式優化</Label>
+                        <p className="text-xs text-muted-foreground">轉換為GEO優化格式</p>
+                      </div>
+                      <Switch checked={batchGeoOptimized} onCheckedChange={setBatchGeoOptimized} />
+                    </div>
+
+                    {/* Custom Ending */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>自訂結尾</Label>
+                        <p className="text-xs text-muted-foreground">為重寫內容添加結尾</p>
+                      </div>
+                      <Switch checked={batchCustomEnding} onCheckedChange={setBatchCustomEnding} />
+                    </div>
+
+                    {batchCustomEnding && (
+                      <div className="space-y-2">
+                        <Label>結尾內容</Label>
+                        <Textarea
+                          value={batchCustomEndingText}
+                          onChange={(e) => setBatchCustomEndingText(e.target.value)}
+                          placeholder="輸入您想要的結尾內容..."
+                          rows={3}
+                        />
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Batch URLs Input */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>批量連結輸入</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      每行輸入一個網頁或YouTube連結，或從RSS選擇
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Textarea
+                      value={batchUrls}
+                      onChange={(e) => setBatchUrls(e.target.value)}
+                      placeholder={`https://example.com/article1\nhttps://youtube.com/watch?v=...\nhttps://example.com/article2`}
+                      rows={10}
                     />
-                  </div>
 
-                  {/* GEO Optimization */}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>文章格式優化</Label>
-                      <p className="text-xs text-muted-foreground">轉換為GEO優化格式</p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsRssOpen(true)}
+                        className="flex-1"
+                      >
+                        從RSS選擇
+                      </Button>
+                      <Button
+                        className="flex-1"
+                        onClick={handleBatchRewrite}
+                        disabled={isBatchProcessing}
+                      >
+                        {isBatchProcessing ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            處理中...
+                          </>
+                        ) : (
+                          '批量生成'
+                        )}
+                      </Button>
                     </div>
-                    <Switch checked={batchGeoOptimized} onCheckedChange={setBatchGeoOptimized} />
-                  </div>
 
-                  {/* Custom Ending */}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label>自訂結尾</Label>
-                      <p className="text-xs text-muted-foreground">為重寫內容添加結尾</p>
-                    </div>
-                    <Switch checked={batchCustomEnding} onCheckedChange={setBatchCustomEnding} />
-                  </div>
+                    {/* Batch Results */}
+                    {batchResults.length > 0 && (
+                      <div className="space-y-4 mt-4">
+                        <h4 className="font-medium">批量處理結果</h4>
+                        <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                          {batchResults.map((r, idx) => (
+                            <Card key={idx} className="p-3">
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <p className="text-xs text-muted-foreground truncate flex-1">{r.url}</p>
+                                <Badge variant={r.status === 'success' ? 'default' : 'destructive'}>
+                                  {r.status === 'success' ? '成功' : '失敗'}
+                                </Badge>
+                              </div>
+                              {r.status === 'success' && r.content && (
+                                <div className="relative">
+                                  <div className="bg-muted/50 rounded p-2 text-xs max-h-32 overflow-y-auto">
+                                    {r.content.substring(0, 300)}...
+                                  </div>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="absolute top-1 right-1"
+                                    onClick={() => handleCopy(r.content)}
+                                  >
+                                    <Copy className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              )}
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
 
-                  {batchCustomEnding && (
-                    <div className="space-y-2">
-                      <Label>結尾內容</Label>
-                      <Textarea
-                        value={batchCustomEndingText}
-                        onChange={(e) => setBatchCustomEndingText(e.target.value)}
-                        placeholder="輸入您想要的結尾內容..."
-                        rows={3}
-                      />
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Batch URLs Input */}
+              {/* Batch Raw Content Section */}
               <Card>
                 <CardHeader>
-                  <CardTitle>批量連結輸入</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    原文內容處理
+                  </CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    每行輸入一個網頁或YouTube連結，或從RSS選擇
+                    貼上原文內容，使用以下工具進行處理
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Textarea
-                    value={batchUrls}
-                    onChange={(e) => setBatchUrls(e.target.value)}
-                    placeholder={`https://example.com/article1\nhttps://youtube.com/watch?v=...\nhttps://example.com/article2`}
-                    rows={10}
-                  />
-
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsRssOpen(true)}
-                      className="flex-1"
-                    >
-                      從RSS選擇
-                    </Button>
-                    <Button
-                      className="flex-1"
-                      onClick={handleBatchRewrite}
-                      disabled={isBatchProcessing}
-                    >
-                      {isBatchProcessing ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          處理中...
-                        </>
-                      ) : (
-                        '批量生成'
-                      )}
-                    </Button>
-                  </div>
-
-                  {/* Batch Results */}
-                  {batchResults.length > 0 && (
-                    <div className="space-y-4 mt-4">
-                      <h4 className="font-medium">批量處理結果</h4>
-                      <div className="space-y-3 max-h-[400px] overflow-y-auto">
-                        {batchResults.map((r, idx) => (
-                          <Card key={idx} className="p-3">
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                              <p className="text-xs text-muted-foreground truncate flex-1">{r.url}</p>
-                              <Badge variant={r.status === 'success' ? 'default' : 'destructive'}>
-                                {r.status === 'success' ? '成功' : '失敗'}
-                              </Badge>
-                            </div>
-                            {r.status === 'success' && r.content && (
-                              <div className="relative">
-                                <div className="bg-muted/50 rounded p-2 text-xs max-h-32 overflow-y-auto">
-                                  {r.content.substring(0, 300)}...
-                                </div>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="absolute top-1 right-1"
-                                  onClick={() => handleCopy(r.content)}
-                                >
-                                  <Copy className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            )}
-                          </Card>
-                        ))}
+                  <div className="grid lg:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>原文內容</Label>
+                        <Textarea
+                          value={rawContent}
+                          onChange={(e) => setRawContent(e.target.value)}
+                          placeholder="貼上您要處理的原文內容..."
+                          rows={10}
+                        />
+                      </div>
+                      {/* Action Buttons for raw content */}
+                      <div>
+                        <Label className="mb-2 block">操作工具</Label>
+                        {renderActionButtons(handleRawContentAction)}
                       </div>
                     </div>
-                  )}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label>處理結果</Label>
+                        {rawContentResult && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCopy(rawContentResult)}
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                      {rawContentResult ? (
+                        <div className="bg-muted/50 rounded-lg p-4 whitespace-pre-wrap text-sm max-h-[400px] overflow-y-auto">
+                          {rawContentResult}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground bg-muted/30 rounded-lg">
+                          <FileText className="w-12 h-12 mb-4 opacity-50" />
+                          <p className="text-center">選擇操作後結果將顯示在這裡</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
