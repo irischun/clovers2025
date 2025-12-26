@@ -32,6 +32,7 @@ import {
   BookOpen,
   Rss,
   FolderEdit,
+  FileEdit,
   Sticker,
   Rocket,
   Send
@@ -66,6 +67,7 @@ const mediaToolsItems = [
 const publishToolsItems = [
   { title: '自媒體發佈工具', icon: Send, path: '/dashboard/scheduler' },
   { title: '內容整理', icon: FolderEdit, path: '/dashboard/content-organize' },
+  { title: '內容重整', icon: FileEdit, path: '/dashboard/content-rewriter' },
   { title: '貼圖製作器', icon: Sticker, path: '/dashboard/sticker-maker' },
   { title: '智能內容發布', icon: Rocket, path: '/dashboard/smart-publish' },
 ];
