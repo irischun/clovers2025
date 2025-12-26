@@ -23,6 +23,7 @@ import YouTubeSearchPage from "./pages/dashboard/YouTubeSearchPage";
 import XiaohongshuSearchPage from "./pages/dashboard/XiaohongshuSearchPage";
 import RSSPage from "./pages/dashboard/RSSPage";
 import ContentOrganizePage from "./pages/dashboard/ContentOrganizePage";
+import ContentRewriterPage from "./pages/dashboard/ContentRewriterPage";
 import StickerMakerPage from "./pages/dashboard/StickerMakerPage";
 import SmartPublishPage from "./pages/dashboard/SmartPublishPage";
 import NotFound from "./pages/NotFound";
@@ -56,6 +57,7 @@ const App = () => (
               <Route path="xiaohongshu-search" element={<XiaohongshuSearchPage />} />
               <Route path="rss" element={<RSSPage />} />
               <Route path="content-organize" element={<ContentOrganizePage />} />
+              <Route path="content-rewriter" element={<ContentRewriterPage />} />
               <Route path="sticker-maker" element={<StickerMakerPage />} />
               <Route path="smart-publish" element={<SmartPublishPage />} />
             </Route>

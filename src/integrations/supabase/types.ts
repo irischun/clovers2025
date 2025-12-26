@@ -41,6 +41,69 @@ export type Database = {
         }
         Relationships: []
       }
+      content_rewrites: {
+        Row: {
+          batch_id: string | null
+          created_at: string
+          custom_ending: boolean | null
+          custom_ending_text: string | null
+          custom_style: string | null
+          geo_optimized: boolean | null
+          id: string
+          is_batch: boolean | null
+          original_content: string | null
+          output_language: string
+          rewritten_content: string | null
+          source_type: string
+          source_url: string
+          status: string
+          style: string
+          target_word_count: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          batch_id?: string | null
+          created_at?: string
+          custom_ending?: boolean | null
+          custom_ending_text?: string | null
+          custom_style?: string | null
+          geo_optimized?: boolean | null
+          id?: string
+          is_batch?: boolean | null
+          original_content?: string | null
+          output_language?: string
+          rewritten_content?: string | null
+          source_type?: string
+          source_url: string
+          status?: string
+          style: string
+          target_word_count?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          batch_id?: string | null
+          created_at?: string
+          custom_ending?: boolean | null
+          custom_ending_text?: string | null
+          custom_style?: string | null
+          geo_optimized?: boolean | null
+          id?: string
+          is_batch?: boolean | null
+          original_content?: string | null
+          output_language?: string
+          rewritten_content?: string | null
+          source_type?: string
+          source_url?: string
+          status?: string
+          style?: string
+          target_word_count?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       media_files: {
         Row: {
           created_at: string

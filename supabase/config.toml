@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.audio-to-subtitle]
 verify_jwt = false
+
+[functions.content-rewrite]
+verify_jwt = false
