@@ -64,7 +64,7 @@ export function UploadPostSettings() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <Key className="w-5 h-5" />
-              Upload-Post 設定
+              社交媒體 Upload-Post 設定
             </CardTitle>
             <CardDescription>
               設定您的 Upload-Post 用戶識別碼，用於發布到社交媒體
