@@ -26,6 +26,7 @@ import ContentOrganizePage from "./pages/dashboard/ContentOrganizePage";
 import StickerMakerPage from "./pages/dashboard/StickerMakerPage";
 import SmartPublishPage from "./pages/dashboard/SmartPublishPage";
 import GalleryPage from "./pages/dashboard/GalleryPage";
+import SubscriptionPage from "./pages/dashboard/SubscriptionPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -60,6 +61,7 @@ const App = () => (
               <Route path="sticker-maker" element={<StickerMakerPage />} />
               <Route path="smart-publish" element={<SmartPublishPage />} />
               <Route path="gallery" element={<GalleryPage />} />
+              <Route path="subscription" element={<SubscriptionPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
