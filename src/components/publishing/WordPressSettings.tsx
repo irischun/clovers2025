@@ -85,7 +85,7 @@ export function WordPressSettings() {
           </Label>
           <Input
             id="site-url"
-            placeholder="https://website.com"
+            placeholder="https://yoursite.com"
             value={siteUrl}
             onChange={(e) => setSiteUrl(e.target.value)}
           />
