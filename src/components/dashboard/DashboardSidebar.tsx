@@ -64,7 +64,7 @@ const mediaToolsItems = [
 ];
 
 const publishToolsItems = [
-  { title: '內容排程', icon: Calendar, path: '/dashboard/scheduler' },
+  { title: '自媒體發佈工具', icon: Send, path: '/dashboard/scheduler' },
   { title: '內容整理', icon: FolderEdit, path: '/dashboard/content-organize' },
   { title: '貼圖製作器', icon: Sticker, path: '/dashboard/sticker-maker' },
   { title: '智能內容發布', icon: Rocket, path: '/dashboard/smart-publish' },
