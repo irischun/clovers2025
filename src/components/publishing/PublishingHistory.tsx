@@ -42,11 +42,16 @@ export function PublishingHistory() {
                   {records.length}
                 </span>
               </CardTitle>
-              {isOpen ? (
-                <ChevronUp className="w-5 h-5 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="w-5 h-5 text-muted-foreground" />
-              )}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  {isOpen ? '摺疊' : '展開'}
+                </span>
+                {isOpen ? (
+                  <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                )}
+              </div>
             </div>
           </CardHeader>
         </CollapsibleTrigger>
