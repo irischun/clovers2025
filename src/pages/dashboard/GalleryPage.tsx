@@ -210,29 +210,25 @@ const GalleryPage = () => {
             </Popover>
           </div>
 
-          {/* Favorites Toggle */}
-          <Toggle
-            pressed={showFavoritesOnly}
-            onPressedChange={setShowFavoritesOnly}
-            variant="outline"
-            className="gap-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+          {/* Favorites Toggle Button */}
+          <Button
+            variant={showFavoritesOnly ? "default" : "outline"}
+            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            className="gap-2"
           >
-            <Star className="w-4 h-4" />
-            只顯示收藏
-          </Toggle>
+            <Star className={cn("w-4 h-4", showFavoritesOnly && "fill-current")} />
+            {showFavoritesOnly ? '只顯示收藏' : '全部'}
+          </Button>
 
-          {/* YouTube Toggle (only for videos) */}
-          {activeTab === 'videos' && (
-            <Toggle
-              pressed={showYouTube}
-              onPressedChange={setShowYouTube}
-              variant="outline"
-              className="gap-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-            >
-              <Youtube className="w-4 h-4" />
-              顯示YouTube
-            </Toggle>
-          )}
+          {/* YouTube Toggle Button */}
+          <Button
+            variant={showYouTube ? "default" : "outline"}
+            onClick={() => setShowYouTube(!showYouTube)}
+            className="gap-2"
+          >
+            <Youtube className="w-4 h-4" />
+            {showYouTube ? '顯示YouTube' : '隱藏YouTube'}
+          </Button>
         </div>
 
         {/* Count */}
