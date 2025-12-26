@@ -60,14 +60,12 @@ export function SocialMediaPublisher() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isPlatformEnabled = (platformId: string) => {
+  const isPlatformConfigured = (platformId: string) => {
     if (platformId === 'wordpress') return !!wpConnection?.is_connected;
     return !!uploadPostSettings;
   };
 
   const handlePlatformToggle = (platformId: string) => {
-    if (!isPlatformEnabled(platformId)) return;
-    
     setSelectedPlatforms(prev =>
       prev.includes(platformId)
         ? prev.filter(p => p !== platformId)
@@ -266,32 +264,33 @@ export function SocialMediaPublisher() {
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {platforms.map((platform) => {
-                const enabled = isPlatformEnabled(platform.id);
+                const configured = isPlatformConfigured(platform.id);
                 const Icon = platform.icon;
+                const isSelected = selectedPlatforms.includes(platform.id);
                 return (
                   <div
                     key={platform.id}
                     onClick={() => handlePlatformToggle(platform.id)}
                     className={`
                       flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors
-                      ${enabled ? 'hover:border-primary' : 'opacity-50 cursor-not-allowed'}
-                      ${selectedPlatforms.includes(platform.id) ? 'border-primary bg-primary/10' : 'border-border'}
+                      hover:border-primary
+                      ${isSelected ? 'border-primary bg-primary/10' : 'border-border'}
+                      ${!configured ? 'opacity-70' : ''}
                     `}
                   >
                     <Checkbox
-                      checked={selectedPlatforms.includes(platform.id)}
+                      checked={isSelected}
                       onCheckedChange={() => handlePlatformToggle(platform.id)}
-                      disabled={!enabled}
                     />
                     <Icon />
                     <span className="text-sm">{platform.name}</span>
+                    {!configured && (
+                      <span className="text-xs text-muted-foreground ml-auto">未設定</span>
+                    )}
                   </div>
                 );
               })}
             </div>
-            <p className="text-xs text-muted-foreground">
-              💡 提示：灰色的平台表示尚未設定帳號資訊。WordPress 需先儲存連線設定，社交媒體平台請先到上方「社交媒體帳號設定」填寫
-            </p>
           </div>
 
           {/* Schedule Options */}
