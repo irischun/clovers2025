@@ -157,7 +157,7 @@ export function UploadPostSettings() {
           <p className="text-xs text-muted-foreground">
             如有多個 Facebook Page 需要發布，可以添加多個 Page ID。
             <a 
-              href="https://upload-post.com" 
+              href="https://app.upload-post.com/login" 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-primary hover:underline ml-1"
