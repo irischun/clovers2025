@@ -280,6 +280,7 @@ export function SocialMediaPublisher() {
                   >
                     <Checkbox
                       checked={selectedPlatforms.includes(platform.id)}
+                      onCheckedChange={() => handlePlatformToggle(platform.id)}
                       disabled={!enabled}
                     />
                     <Icon />
