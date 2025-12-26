@@ -1,11 +1,13 @@
 import { useState, useRef, useCallback } from 'react';
-import { Upload, Images, Loader2, Sparkles, Download, X, GripVertical, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { Upload, Images, Loader2, Sparkles, Download, X, GripVertical, Image as ImageIcon, AlertCircle, Sticker } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useMediaFiles } from '@/hooks/useMediaFiles';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ImageFrame {
   id: string;
@@ -13,10 +15,25 @@ interface ImageFrame {
   file?: File;
 }
 
+const textStyles = [
+  { id: 'cute', label: '可愛', emoji: '🥰' },
+  { id: 'minimal', label: '極簡', emoji: '✨' },
+  { id: 'watercolor', label: '水彩', emoji: '🎨' },
+  { id: 'bold', label: '醒目', emoji: '💥' },
+  { id: 'vintage', label: '復古', emoji: '🎞️' },
+  { id: 'neon', label: '霓虹', emoji: '🌈' },
+];
+
 const StickerMakerPage = () => {
   const [frames, setFrames] = useState<ImageFrame[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  
+  // Text sticker states
+  const [stickerText, setStickerText] = useState('');
+  const [textStyle, setTextStyle] = useState('cute');
+  const [isTextGenerating, setIsTextGenerating] = useState(false);
+  const [textStickers, setTextStickers] = useState<string[]>([]);
   const [generatedStickerUrl, setGeneratedStickerUrl] = useState<string | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -152,6 +169,29 @@ const StickerMakerPage = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleTextStickerGenerate = async () => {
+    if (!stickerText.trim()) {
+      toast({ title: '請輸入文字', variant: 'destructive' });
+      return;
+    }
+    setIsTextGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sticker-generate', { 
+        body: { text: stickerText, style: textStyle } 
+      });
+      if (error) throw error;
+      if (data.imageUrl) {
+        setTextStickers(prev => [data.imageUrl, ...prev.slice(0, 11)]);
+      }
+      toast({ title: '貼圖生成成功！' });
+    } catch (error) {
+      console.error('Text sticker generation error:', error);
+      toast({ title: '生成失敗', variant: 'destructive' });
+    } finally {
+      setIsTextGenerating(false);
+    }
   };
 
   const imageMediaFiles = mediaFiles.filter(f => f.file_type.startsWith('image/'));
@@ -364,6 +404,73 @@ const StickerMakerPage = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Text Sticker Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Sticker className="w-5 h-5 text-primary" />
+            <CardTitle className="text-lg">創建個性化的表情貼圖神器</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <h3 className="font-medium mb-2">創建貼圖</h3>
+            <Input 
+              value={stickerText} 
+              onChange={(e) => setStickerText(e.target.value)} 
+              placeholder="輸入貼圖文字或表情..." 
+            />
+          </div>
+          
+          <div className="flex gap-2 flex-wrap">
+            {textStyles.map(s => (
+              <Button 
+                key={s.id} 
+                variant={textStyle === s.id ? 'default' : 'outline'} 
+                size="sm" 
+                onClick={() => setTextStyle(s.id)}
+              >
+                {s.emoji} {s.label}
+              </Button>
+            ))}
+          </div>
+          
+          <Button 
+            onClick={handleTextStickerGenerate} 
+            disabled={isTextGenerating} 
+            className="w-full"
+          >
+            {isTextGenerating ? (
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+            ) : (
+              <Sticker className="w-4 h-4 mr-2" />
+            )}
+            生成貼圖
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Text Stickers Gallery */}
+      {textStickers.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle>我的貼圖</CardTitle></CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+              {textStickers.map((url, i) => (
+                <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-muted group">
+                  <img src={url} alt="Sticker" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                    <a href={url} download className="p-2 bg-white rounded-full">
+                      <Download className="w-4 h-4 text-black" />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
