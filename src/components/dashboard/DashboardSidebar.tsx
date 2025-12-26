@@ -29,6 +29,7 @@ import {
   Video,
   Tv,
   Youtube,
+  GalleryHorizontalEnd,
   BookOpen,
   Rss,
   FolderEdit,
@@ -43,6 +44,7 @@ import { cn } from '@/lib/utils';
 
 const mainMenuItems = [
   { title: '儀表板', icon: LayoutDashboard, path: '/dashboard' },
+  { title: '作品畫廊', icon: GalleryHorizontalEnd, path: '/dashboard/gallery' },
   { title: '提示詞管理', icon: FileText, path: '/dashboard/prompts' },
 ];
 
