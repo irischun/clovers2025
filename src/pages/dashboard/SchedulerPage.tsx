@@ -33,19 +33,15 @@ const SchedulerPage = () => {
         <span className="text-lg font-semibold">📺 觀看教學：如何一鍵發佈到不同Social Media平台</span>
       </Button>
 
-      {/* Tutorial Video Modal */}
+      {/* Tutorial Video Modal - Add your YouTube video ID below */}
       <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
-        <DialogContent className="max-w-4xl p-0 overflow-hidden">
-          <div className="aspect-video">
-            <iframe
-              width="100%"
-              height="100%"
-              src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
-              title="如何一鍵發佈到不同 Social Media 平台"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="border-0"
-            />
+        <DialogContent className="max-w-4xl p-6">
+          <div className="text-center space-y-4">
+            <Play className="h-16 w-16 mx-auto text-muted-foreground" />
+            <h3 className="text-xl font-semibold">教學影片即將推出</h3>
+            <p className="text-muted-foreground">
+              我們正在準備詳細的教學影片，敬請期待！
+            </p>
           </div>
         </DialogContent>
       </Dialog>
