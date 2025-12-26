@@ -131,6 +131,7 @@ export function UploadPostSettings() {
               variant="outline"
               onClick={handleAddPageId}
               disabled={!newPageId.trim()}
+              className="gap-2"
             >
               <Plus className="w-4 h-4" />
               添加 Page ID
