@@ -103,12 +103,63 @@ serve(async (req) => {
       customEnding = false,
       customEndingText = '',
       isBatch = false,
-      urls = []
+      urls = [],
+      directPrompt = ''
     } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
+    }
+
+    // Handle direct prompt actions (summarize, translate, etc.)
+    if (directPrompt) {
+      console.log('Processing direct prompt action');
+      
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { 
+              role: 'system', 
+              content: `你是一位專業的內容處理專家。請根據用戶的要求處理內容。輸出語言：${languageMap[outputLanguage] || '繁體中文'}。`
+            },
+            { role: 'user', content: directPrompt }
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('AI gateway error:', response.status, errorText);
+        
+        if (response.status === 429) {
+          return new Response(
+            JSON.stringify({ success: true, results: { status: 'rate_limited', content: '' } }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        if (response.status === 402) {
+          return new Response(
+            JSON.stringify({ success: true, results: { status: 'credits_exhausted', content: '' } }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        throw new Error('AI gateway error');
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || '';
+      
+      return new Response(
+        JSON.stringify({ success: true, results: { content, status: 'success' } }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // For batch processing, process multiple URLs
