@@ -248,6 +248,36 @@ export type Database = {
         }
         Relationships: []
       }
+      upload_post_settings: {
+        Row: {
+          api_key: string
+          created_at: string
+          facebook_page_ids: string[] | null
+          id: string
+          managed_user: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          api_key: string
+          created_at?: string
+          facebook_page_ids?: string[] | null
+          id?: string
+          managed_user: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          api_key?: string
+          created_at?: string
+          facebook_page_ids?: string[] | null
+          id?: string
+          managed_user?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       voice_generations: {
         Row: {
           audio_url: string | null
