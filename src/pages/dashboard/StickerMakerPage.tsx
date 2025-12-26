@@ -34,10 +34,13 @@ const StickerMakerPage = () => {
   const [textStyle, setTextStyle] = useState('cute');
   const [isTextGenerating, setIsTextGenerating] = useState(false);
   const [textStickers, setTextStickers] = useState<string[]>([]);
+  const [textStickerImages, setTextStickerImages] = useState<string[]>([]);
   const [generatedStickerUrl, setGeneratedStickerUrl] = useState<string | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [isTextGalleryOpen, setIsTextGalleryOpen] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textFileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const { files: mediaFiles, loading: mediaLoading, getPublicUrl } = useMediaFiles();
 
@@ -192,6 +195,30 @@ const StickerMakerPage = () => {
     } finally {
       setIsTextGenerating(false);
     }
+  };
+
+  const handleTextImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    
+    Array.from(files).forEach((file) => {
+      if (file.type.startsWith('image/')) {
+        const url = URL.createObjectURL(file);
+        setTextStickerImages(prev => [...prev, url].slice(0, 5));
+      }
+    });
+    if (textFileInputRef.current) {
+      textFileInputRef.current.value = '';
+    }
+  };
+
+  const handleTextGallerySelect = (fileUrl: string) => {
+    setTextStickerImages(prev => [...prev, fileUrl].slice(0, 5));
+    setIsTextGalleryOpen(false);
+  };
+
+  const removeTextStickerImage = (index: number) => {
+    setTextStickerImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const imageMediaFiles = mediaFiles.filter(f => f.file_type.startsWith('image/'));
@@ -421,6 +448,89 @@ const StickerMakerPage = () => {
               onChange={(e) => setStickerText(e.target.value)} 
               placeholder="輸入貼圖文字或表情..." 
             />
+          </div>
+
+          {/* Image Upload Section */}
+          <div>
+            <h3 className="font-medium mb-2">上傳圖片</h3>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <Button
+                variant="outline"
+                className="h-10"
+                onClick={() => textFileInputRef.current?.click()}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                上傳圖片
+              </Button>
+              <input
+                ref={textFileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleTextImageUpload}
+              />
+              
+              <Dialog open={isTextGalleryOpen} onOpenChange={setIsTextGalleryOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="h-10">
+                    <Images className="w-4 h-4 mr-2" />
+                    從畫廊選擇
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>從畫廊選擇圖片</DialogTitle>
+                  </DialogHeader>
+                  {mediaLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : imageMediaFiles.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <ImageIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>畫廊中沒有圖片</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-4 gap-3">
+                      {imageMediaFiles.map((file) => {
+                        const publicUrl = getPublicUrl(file.file_path);
+                        return (
+                          <button
+                            key={file.id}
+                            onClick={() => handleTextGallerySelect(publicUrl)}
+                            className="aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-primary transition-colors"
+                          >
+                            <img
+                              src={publicUrl}
+                              alt={file.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {/* Uploaded Images Preview */}
+            {textStickerImages.length > 0 && (
+              <div className="flex gap-2 flex-wrap">
+                {textStickerImages.map((url, index) => (
+                  <div key={index} className="relative w-16 h-16 rounded-lg overflow-hidden border group">
+                    <img src={url} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => removeTextStickerImage(index)}
+                      className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           
           <div className="flex gap-2 flex-wrap">
