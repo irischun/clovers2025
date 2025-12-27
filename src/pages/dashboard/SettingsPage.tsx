@@ -14,6 +14,7 @@ const SettingsPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState('');
+  const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [profile, setProfile] = useState({
     full_name: '',
     bio: '',
@@ -32,6 +33,7 @@ const SettingsPage = () => {
         if (!user) return;
         
         setEmail(user.email || '');
+        setCreatedAt(user.created_at || null);
 
         const { data, error } = await supabase
           .from('profiles')
@@ -130,8 +132,8 @@ const SettingsPage = () => {
     <div className="space-y-6 animate-fade-in max-w-2xl">
       {/* Header */}
       <div>
-        <h1 className="heading-display text-2xl mb-1">設定</h1>
-        <p className="text-muted-foreground">管理您的帳戶和偏好設定</p>
+        <h1 className="heading-display text-2xl mb-1">用戶資料</h1>
+        <p className="text-muted-foreground">管理您的個人資訊</p>
       </div>
 
       {/* Profile Section */}
@@ -182,6 +184,22 @@ const SettingsPage = () => {
             </label>
             <Input value={email} disabled className="bg-muted" />
             <p className="text-xs text-muted-foreground mt-1">電子郵件無法更改</p>
+          </div>
+
+          {/* Registration time (read-only) */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">註冊時間</label>
+            <Input 
+              value={createdAt ? new Date(createdAt).toLocaleString('zh-TW', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              }) : ''} 
+              disabled 
+              className="bg-muted" 
+            />
           </div>
 
           {/* Bio */}
