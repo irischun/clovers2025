@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { differenceInDays } from 'date-fns';
 
 interface UserSubscription {
   id: string;
@@ -117,6 +118,28 @@ export const useUserSubscription = () => {
     },
   });
 
+  // Check if subscription is about to expire (within specified days, default 7)
+  const isExpiringSoon = useMemo(() => {
+    if (!subscription) return false;
+    const expirationDate = new Date(subscription.expiration_date);
+    const daysUntilExpiration = differenceInDays(expirationDate, new Date());
+    return daysUntilExpiration <= 7 && daysUntilExpiration >= 0;
+  }, [subscription]);
+
+  // Get days until expiration
+  const daysUntilExpiration = useMemo(() => {
+    if (!subscription) return null;
+    const expirationDate = new Date(subscription.expiration_date);
+    return differenceInDays(expirationDate, new Date());
+  }, [subscription]);
+
+  // Check if subscription has expired
+  const isExpired = useMemo(() => {
+    if (!subscription) return false;
+    const expirationDate = new Date(subscription.expiration_date);
+    return expirationDate < new Date();
+  }, [subscription]);
+
   return {
     subscription,
     isLoading,
@@ -125,5 +148,8 @@ export const useUserSubscription = () => {
     isSubscribing: subscribeMutation.isPending,
     cancelSubscription: cancelMutation.mutate,
     isCancelling: cancelMutation.isPending,
+    isExpiringSoon,
+    daysUntilExpiration,
+    isExpired,
   };
 };
