@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search, Star, Copy, Pencil, Trash2, Filter, BookOpen, Download, Eye } from 'lucide-react';
+import { Plus, Search, Star, Copy, Pencil, Trash2, Filter, BookOpen, Download, Eye, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -44,6 +44,7 @@ const PromptsPage = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null);
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const filteredPrompts = prompts.filter(prompt => {
     const matchesSearch = prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -181,6 +182,24 @@ const PromptsPage = () => {
               <Star className={`w-4 h-4 ${showFavorites ? 'fill-current' : ''}`} />
               收藏
             </Button>
+            <div className="flex border border-border rounded-lg overflow-hidden">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="icon"
+                onClick={() => setViewMode('grid')}
+                className="rounded-none"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="icon"
+                onClick={() => setViewMode('list')}
+                className="rounded-none"
+              >
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
 
           {/* Prompts Grid */}
@@ -213,7 +232,7 @@ const PromptsPage = () => {
                 </Button>
               </div>
             </div>
-          ) : (
+          ) : viewMode === 'grid' ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredPrompts.map(prompt => (
                 <div 
@@ -252,6 +271,43 @@ const PromptsPage = () => {
                 </div>
               ))}
             </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {filteredPrompts.map(prompt => (
+                <div 
+                  key={prompt.id} 
+                  className="bg-card border border-border rounded-xl p-4 hover:border-primary/50 transition-colors group flex items-center gap-4"
+                >
+                  <button 
+                    onClick={() => toggleFavorite(prompt.id)}
+                    className="text-muted-foreground hover:text-primary transition-colors flex-shrink-0"
+                  >
+                    <Star className={`w-4 h-4 ${prompt.is_favorite ? 'fill-primary text-primary' : ''}`} />
+                  </button>
+                  
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-foreground truncate">{prompt.title}</h3>
+                    <p className="text-sm text-muted-foreground truncate">{prompt.content}</p>
+                  </div>
+                  
+                  <Badge variant="secondary" className="flex-shrink-0">
+                    {categories.find(c => c.value === prompt.category)?.label || prompt.category}
+                  </Badge>
+                  
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                    <Button size="icon" variant="ghost" onClick={() => handleCopy(prompt.content)}>
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => handleOpenDialog(prompt)}>
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => deletePrompt(prompt.id)}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </TabsContent>
 
@@ -279,34 +335,90 @@ const PromptsPage = () => {
                 ))}
               </SelectContent>
             </Select>
+            <div className="flex border border-border rounded-lg overflow-hidden">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="icon"
+                onClick={() => setViewMode('grid')}
+                className="rounded-none"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="icon"
+                onClick={() => setViewMode('list')}
+                className="rounded-none"
+              >
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
 
           <div className="text-sm text-muted-foreground">
             共 {filteredTemplates.length} 個模板
           </div>
 
-          {/* Templates Grid */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredTemplates.map(template => (
-              <div 
-                key={template.id} 
-                className="bg-card border border-border rounded-xl p-5 hover:border-primary/50 transition-colors group"
-              >
-                <h3 className="font-semibold text-foreground line-clamp-2 mb-2">{template.title}</h3>
-                <p className="text-sm text-muted-foreground line-clamp-3 mb-3">{template.content}</p>
-                
-                <div className="flex flex-wrap gap-1 mb-4">
-                  {template.tags.slice(0, 3).map((tag, i) => (
-                    <Badge key={i} variant="outline" className="text-xs">{tag}</Badge>
-                  ))}
+          {/* Templates Grid/List */}
+          {viewMode === 'grid' ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredTemplates.map(template => (
+                <div 
+                  key={template.id} 
+                  className="bg-card border border-border rounded-xl p-5 hover:border-primary/50 transition-colors group"
+                >
+                  <h3 className="font-semibold text-foreground line-clamp-2 mb-2">{template.title}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-3 mb-3">{template.content}</p>
+                  
+                  <div className="flex flex-wrap gap-1 mb-4">
+                    {template.tags.slice(0, 3).map((tag, i) => (
+                      <Badge key={i} variant="outline" className="text-xs">{tag}</Badge>
+                    ))}
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <Badge variant="secondary">
+                      {templateCategories.find(c => c.value === template.category)?.label || template.category}
+                    </Badge>
+                    
+                    <div className="flex gap-1">
+                      <Button size="sm" variant="ghost" onClick={() => handleViewTemplate(template)}>
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleCopy(template.content)}>
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleImportTemplate(template)}>
+                        <Download className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="flex items-center justify-between">
-                  <Badge variant="secondary">
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {filteredTemplates.map(template => (
+                <div 
+                  key={template.id} 
+                  className="bg-card border border-border rounded-xl p-4 hover:border-primary/50 transition-colors group flex items-center gap-4"
+                >
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-foreground truncate">{template.title}</h3>
+                    <p className="text-sm text-muted-foreground truncate">{template.content}</p>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-1 flex-shrink-0 max-w-32">
+                    {template.tags.slice(0, 2).map((tag, i) => (
+                      <Badge key={i} variant="outline" className="text-xs">{tag}</Badge>
+                    ))}
+                  </div>
+                  
+                  <Badge variant="secondary" className="flex-shrink-0">
                     {templateCategories.find(c => c.value === template.category)?.label || template.category}
                   </Badge>
                   
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                     <Button size="sm" variant="ghost" onClick={() => handleViewTemplate(template)}>
                       <Eye className="w-4 h-4" />
                     </Button>
@@ -318,9 +430,9 @@ const PromptsPage = () => {
                     </Button>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 
