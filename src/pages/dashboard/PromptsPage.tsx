@@ -184,7 +184,7 @@ const PromptsPage = () => {
                 收藏
               </Button>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-muted/30 rounded-lg border border-border">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-muted/30 rounded-lg border border-border sticky top-0 z-10">
               <span className="text-sm text-muted-foreground">
                 共 {filteredPrompts.length} 個提示詞
               </span>
@@ -349,7 +349,7 @@ const PromptsPage = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-muted/30 rounded-lg border border-border">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-muted/30 rounded-lg border border-border sticky top-0 z-10">
               <span className="text-sm text-muted-foreground">
                 共 {filteredTemplates.length} 個模板
               </span>
