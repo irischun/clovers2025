@@ -52,7 +52,7 @@ const mainMenuItems = [
   { title: '點數紀錄', icon: History, path: '/dashboard/point-history' },
   { title: '作品畫廊', icon: GalleryHorizontalEnd, path: '/dashboard/gallery' },
   { title: '提示詞管理', icon: FileText, path: '/dashboard/prompts' },
-  { title: '設定', icon: Settings, path: '/dashboard/settings' },
+  { title: '用戶資料', icon: Settings, path: '/dashboard/settings' },
 ];
 
 const aiToolsItems = [
