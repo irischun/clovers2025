@@ -184,13 +184,13 @@ const PromptsPage = () => {
                 收藏
               </Button>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-muted/30 rounded-lg border border-border">
               <span className="text-sm text-muted-foreground">
                 共 {filteredPrompts.length} 個提示詞
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">檢視模式:</span>
-                <div className="flex border border-border rounded-lg overflow-hidden">
+                <div className="flex border border-border rounded-lg overflow-hidden bg-background">
                   <Button
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
@@ -349,13 +349,13 @@ const PromptsPage = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-muted/30 rounded-lg border border-border">
               <span className="text-sm text-muted-foreground">
                 共 {filteredTemplates.length} 個模板
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">檢視模式:</span>
-                <div className="flex border border-border rounded-lg overflow-hidden">
+                <div className="flex border border-border rounded-lg overflow-hidden bg-background">
                   <Button
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
