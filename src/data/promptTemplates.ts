@@ -9,13 +9,6 @@ export interface PromptTemplate {
 export const promptTemplates: PromptTemplate[] = [
   // Landing Page 提示詞
   {
-    id: 'landing-page-1',
-    title: 'Landing page提示詞',
-    content: '創建一個現代化的Landing Page，包含英雄區塊、功能介紹、價格方案、客戶見證和CTA按鈕。使用漸變色背景和動畫效果，確保響應式設計。',
-    category: 'general',
-    tags: ['網站', 'Landing Page', '設計'],
-  },
-  {
     id: 'landing-quiz',
     title: 'Landing Page with Quiz - 完整工作流程',
     content: '創建一個包含互動測驗的Landing Page。用戶完成測驗後會看到個性化結果。包含進度條、動畫過渡和結果分享功能。使用React狀態管理測驗流程。',
