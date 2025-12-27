@@ -125,21 +125,21 @@ const PromptsPage = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="heading-display text-2xl mb-1">提示詞庫</h1>
-          <p className="text-muted-foreground">管理和組織您的 AI 提示詞</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setIsTutorialOpen(true)} className="gap-2">
-            <BookOpen className="w-4 h-4" />
-            觀看教學
-          </Button>
-          <Button onClick={() => handleOpenDialog()} className="gap-2">
-            <Plus className="w-4 h-4" />
-            新增提示詞
-          </Button>
-        </div>
+      <div>
+        <h1 className="heading-display text-2xl mb-1">提示詞庫</h1>
+        <p className="text-muted-foreground">管理和組織您的 AI 提示詞</p>
+      </div>
+
+      {/* Action Buttons - Left Aligned */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="outline" onClick={() => setIsTutorialOpen(true)} className="gap-2">
+          <BookOpen className="w-4 h-4" />
+          觀看教學
+        </Button>
+        <Button onClick={() => handleOpenDialog()} className="gap-2">
+          <Plus className="w-4 h-4" />
+          新增提示詞
+        </Button>
       </div>
 
       {/* Tabs */}
@@ -150,21 +150,24 @@ const PromptsPage = () => {
         </TabsList>
 
         {/* My Prompts Tab */}
-        <TabsContent value="my-prompts" className="space-y-6">
-          {/* Filters */}
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="搜尋提示詞..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+        <TabsContent value="my-prompts" className="space-y-4">
+          {/* All Controls - Left Aligned, Stacked Vertically */}
+          <div className="flex flex-col gap-3 items-start">
+            {/* Search */}
+            <div className="relative w-full max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="搜尋提示詞..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            {/* Filter Controls Row */}
+            <div className="flex flex-wrap items-center gap-2">
               <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="w-full sm:w-40">
+                <SelectTrigger className="w-40">
                   <Filter className="w-4 h-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
@@ -175,6 +178,7 @@ const PromptsPage = () => {
                   ))}
                 </SelectContent>
               </Select>
+              
               <Button 
                 variant={showFavorites ? "default" : "outline"} 
                 onClick={() => setShowFavorites(!showFavorites)}
@@ -184,33 +188,33 @@ const PromptsPage = () => {
                 收藏
               </Button>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-muted/30 rounded-lg border border-border sticky top-0 z-10">
-              <span className="text-sm text-muted-foreground">
+
+            {/* View Mode Toggle - Left Aligned */}
+            <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg border border-border sticky top-0 z-10">
+              <span className="text-sm text-muted-foreground">檢視模式:</span>
+              <div className="flex border border-border rounded-lg overflow-hidden bg-background">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className="rounded-none gap-1 px-3"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                  網格
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="rounded-none gap-1 px-3"
+                >
+                  <List className="w-4 h-4" />
+                  列表
+                </Button>
+              </div>
+              <span className="text-sm text-muted-foreground ml-2">
                 共 {filteredPrompts.length} 個提示詞
               </span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">檢視模式:</span>
-                <div className="flex border border-border rounded-lg overflow-hidden bg-background">
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                    className="rounded-none gap-1 px-3"
-                  >
-                    <LayoutGrid className="w-4 h-4" />
-                    網格
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className="rounded-none gap-1 px-3"
-                  >
-                    <List className="w-4 h-4" />
-                    列表
-                  </Button>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -324,21 +328,24 @@ const PromptsPage = () => {
         </TabsContent>
 
         {/* Template Library Tab */}
-        <TabsContent value="template-library" className="space-y-6">
-          {/* Template Filters */}
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="搜尋模板..."
-                  value={templateSearch}
-                  onChange={(e) => setTemplateSearch(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+        <TabsContent value="template-library" className="space-y-4">
+          {/* All Controls - Left Aligned, Stacked Vertically */}
+          <div className="flex flex-col gap-3 items-start">
+            {/* Search */}
+            <div className="relative w-full max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="搜尋模板..."
+                value={templateSearch}
+                onChange={(e) => setTemplateSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            {/* Filter Controls Row */}
+            <div className="flex flex-wrap items-center gap-2">
               <Select value={templateCategory} onValueChange={setTemplateCategory}>
-                <SelectTrigger className="w-full sm:w-48">
+                <SelectTrigger className="w-48">
                   <Filter className="w-4 h-4 mr-2" />
                   <SelectValue />
                 </SelectTrigger>
@@ -349,33 +356,33 @@ const PromptsPage = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-muted/30 rounded-lg border border-border sticky top-0 z-10">
-              <span className="text-sm text-muted-foreground">
+
+            {/* View Mode Toggle - Left Aligned */}
+            <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg border border-border sticky top-0 z-10">
+              <span className="text-sm text-muted-foreground">檢視模式:</span>
+              <div className="flex border border-border rounded-lg overflow-hidden bg-background">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className="rounded-none gap-1 px-3"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                  網格
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="rounded-none gap-1 px-3"
+                >
+                  <List className="w-4 h-4" />
+                  列表
+                </Button>
+              </div>
+              <span className="text-sm text-muted-foreground ml-2">
                 共 {filteredTemplates.length} 個模板
               </span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">檢視模式:</span>
-                <div className="flex border border-border rounded-lg overflow-hidden bg-background">
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                    className="rounded-none gap-1 px-3"
-                  >
-                    <LayoutGrid className="w-4 h-4" />
-                    網格
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                    className="rounded-none gap-1 px-3"
-                  >
-                    <List className="w-4 h-4" />
-                    列表
-                  </Button>
-                </div>
-              </div>
             </div>
           </div>
 
