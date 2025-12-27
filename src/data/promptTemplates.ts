@@ -1067,9 +1067,11 @@ export const templateCategories = [
   { value: 'nano-banana', label: 'nano banana' },
   { value: 'programme', label: 'programme' },
   { value: 'creative', label: '創意' },
-  { value: 'image-video', label: '圖片生成/視頻生成' },
+  { value: 'image', label: '圖片生成' },
+  { value: 'video', label: '視頻生成' },
   { value: 'learning', label: '學習' },
   { value: 'writing', label: '寫作' },
   { value: 'coding', label: '編程' },
-  { value: 'marketing-game', label: '行銷/遊戲' },
+  { value: 'marketing', label: '行銷' },
+  { value: 'game', label: '遊戲' },
 ];
