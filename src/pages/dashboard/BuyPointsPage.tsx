@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Coins, Check, Zap, Wallet, Sparkles } from "lucide-react";
+import { Coins, Check, Zap, Wallet, Sparkles, AlertCircle } from "lucide-react";
 import { useUserPoints } from "@/hooks/useUserPoints";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -35,6 +35,26 @@ const BuyPointsPage = () => {
 
   return (
     <div className="p-6 space-y-8 max-w-4xl mx-auto">
+      {/* Important Notice */}
+      <Card className="border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-orange-500/10">
+        <CardContent className="py-5">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 animate-pulse">
+              <AlertCircle className="w-6 h-6 text-amber-500" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 animate-bounce" />
+                重要提示：訂閱後才能購買額外點數
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                購買額外點數套餐是訂閱會員的專屬福利。請先選擇並訂閱下方任一方案，即可在需要時隨時購買額外點數補充帳戶。
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Points Balance Display */}
       <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
         <CardContent className="py-6">
