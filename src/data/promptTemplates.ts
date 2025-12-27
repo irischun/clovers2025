@@ -1063,10 +1063,13 @@ export const promptTemplates: PromptTemplate[] = [
 ];
 
 export const templateCategories = [
-  { value: 'all', label: '全部模板' },
-  { value: 'general', label: '一般' },
-  { value: 'social', label: '社交媒體' },
-  { value: 'video', label: '視頻/鏡頭' },
-  { value: 'marketing', label: '行銷/海報' },
-  { value: 'blog', label: '部落格' },
+  { value: 'all', label: '所有分類' },
+  { value: 'nano-banana', label: 'nano banana' },
+  { value: 'programme', label: 'programme' },
+  { value: 'creative', label: '創意' },
+  { value: 'image-video', label: '圖片生成/視頻生成' },
+  { value: 'learning', label: '學習' },
+  { value: 'writing', label: '寫作' },
+  { value: 'coding', label: '編程' },
+  { value: 'marketing-game', label: '行銷/遊戲' },
 ];
