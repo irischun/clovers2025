@@ -36,6 +36,7 @@ export const useUserSubscription = () => {
     getUser();
   }, []);
 
+  // Fetch active subscription
   const { data: subscription, isLoading, error } = useQuery({
     queryKey: ['user-subscription', userId],
     queryFn: async () => {
@@ -51,6 +52,24 @@ export const useUserSubscription = () => {
       
       if (error) throw error;
       return data as UserSubscription | null;
+    },
+    enabled: !!userId,
+  });
+
+  // Fetch subscription history (all subscriptions)
+  const { data: subscriptionHistory, isLoading: isLoadingHistory } = useQuery({
+    queryKey: ['user-subscription-history', userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      
+      const { data, error } = await supabase
+        .from('user_subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as UserSubscription[];
     },
     enabled: !!userId,
   });
@@ -97,6 +116,7 @@ export const useUserSubscription = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['user-subscription-history'] });
     },
   });
 
@@ -115,6 +135,7 @@ export const useUserSubscription = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['user-subscription-history'] });
     },
   });
 
@@ -151,5 +172,7 @@ export const useUserSubscription = () => {
     isExpiringSoon,
     daysUntilExpiration,
     isExpired,
+    subscriptionHistory: subscriptionHistory || [],
+    isLoadingHistory,
   };
 };

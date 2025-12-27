@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Check, Zap, AlertCircle, Sparkles, Wallet, Crown, Calendar } from 'lucide-react';
+import { Check, Zap, AlertCircle, Sparkles, Wallet, Crown, Calendar, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -127,7 +128,11 @@ const SubscriptionPage = () => {
     subscribe, 
     isSubscribing,
     cancelSubscription,
-    isCancelling 
+    isCancelling,
+    subscriptionHistory,
+    isLoadingHistory,
+    isExpiringSoon,
+    daysUntilExpiration,
   } = useUserSubscription();
   const navigate = useNavigate();
   
@@ -437,6 +442,77 @@ const SubscriptionPage = () => {
           );
         })}
       </div>
+
+      {/* Expiration Warning */}
+      {isExpiringSoon && daysUntilExpiration !== null && (
+        <Alert className="bg-destructive/10 border-destructive/30">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-destructive" />
+            <div>
+              <AlertTitle className="text-destructive font-semibold text-base">
+                訂閱即將到期
+              </AlertTitle>
+              <AlertDescription className="text-muted-foreground mt-1">
+                您的訂閱將在 {daysUntilExpiration} 天後到期。請及時續訂以確保服務不中斷。
+              </AlertDescription>
+            </div>
+          </div>
+        </Alert>
+      )}
+
+      {/* Subscription History */}
+      {subscriptionHistory.length > 0 && (
+        <Card>
+          <CardContent className="py-6">
+            <div className="flex items-center gap-3 mb-4">
+              <History className="w-5 h-5 text-muted-foreground" />
+              <h2 className="text-xl font-semibold">訂閱歷史</h2>
+            </div>
+            {isLoadingHistory ? (
+              <div className="space-y-2">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>計劃</TableHead>
+                    <TableHead>付款方式</TableHead>
+                    <TableHead>價格</TableHead>
+                    <TableHead>開始日期</TableHead>
+                    <TableHead>到期日期</TableHead>
+                    <TableHead>狀態</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {subscriptionHistory.map((sub) => (
+                    <TableRow key={sub.id}>
+                      <TableCell className="font-medium">{sub.plan_name}</TableCell>
+                      <TableCell>{sub.billing_period === 'monthly' ? '月付' : '年付'}</TableCell>
+                      <TableCell>${sub.price}</TableCell>
+                      <TableCell>{format(new Date(sub.start_date), 'yyyy/MM/dd')}</TableCell>
+                      <TableCell>{format(new Date(sub.expiration_date), 'yyyy/MM/dd')}</TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={sub.status === 'active' ? 'default' : 'secondary'}
+                          className={cn(
+                            sub.status === 'active' && 'bg-green-500 hover:bg-green-600',
+                            sub.status === 'cancelled' && 'bg-muted text-muted-foreground'
+                          )}
+                        >
+                          {sub.status === 'active' ? '生效中' : sub.status === 'cancelled' ? '已取消' : '已過期'}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Footer Note */}
       <p className="text-center text-sm text-muted-foreground">
