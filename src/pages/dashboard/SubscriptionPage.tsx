@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useUserPoints } from '@/hooks/useUserPoints';
+import { useNavigate } from 'react-router-dom';
 
 const monthlyPlans = [
   {
@@ -117,6 +118,7 @@ const yearlyPlans = [
 const SubscriptionPage = () => {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const { points, isLoading, addPoints, isAddingPoints } = useUserPoints();
+  const navigate = useNavigate();
   
   const plans = billingPeriod === 'monthly' ? monthlyPlans : yearlyPlans;
 
@@ -128,12 +130,20 @@ const SubscriptionPage = () => {
     });
   };
 
+  const handleCancelSubscription = () => {
+    toast.success('訂閱取消成功');
+  };
+
+  const handleChangeSubscription = () => {
+    navigate('/dashboard/change-subscription');
+  };
+
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
       {/* Points Balance Display */}
       <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
         <CardContent className="py-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center">
                 <Wallet className="w-7 h-7 text-primary" />
@@ -146,6 +156,20 @@ const SubscriptionPage = () => {
                   <p className="text-3xl font-bold text-primary">{points} 點</p>
                 )}
               </div>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={handleChangeSubscription}
+              >
+                更改訂閱
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleCancelSubscription}
+              >
+                取消訂閱
+              </Button>
             </div>
           </div>
         </CardContent>

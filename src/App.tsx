@@ -27,6 +27,7 @@ import StickerMakerPage from "./pages/dashboard/StickerMakerPage";
 import SmartPublishPage from "./pages/dashboard/SmartPublishPage";
 import GalleryPage from "./pages/dashboard/GalleryPage";
 import SubscriptionPage from "./pages/dashboard/SubscriptionPage";
+import ChangeSubscriptionPage from "./pages/dashboard/ChangeSubscriptionPage";
 import BuyPointsPage from "./pages/dashboard/BuyPointsPage";
 import PointHistoryPage from "./pages/dashboard/PointHistoryPage";
 import NotFound from "./pages/NotFound";
@@ -64,6 +65,7 @@ const App = () => (
               <Route path="smart-publish" element={<SmartPublishPage />} />
               <Route path="gallery" element={<GalleryPage />} />
               <Route path="subscription" element={<SubscriptionPage />} />
+              <Route path="change-subscription" element={<ChangeSubscriptionPage />} />
               <Route path="buy-points" element={<BuyPointsPage />} />
               <Route path="point-history" element={<PointHistoryPage />} />
             </Route>
