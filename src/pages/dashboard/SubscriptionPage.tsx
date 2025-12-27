@@ -242,25 +242,6 @@ const SubscriptionPage = () => {
                 </div>
               </div>
             )}
-
-            {/* Action Buttons */}
-            {subscription && (
-              <div className="flex gap-3">
-                <Button
-                  onClick={handleChangeSubscription}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                >
-                  更改訂閱
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleCancelSubscription}
-                  disabled={isCancelling}
-                >
-                  {isCancelling ? '處理中...' : '取消訂閱'}
-                </Button>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -512,6 +493,25 @@ const SubscriptionPage = () => {
             )}
           </CardContent>
         </Card>
+      )}
+
+      {/* Action Buttons */}
+      {subscription && (
+        <div className="flex justify-center gap-3">
+          <Button
+            onClick={handleChangeSubscription}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            更改訂閱
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleCancelSubscription}
+            disabled={isCancelling}
+          >
+            {isCancelling ? '處理中...' : '取消訂閱'}
+          </Button>
+        </div>
       )}
 
       {/* Footer Note */}
