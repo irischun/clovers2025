@@ -152,53 +152,65 @@ const PromptsPage = () => {
         {/* My Prompts Tab */}
         <TabsContent value="my-prompts" className="space-y-6">
           {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="搜尋提示詞..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="搜尋提示詞..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger className="w-full sm:w-40">
+                  <Filter className="w-4 h-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部分類</SelectItem>
+                  {categories.map(cat => (
+                    <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button 
+                variant={showFavorites ? "default" : "outline"} 
+                onClick={() => setShowFavorites(!showFavorites)}
+                className="gap-2"
+              >
+                <Star className={`w-4 h-4 ${showFavorites ? 'fill-current' : ''}`} />
+                收藏
+              </Button>
             </div>
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="w-full sm:w-40">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部分類</SelectItem>
-                {categories.map(cat => (
-                  <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button 
-              variant={showFavorites ? "default" : "outline"} 
-              onClick={() => setShowFavorites(!showFavorites)}
-              className="gap-2"
-            >
-              <Star className={`w-4 h-4 ${showFavorites ? 'fill-current' : ''}`} />
-              收藏
-            </Button>
-            <div className="flex border border-border rounded-lg overflow-hidden">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="icon"
-                onClick={() => setViewMode('grid')}
-                className="rounded-none"
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="icon"
-                onClick={() => setViewMode('list')}
-                className="rounded-none"
-              >
-                <List className="w-4 h-4" />
-              </Button>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">
+                共 {filteredPrompts.length} 個提示詞
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">檢視模式:</span>
+                <div className="flex border border-border rounded-lg overflow-hidden">
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className="rounded-none gap-1 px-3"
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                    網格
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="rounded-none gap-1 px-3"
+                  >
+                    <List className="w-4 h-4" />
+                    列表
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -314,49 +326,57 @@ const PromptsPage = () => {
         {/* Template Library Tab */}
         <TabsContent value="template-library" className="space-y-6">
           {/* Template Filters */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="搜尋模板..."
-                value={templateSearch}
-                onChange={(e) => setTemplateSearch(e.target.value)}
-                className="pl-10"
-              />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="搜尋模板..."
+                  value={templateSearch}
+                  onChange={(e) => setTemplateSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Select value={templateCategory} onValueChange={setTemplateCategory}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <Filter className="w-4 h-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {templateCategories.map(cat => (
+                    <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <Select value={templateCategory} onValueChange={setTemplateCategory}>
-              <SelectTrigger className="w-full sm:w-48">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {templateCategories.map(cat => (
-                  <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="flex border border-border rounded-lg overflow-hidden">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="icon"
-                onClick={() => setViewMode('grid')}
-                className="rounded-none"
-              >
-                <LayoutGrid className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="icon"
-                onClick={() => setViewMode('list')}
-                className="rounded-none"
-              >
-                <List className="w-4 h-4" />
-              </Button>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">
+                共 {filteredTemplates.length} 個模板
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">檢視模式:</span>
+                <div className="flex border border-border rounded-lg overflow-hidden">
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className="rounded-none gap-1 px-3"
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                    網格
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="rounded-none gap-1 px-3"
+                  >
+                    <List className="w-4 h-4" />
+                    列表
+                  </Button>
+                </div>
+              </div>
             </div>
-          </div>
-
-          <div className="text-sm text-muted-foreground">
-            共 {filteredTemplates.length} 個模板
           </div>
 
           {/* Templates Grid/List */}
