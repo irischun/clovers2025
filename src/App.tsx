@@ -28,6 +28,7 @@ import SmartPublishPage from "./pages/dashboard/SmartPublishPage";
 import GalleryPage from "./pages/dashboard/GalleryPage";
 import SubscriptionPage from "./pages/dashboard/SubscriptionPage";
 import BuyPointsPage from "./pages/dashboard/BuyPointsPage";
+import PointHistoryPage from "./pages/dashboard/PointHistoryPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ const App = () => (
               <Route path="gallery" element={<GalleryPage />} />
               <Route path="subscription" element={<SubscriptionPage />} />
               <Route path="buy-points" element={<BuyPointsPage />} />
+              <Route path="point-history" element={<PointHistoryPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
