@@ -271,7 +271,7 @@ const SubscriptionPage = () => {
                   </p>
                   <p className={cn(
                     "text-sm font-medium",
-                    plan.popular ? "text-accent" : "text-primary"
+                    plan.popular ? "text-primary-foreground" : "text-primary"
                   )}>
                     年費慳 ${(plan as typeof yearlyPlans[0]).savings}
                   </p>
