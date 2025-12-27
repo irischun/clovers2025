@@ -395,6 +395,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_subscriptions: {
+        Row: {
+          billing_period: string
+          created_at: string
+          expiration_date: string
+          id: string
+          plan_name: string
+          points_per_month: number
+          price: number
+          start_date: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_period: string
+          created_at?: string
+          expiration_date: string
+          id?: string
+          plan_name: string
+          points_per_month: number
+          price: number
+          start_date?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_period?: string
+          created_at?: string
+          expiration_date?: string
+          id?: string
+          plan_name?: string
+          points_per_month?: number
+          price?: number
+          start_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       voice_generations: {
         Row: {
           audio_url: string | null
