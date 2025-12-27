@@ -70,7 +70,7 @@ const DashboardHeader = ({ user }: DashboardHeaderProps) => {
             <DropdownMenuLabel>我的帳戶</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate('/dashboard/settings')}>
-              設定
+              用戶資料
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="text-destructive">
