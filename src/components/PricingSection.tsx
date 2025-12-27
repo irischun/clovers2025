@@ -1,62 +1,7 @@
 import { Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-
-const plans = [
-  {
-    name: '免費版',
-    nameEn: 'Free',
-    price: '$0',
-    period: '永久免費',
-    description: '適合剛開始的一人創業者',
-    features: [
-      '10 個提示詞模板',
-      '5 次 AI 生成 / 月',
-      '基本排程功能',
-      '100 MB 媒體儲存',
-      '社群支援',
-    ],
-    cta: '免費開始',
-    popular: false,
-  },
-  {
-    name: '專業版',
-    nameEn: 'Pro',
-    price: '$19',
-    period: '每月',
-    description: '適合成長中的一人公司',
-    features: [
-      '無限提示詞模板',
-      '500 次 AI 生成 / 月',
-      '進階排程與分析',
-      '10 GB 媒體儲存',
-      '優先客服支援',
-      '自訂品牌設定',
-      'API 存取權限',
-    ],
-    cta: '開始試用',
-    popular: true,
-  },
-  {
-    name: '企業版',
-    nameEn: 'Enterprise',
-    price: '$49',
-    period: '每月',
-    description: '適合規模化的團隊',
-    features: [
-      '專業版所有功能',
-      '無限 AI 生成',
-      '100 GB 媒體儲存',
-      '團隊協作功能',
-      '專屬客戶經理',
-      '自訂整合方案',
-      'SSO 單一登入',
-      'SLA 保證',
-    ],
-    cta: '聯繫我們',
-    popular: false,
-  },
-];
+import { landingPlans } from '@/data/subscriptionPlans';
 
 const PricingSection = () => {
   const navigate = useNavigate();
@@ -80,7 +25,7 @@ const PricingSection = () => {
 
         {/* Pricing cards */}
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {plans.map((plan, index) => (
+          {landingPlans.map((plan, index) => (
             <div
               key={plan.name}
               className={`relative rounded-2xl p-8 transition-all duration-300 ${
