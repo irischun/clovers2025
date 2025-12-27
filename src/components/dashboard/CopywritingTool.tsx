@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Copy, RefreshCw, Loader2, Home, FileText, Hash, Smile, Phone, Mail, Building2, Globe, Wand2 } from 'lucide-react';
+import { Sparkles, Copy, RefreshCw, Loader2, Home, FileText, Hash, Smile, Phone, Mail, Building2, Globe, Wand2, History, Trash2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -10,8 +10,20 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAIGeneration } from '@/hooks/useAIGeneration';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
+
+interface HistoryItem {
+  id: string;
+  prompt: string;
+  result: string;
+  tool_type: string;
+  created_at: string;
+}
 
 const copywritingStructures = [
   { id: 'aida', label: 'AIDA模型', description: 'Attention → Interest → Desire → Action' },
@@ -141,6 +153,82 @@ const CopywritingTool = () => {
   const [emailIncludeEmoji, setEmailIncludeEmoji] = useState(false);
   const [emailPrompt, setEmailPrompt] = useState(defaultEmailPrompt);
   const [isCustomPrompt, setIsCustomPrompt] = useState(false);
+
+  // History states
+  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [selectedHistoryItem, setSelectedHistoryItem] = useState<HistoryItem | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+
+  // Fetch history when tab changes to history
+  useEffect(() => {
+    if (activeTab === 'history') {
+      fetchHistory();
+    }
+  }, [activeTab]);
+
+  const fetchHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: '請先登入', variant: 'destructive' });
+        setHistoryLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('ai_generations')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setHistoryItems(data || []);
+    } catch (error) {
+      console.error('Error fetching history:', error);
+      toast({ title: '載入歷史記錄失敗', variant: 'destructive' });
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const handleDeleteHistory = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('ai_generations')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setHistoryItems(prev => prev.filter(item => item.id !== id));
+      toast({ title: '已刪除記錄' });
+    } catch (error) {
+      console.error('Error deleting history:', error);
+      toast({ title: '刪除失敗', variant: 'destructive' });
+    }
+  };
+
+  const handleCopyHistoryResult = (result: string) => {
+    navigator.clipboard.writeText(result);
+    toast({ title: '已複製到剪貼板' });
+  };
+
+  const handleViewHistory = (item: HistoryItem) => {
+    setSelectedHistoryItem(item);
+    setViewDialogOpen(true);
+  };
+
+  const getToolTypeLabel = (toolType: string) => {
+    const labels: Record<string, string> = {
+      'blog': '創作文案',
+      'email': 'Email 文案',
+      'social': '社交媒體文案',
+      'general': '一般文案',
+    };
+    return labels[toolType] || toolType;
+  };
 
   const getStructurePrompt = (structureId: string) => {
     const structurePrompts: Record<string, string> = {
@@ -333,7 +421,7 @@ const CopywritingTool = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 max-w-lg">
+        <TabsList className="grid w-full grid-cols-4 max-w-2xl">
           <TabsTrigger value="copywriting" className="gap-2">
             <FileText className="w-4 h-4" />
             創作文案
@@ -345,6 +433,10 @@ const CopywritingTool = () => {
           <TabsTrigger value="social" className="gap-2">
             <Hash className="w-4 h-4" />
             社交媒體文案
+          </TabsTrigger>
+          <TabsTrigger value="history" className="gap-2">
+            <History className="w-4 h-4" />
+            歷史記錄
           </TabsTrigger>
         </TabsList>
 
@@ -830,7 +922,138 @@ const CopywritingTool = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* 歷史記錄 Tab */}
+        <TabsContent value="history" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <History className="w-5 h-5 text-primary" />
+                歷史記錄
+              </CardTitle>
+              <CardDescription>查看之前生成的文案</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {historyLoading ? (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+                  <p className="text-muted-foreground">載入中...</p>
+                </div>
+              ) : historyItems.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                  <History className="w-16 h-16 mb-6 opacity-30" />
+                  <p className="text-lg font-medium">暫無歷史記錄</p>
+                  <p className="text-sm mt-2">您生成的文案將會顯示在這裡</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {historyItems.map((item) => (
+                    <div 
+                      key={item.id} 
+                      className="p-4 border rounded-lg hover:border-primary/50 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary">
+                              {getToolTypeLabel(item.tool_type)}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {format(new Date(item.created_at), 'yyyy-MM-dd HH:mm')}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                            {item.prompt.slice(0, 100)}...
+                          </p>
+                          <p className="text-sm line-clamp-3">
+                            {item.result.slice(0, 150)}...
+                          </p>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => handleViewHistory(item)}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={() => handleCopyHistoryResult(item.result)}
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => handleDeleteHistory(item.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
+      {/* History View Dialog */}
+      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" />
+              文案詳情
+            </DialogTitle>
+            <DialogDescription>
+              {selectedHistoryItem && (
+                <span className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary">
+                    {getToolTypeLabel(selectedHistoryItem.tool_type)}
+                  </span>
+                  <span className="text-xs">
+                    {format(new Date(selectedHistoryItem.created_at), 'yyyy-MM-dd HH:mm')}
+                  </span>
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedHistoryItem && (
+            <ScrollArea className="max-h-[60vh]">
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-muted-foreground">提示詞</Label>
+                  <div className="mt-1 p-3 bg-muted/50 rounded-lg text-sm whitespace-pre-wrap">
+                    {selectedHistoryItem.prompt}
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-sm font-medium text-muted-foreground">生成結果</Label>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => handleCopyHistoryResult(selectedHistoryItem.result)}
+                    >
+                      <Copy className="w-4 h-4 mr-1" />
+                      複製
+                    </Button>
+                  </div>
+                  <div className="mt-1 p-3 bg-muted/50 rounded-lg text-sm whitespace-pre-wrap">
+                    {selectedHistoryItem.result}
+                  </div>
+                </div>
+              </div>
+            </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Structure Info - Shows for both tabs */}
       <Card className="border-primary/20">
