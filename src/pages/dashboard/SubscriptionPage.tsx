@@ -247,13 +247,13 @@ const SubscriptionPage = () => {
             {subscription && (
               <div className="flex gap-3">
                 <Button
-                  variant="outline"
                   onClick={handleChangeSubscription}
+                  className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   更改訂閱
                 </Button>
                 <Button
-                  variant="destructive"
+                  variant="outline"
                   onClick={handleCancelSubscription}
                   disabled={isCancelling}
                 >
