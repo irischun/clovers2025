@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { FileText, Calendar, Image, Sparkles, ArrowRight } from 'lucide-react';
+import { FileText, Calendar, Image, Sparkles, ArrowRight, Coins, Crown, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
+import { useUserPoints } from '@/hooks/useUserPoints';
+import { Badge } from '@/components/ui/badge';
 
 interface Stats {
   prompts: number;
@@ -120,14 +122,56 @@ const DashboardHome = () => {
     }
   };
 
+  const { points, isLoading: pointsLoading } = useUserPoints();
+
+  // Mock subscription plan - in real app, this would come from database
+  const subscriptionPlan = '專業版';
+
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Welcome section */}
-      <div>
-        <h1 className="heading-display text-3xl mb-2">歡迎回來！ 👋</h1>
-        <p className="text-muted-foreground">
-          這是您的 Clover 儀表板，開始創建精彩內容吧。
-        </p>
+      {/* Page Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+          <h1 className="heading-display text-3xl mb-2">儀表板</h1>
+          <p className="text-muted-foreground">
+            歡迎回來！這是您的 Clover 儀表板，開始創建精彩內容吧。
+          </p>
+        </div>
+        
+        {/* Subscription & Points Info */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Subscription Plan */}
+          <Link 
+            to="/dashboard/subscription"
+            className="flex items-center gap-2 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/30 rounded-xl px-4 py-2.5 hover:border-amber-500/50 transition-colors group"
+          >
+            <Crown className="w-5 h-5 text-amber-500" />
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground">已訂閱方案</span>
+              <span className="font-semibold text-amber-600 dark:text-amber-400 group-hover:text-amber-500 transition-colors">
+                {subscriptionPlan}
+              </span>
+            </div>
+          </Link>
+          
+          {/* Points Balance */}
+          <Link 
+            to="/dashboard/buy-points"
+            className="flex items-center gap-2 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/30 rounded-xl px-4 py-2.5 hover:border-primary/50 transition-colors group"
+          >
+            <Coins className="w-5 h-5 text-primary" />
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground">所剩點數</span>
+              {pointsLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              ) : (
+                <span className="font-semibold text-primary group-hover:text-primary/80 transition-colors">
+                  {points.toLocaleString()} 點
+                </span>
+              )}
+            </div>
+          </Link>
+        </div>
       </div>
 
       {/* Stats grid */}
