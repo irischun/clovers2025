@@ -125,7 +125,7 @@ const DashboardHome = () => {
   const { points, isLoading: pointsLoading } = useUserPoints();
 
   // Mock subscription plan - in real app, this would come from database
-  const subscriptionPlan = '專業版';
+  const subscriptionPlan = '高級版';
 
   return (
     <div className="space-y-8 animate-fade-in">
