@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import { Check, ArrowLeft } from 'lucide-react';
+import { Check, ArrowLeft, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { useUserSubscription } from '@/hooks/useUserSubscription';
+import { useUserPoints } from '@/hooks/useUserPoints';
 
 const monthlyPlans = [
   {
@@ -113,113 +115,145 @@ const yearlyPlans = [
 
 const ChangeSubscriptionPage = () => {
   const navigate = useNavigate();
-  const [isUpdating, setIsUpdating] = useState(false);
+  const { subscription, subscribe, isSubscribing } = useUserSubscription();
+  const { addPoints } = useUserPoints();
 
-  const handleChangePlan = (planName: string, period: string) => {
-    setIsUpdating(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsUpdating(false);
-      toast.success('你的訂閱計劃已更新', {
-        description: `已更改為 ${planName} (${period}付)`,
-      });
-      navigate('/dashboard/subscription');
-    }, 1000);
+  const handleChangePlan = (planName: string, billingPeriod: 'monthly' | 'yearly', pointsPerMonth: number, price: number) => {
+    subscribe({
+      plan_name: planName,
+      billing_period: billingPeriod,
+      points_per_month: pointsPerMonth,
+      price: price,
+    }, {
+      onSuccess: () => {
+        addPoints(pointsPerMonth);
+        toast.success('你的訂閱計劃已更新', {
+          description: `已更改為 ${planName} (${billingPeriod === 'monthly' ? '月' : '年'}付)`,
+        });
+        navigate('/dashboard/subscription');
+      },
+      onError: (error) => {
+        toast.error('更改訂閱失敗', {
+          description: error.message,
+        });
+      },
+    });
   };
 
-  const renderPlanCard = (plan: typeof monthlyPlans[0] | typeof yearlyPlans[0], isYearly: boolean) => (
-    <div
-      key={`${plan.name}-${plan.period}`}
-      className={cn(
-        "relative rounded-2xl p-6 transition-all duration-300",
-        plan.popular
-          ? "bg-primary text-primary-foreground ring-2 ring-primary shadow-2xl shadow-primary/25"
-          : "bg-card border border-border hover:border-primary/50"
-      )}
-    >
-      {/* Popular Badge */}
-      {plan.popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="px-4 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">
-            最受歡迎
-          </span>
-        </div>
-      )}
+  const isCurrentPlan = (planName: string, billingPeriod: 'monthly' | 'yearly') => {
+    if (!subscription) return false;
+    return subscription.plan_name === planName && subscription.billing_period === billingPeriod;
+  };
 
-      {/* Plan Name */}
-      <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
-      
-      {/* Points per month */}
-      <p className={cn(
-        "text-sm mb-4",
-        plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
-      )}>
-        每月 {plan.pointsPerMonth} 點數
-      </p>
+  const renderPlanCard = (plan: typeof monthlyPlans[0] | typeof yearlyPlans[0], isYearly: boolean) => {
+    const billingPeriod = isYearly ? 'yearly' : 'monthly';
+    const isCurrent = isCurrentPlan(plan.name, billingPeriod);
 
-      {/* Price */}
-      <div className="mb-6">
-        <span className="text-4xl font-bold">${plan.price}</span>
-        <span className={cn(
-          "text-sm ml-1",
-          plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
-        )}>
-          / {plan.period}
-        </span>
-        
-        {/* Yearly savings */}
-        {isYearly && 'savings' in plan && (
-          <div className="mt-2 space-y-1">
-            <p className={cn(
-              "text-sm",
-              plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
-            )}>
-              平均每月 ${(plan as typeof yearlyPlans[0]).monthlyPrice}
-            </p>
-            <p className={cn(
-              "text-sm font-medium",
-              plan.popular ? "text-primary-foreground" : "text-primary"
-            )}>
-              年費慳 ${(plan as typeof yearlyPlans[0]).savings}
-            </p>
+    return (
+      <div
+        key={`${plan.name}-${plan.period}`}
+        className={cn(
+          "relative rounded-2xl p-6 transition-all duration-300",
+          plan.popular
+            ? "bg-primary text-primary-foreground ring-2 ring-primary shadow-2xl shadow-primary/25"
+            : "bg-card border border-border hover:border-primary/50",
+          isCurrent && "ring-2 ring-accent"
+        )}
+      >
+        {/* Current Plan Badge */}
+        {isCurrent && (
+          <div className="absolute -top-3 right-4">
+            <span className="px-3 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium flex items-center gap-1">
+              <Crown className="w-3 h-3" />
+              目前計劃
+            </span>
           </div>
         )}
-      </div>
 
-      {/* Features */}
-      <ul className="space-y-3 mb-6">
-        {plan.features.map((feature) => (
-          <li key={feature} className="flex items-start gap-3">
-            <Check className={cn(
-              "w-5 h-5 shrink-0 mt-0.5",
-              plan.popular ? "text-primary-foreground" : "text-primary"
-            )} />
-            <span className={cn(
-              "text-sm",
-              plan.popular ? "text-primary-foreground/90" : ""
-            )}>
-              {feature}
+        {/* Popular Badge */}
+        {plan.popular && !isCurrent && (
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+            <span className="px-4 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">
+              最受歡迎
             </span>
-          </li>
-        ))}
-      </ul>
-
-      {/* Change Plan Button */}
-      <Button
-        onClick={() => handleChangePlan(plan.name, isYearly ? '年' : '月')}
-        disabled={isUpdating}
-        className={cn(
-          "w-full",
-          plan.popular
-            ? "bg-background text-foreground hover:bg-background/90"
-            : ""
+          </div>
         )}
-        variant={plan.popular ? "secondary" : "outline"}
-      >
-        {isUpdating ? "處理中..." : "選擇此計劃"}
-      </Button>
-    </div>
-  );
+
+        {/* Plan Name */}
+        <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
+        
+        {/* Points per month */}
+        <p className={cn(
+          "text-sm mb-4",
+          plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
+        )}>
+          每月 {plan.pointsPerMonth} 點數
+        </p>
+
+        {/* Price */}
+        <div className="mb-6">
+          <span className="text-4xl font-bold">${plan.price}</span>
+          <span className={cn(
+            "text-sm ml-1",
+            plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
+          )}>
+            / {plan.period}
+          </span>
+          
+          {/* Yearly savings */}
+          {isYearly && 'savings' in plan && (
+            <div className="mt-2 space-y-1">
+              <p className={cn(
+                "text-sm",
+                plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
+              )}>
+                平均每月 ${(plan as typeof yearlyPlans[0]).monthlyPrice}
+              </p>
+              <p className={cn(
+                "text-sm font-medium",
+                plan.popular ? "text-primary-foreground" : "text-primary"
+              )}>
+                年費慳 ${(plan as typeof yearlyPlans[0]).savings}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Features */}
+        <ul className="space-y-3 mb-6">
+          {plan.features.map((feature) => (
+            <li key={feature} className="flex items-start gap-3">
+              <Check className={cn(
+                "w-5 h-5 shrink-0 mt-0.5",
+                plan.popular ? "text-primary-foreground" : "text-primary"
+              )} />
+              <span className={cn(
+                "text-sm",
+                plan.popular ? "text-primary-foreground/90" : ""
+              )}>
+                {feature}
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        {/* Change Plan Button */}
+        <Button
+          onClick={() => handleChangePlan(plan.name, billingPeriod, plan.pointsPerMonth, plan.price)}
+          disabled={isSubscribing || isCurrent}
+          className={cn(
+            "w-full",
+            plan.popular
+              ? "bg-background text-foreground hover:bg-background/90"
+              : ""
+          )}
+          variant={plan.popular ? "secondary" : "outline"}
+        >
+          {isCurrent ? '目前計劃' : isSubscribing ? "處理中..." : "選擇此計劃"}
+        </Button>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
@@ -232,7 +266,14 @@ const ChangeSubscriptionPage = () => {
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <h1 className="text-3xl md:text-4xl font-bold">更改訂閱</h1>
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold">更改訂閱</h1>
+          {subscription && (
+            <p className="text-muted-foreground mt-1">
+              目前計劃: <Badge variant="secondary">{subscription.plan_name} ({subscription.billing_period === 'monthly' ? '月付' : '年付'})</Badge>
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Monthly Plans Section */}
