@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import { useUserPoints } from '@/hooks/useUserPoints';
+import { useUserSubscription } from '@/hooks/useUserSubscription';
 import { Badge } from '@/components/ui/badge';
 
 interface Stats {
@@ -123,9 +124,7 @@ const DashboardHome = () => {
   };
 
   const { points, isLoading: pointsLoading } = useUserPoints();
-
-  // Mock subscription plan - in real app, this would come from database
-  const subscriptionPlan = '高級版';
+  const { subscription, isLoading: subscriptionLoading } = useUserSubscription();
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -148,9 +147,13 @@ const DashboardHome = () => {
             <Crown className="w-5 h-5 text-amber-500" />
             <div className="flex flex-col">
               <span className="text-xs text-muted-foreground">已訂閱方案</span>
-              <span className="font-semibold text-amber-600 dark:text-amber-400 group-hover:text-amber-500 transition-colors">
-                {subscriptionPlan}
-              </span>
+              {subscriptionLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin text-amber-500" />
+              ) : (
+                <span className="font-semibold text-amber-600 dark:text-amber-400 group-hover:text-amber-500 transition-colors">
+                  {subscription ? `${subscription.plan_name} ${subscription.billing_period === 'monthly' ? '月付' : '年付'}` : '尚未訂閱'}
+                </span>
+              )}
             </div>
           </Link>
           
