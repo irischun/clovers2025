@@ -333,7 +333,7 @@ const CopywritingTool = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsList className="grid w-full grid-cols-3 max-w-lg">
           <TabsTrigger value="copywriting" className="gap-2">
             <FileText className="w-4 h-4" />
             創作文案
@@ -341,6 +341,10 @@ const CopywritingTool = () => {
           <TabsTrigger value="email" className="gap-2">
             <Mail className="w-4 h-4" />
             Email 文案
+          </TabsTrigger>
+          <TabsTrigger value="social" className="gap-2">
+            <Hash className="w-4 h-4" />
+            社交媒體文案
           </TabsTrigger>
         </TabsList>
 
@@ -807,6 +811,24 @@ const CopywritingTool = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* 社交媒體文案 Tab */}
+        <TabsContent value="social" className="mt-6">
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader className="text-center">
+              <CardTitle className="flex items-center justify-center gap-2 text-2xl">
+                <Hash className="w-6 h-6 text-primary" />
+                社交媒體文案
+              </CardTitle>
+              <CardDescription className="text-lg mt-4">Coming Soon</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+              <Sparkles className="w-16 h-16 mb-6 opacity-30" />
+              <p className="text-center">社交媒體文案功能即將推出</p>
+              <p className="text-sm mt-2 text-center">敬請期待更多精彩功能</p>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
