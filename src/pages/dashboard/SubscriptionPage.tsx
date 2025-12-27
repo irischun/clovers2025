@@ -6,6 +6,17 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useUserPoints } from '@/hooks/useUserPoints';
@@ -504,13 +515,38 @@ const SubscriptionPage = () => {
           >
             更改訂閱
           </Button>
-          <Button
-            variant="outline"
-            onClick={handleCancelSubscription}
-            disabled={isCancelling}
-          >
-            {isCancelling ? '處理中...' : '取消訂閱'}
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                disabled={isCancelling}
+              >
+                {isCancelling ? '處理中...' : '取消訂閱'}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>確定要取消訂閱嗎？</AlertDialogTitle>
+                <AlertDialogDescription>
+                  取消訂閱後，您將在當前計費週期結束後失去以下權益：
+                  <ul className="list-disc list-inside mt-2 space-y-1">
+                    <li>每月自動發放的點數</li>
+                    <li>購買額外點數的權限</li>
+                    <li>訂閱專屬功能</li>
+                  </ul>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>返回</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleCancelSubscription}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  確定取消
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       )}
 
