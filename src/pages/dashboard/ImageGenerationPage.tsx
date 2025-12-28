@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
+import { useUserPoints } from '@/hooks/useUserPoints';
 import { Image, Loader2, Download, Wand2, Camera, Film, Palette, ShoppingBag, Share2, ChevronDown, ChevronUp, Sparkles, Upload, X, Languages, Shirt, Zap, ImagePlus, Type, Grid3X3, User, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -251,6 +252,9 @@ const aspectRatios = [
 ];
 
 const ImageGenerationPage = () => {
+  // Get user points
+  const { points: userPoints } = useUserPoints();
+  
   // Generation mode
   const [generationMode, setGenerationMode] = useState<'image-to-image' | 'text-to-image'>('image-to-image');
   
@@ -295,9 +299,6 @@ const ImageGenerationPage = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [history, setHistory] = useState<Array<{ prompt: string; imageUrl: string; isAvatar: boolean }>>([]);
   const [activeGalleryTab, setActiveGalleryTab] = useState<'all' | 'avatars'>('all');
-  
-  // Points (mock for now)
-  const [remainingPoints] = useState(400);
   
   const { toast } = useToast();
   const aspectRatio = aspectRatios.find(ar => ar.id === selectedAspectRatio);
@@ -498,8 +499,8 @@ const ImageGenerationPage = () => {
       return;
     }
 
-    if (totalPoints > remainingPoints) {
-      toast({ title: '點數不足', description: `需要 ${totalPoints} 點但只剩 ${remainingPoints} 點`, variant: 'destructive' });
+    if (totalPoints > userPoints) {
+      toast({ title: '點數不足', description: `需要 ${totalPoints} 點但只剩 ${userPoints} 點`, variant: 'destructive' });
       return;
     }
 
@@ -588,9 +589,6 @@ const ImageGenerationPage = () => {
           <h1 className="heading-display text-2xl mb-1">AI 圖像生成</h1>
           <p className="text-muted-foreground">選擇生成模式並創建精美圖像</p>
         </div>
-        <Badge variant="outline" className="text-base px-4 py-2">
-          剩餘點數: {remainingPoints}
-        </Badge>
       </div>
 
       {/* Generation Mode Tabs */}
@@ -1103,16 +1101,10 @@ const ImageGenerationPage = () => {
                 </div>
               </div>
 
-              {/* Points Info */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
-                <span className="text-sm">剩餘點數:</span>
-                <span className="font-medium">{remainingPoints}</span>
-              </div>
-
               {/* Generate Button */}
               <Button 
                 onClick={handleGenerate} 
-                disabled={isGenerating || totalPoints > remainingPoints}
+                disabled={isGenerating || totalPoints > userPoints}
                 className="w-full gap-2 h-12 text-lg"
                 size="lg"
               >
@@ -1129,9 +1121,9 @@ const ImageGenerationPage = () => {
                 )}
               </Button>
               
-              {totalPoints > remainingPoints && (
+              {totalPoints > userPoints && (
                 <p className="text-sm text-destructive text-center">
-                  點數不足，需要 {totalPoints} 點但只剩 {remainingPoints} 點
+                  點數不足，需要 {totalPoints} 點但只剩 {userPoints} 點
                 </p>
               )}
             </CardContent>
