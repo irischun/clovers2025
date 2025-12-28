@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -131,6 +132,9 @@ const VideoGeneration2Page = () => {
 
   return (
     <div className="space-y-6">
+      {/* Points Balance */}
+      <PointsBalanceCard />
+
       <div>
         <h1 className="text-3xl font-bold">視頻生成 2.0</h1>
         <p className="text-muted-foreground mt-2">

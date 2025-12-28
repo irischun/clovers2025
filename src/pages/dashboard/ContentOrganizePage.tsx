@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { 
   Video, Loader2, Copy, Check, Trash2, RefreshCw, 
   Link2, FileText, Clock, ChevronRight, PlayCircle, X,
@@ -487,6 +488,9 @@ const ContentOrganizePage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Points Balance */}
+      <PointsBalanceCard />
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

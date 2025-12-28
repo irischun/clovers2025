@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Globe, Share2, Play, Coins } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,9 @@ const SchedulerPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Points Balance */}
+      <PointsBalanceCard />
+
       {/* Points Banner */}
       <div className="w-full rounded-lg border border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20 p-4">
         <div className="flex items-center gap-2">

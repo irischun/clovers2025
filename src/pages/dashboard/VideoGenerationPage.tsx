@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Video, Loader2, Play, Download, Plus, RefreshCw, Upload, Image, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -118,6 +119,9 @@ const VideoGenerationPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Points Balance */}
+      <PointsBalanceCard />
+
       <div>
         <h1 className="heading-display text-2xl mb-1">AI 視頻生成</h1>
         <p className="text-muted-foreground">使用 Kling AI 從圖片生成高質量視頻</p>

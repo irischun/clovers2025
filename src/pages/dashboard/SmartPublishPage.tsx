@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Send, Loader2, Search, RefreshCw, CheckCircle, XCircle, Clock, FileText, Upload, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -132,6 +133,9 @@ const SmartPublishPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Points Balance */}
+      <PointsBalanceCard />
+
       {/* Header */}
       <div className="flex items-center gap-3">
         <div>

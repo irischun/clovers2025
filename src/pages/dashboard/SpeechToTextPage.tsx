@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Upload, Loader2, Download, FileAudio, FileVideo, Trash2, Check, Languages, History, Subtitles, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -253,6 +254,9 @@ const SpeechToTextPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Points Balance */}
+      <PointsBalanceCard />
+
       <div>
         <h1 className="heading-display text-2xl mb-1">音頻/視頻轉字幕</h1>
         <p className="text-muted-foreground">將音頻或視頻檔案自動轉換為 SRT 字幕檔案</p>

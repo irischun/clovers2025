@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Image, Loader2, Download, Wand2, Camera, Film, Palette, ShoppingBag, Share2, ChevronDown, ChevronUp, Sparkles, Upload, X, Languages, Shirt, Zap, ImagePlus, Type, Grid3X3, User, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -578,6 +579,9 @@ const ImageGenerationPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Points Balance */}
+      <PointsBalanceCard />
+
       {/* Header with points info */}
       <div className="flex items-center justify-between">
         <div>

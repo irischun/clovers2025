@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Upload, Images, Loader2, Sparkles, Download, X, GripVertical, Image as ImageIcon, AlertCircle, Sticker } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -225,6 +226,9 @@ const StickerMakerPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Points Balance */}
+      <PointsBalanceCard />
+
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">

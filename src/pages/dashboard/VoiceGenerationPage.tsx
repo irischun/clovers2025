@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Volume2, Loader2, Play, Pause, Download, Star, Trash2, RotateCcw, Upload, Mic, Settings, RefreshCw, Square, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -206,6 +207,8 @@ const VoiceGenerationPage = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const cloneAudioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
+
+  // Note: We'll add PointsBalanceCard to JSX
 
   // Calculate estimated credits needed
   const estimatedCredits = Math.ceil(text.length / 300);
@@ -651,6 +654,9 @@ const VoiceGenerationPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Points Balance */}
+      <PointsBalanceCard />
+
       {/* Header with credits display */}
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div>
