@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Copy, RefreshCw, Loader2, Home, FileText, Hash, Smile, Phone, Mail, Building2, Globe, Wand2, History, Trash2, Eye } from 'lucide-react';
+import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -404,6 +405,9 @@ const CopywritingTool = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Points Balance */}
+      <PointsBalanceCard />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

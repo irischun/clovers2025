@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Upload, Image as ImageIcon, Video, File, Trash2, Download, Search, Grid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,6 +75,9 @@ const MediaPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Points Balance */}
+      <PointsBalanceCard />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

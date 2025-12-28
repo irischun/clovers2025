@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Search, Loader2, Youtube, X, Info, Clock, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -132,6 +133,9 @@ const YouTubeSearchPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Points Balance */}
+      <PointsBalanceCard />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

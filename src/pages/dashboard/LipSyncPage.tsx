@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Video, Upload, Loader2, Play, Download, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,6 +52,9 @@ const LipSyncPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Points Balance */}
+      <PointsBalanceCard />
+
       <div>
         <h1 className="heading-display text-2xl mb-1">LipSync 影片</h1>
         <p className="text-muted-foreground">讓視頻中的人物說出任何語言</p>

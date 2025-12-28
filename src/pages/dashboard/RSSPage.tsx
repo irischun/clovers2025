@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Rss, Plus, Loader2, ExternalLink, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +32,9 @@ const RSSPage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Points Balance */}
+      <PointsBalanceCard />
+
       <div>
         <div className="flex items-center gap-3 mb-1">
           <h1 className="heading-display text-2xl">RSS 訂閱</h1>
