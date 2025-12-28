@@ -145,8 +145,6 @@ const YouTubeSearchPage = () => {
         <div className="flex items-center gap-2 text-sm">
           <span className="text-muted-foreground">點數消耗：</span>
           <Badge variant="secondary">{pointsRequired} 點/{videoCount} 部影片</Badge>
-          <span className="text-muted-foreground ml-2">剩餘點數：</span>
-          <Badge variant="outline">{userPoints} 點</Badge>
         </div>
       </div>
 

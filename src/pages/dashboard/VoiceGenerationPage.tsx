@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
+import { useUserPoints } from '@/hooks/useUserPoints';
 import { Volume2, Loader2, Play, Pause, Download, Star, Trash2, RotateCcw, Upload, Mic, Settings, RefreshCw, Square, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -155,6 +156,9 @@ const validateVoiceId = (id: string): boolean => {
 };
 
 const VoiceGenerationPage = () => {
+  // Get user points
+  const { points: userPoints } = useUserPoints();
+  
   // Main tab state
   const [mainTab, setMainTab] = useState<'generate' | 'clone'>('generate');
   
@@ -200,9 +204,6 @@ const VoiceGenerationPage = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
-  
-  // Credits display (simulated)
-  const [remainingCredits] = useState(100);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const cloneAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -664,14 +665,6 @@ const VoiceGenerationPage = () => {
           <p className="text-muted-foreground">使用 MiniMax AI 將文字轉換為自然語音，支援40種語言包括廣東話</p>
         </div>
         
-        {/* Credits Display Card */}
-        <Card className="md:min-w-[160px]">
-          <CardContent className="p-4 text-center">
-            <p className="text-sm text-muted-foreground">剩餘點數</p>
-            <p className="text-3xl font-bold text-primary">{remainingCredits}</p>
-            <p className="text-xs text-muted-foreground mt-1">每300字扣1點數</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Main Tabs: 語音生成 and 聲音克隆 */}
