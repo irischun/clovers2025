@@ -37,6 +37,10 @@ const HeroSection = () => {
             <p className="text-2xl sm:text-3xl text-muted-foreground mb-2 font-display">
               AI 一人公司武器庫
             </p>
+
+            <p className="text-xl sm:text-2xl text-primary font-semibold mb-2">
+              一站式營銷AI生成系統
+            </p>
             
             <p className="text-lg text-muted-foreground mb-8 max-w-lg">
               turns scattered tools into a clean single, intelligent workspace.
