@@ -510,10 +510,40 @@ const ImageGenerationPage = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Upload Area */}
+                {/* Upload Area with Drag and Drop */}
                 <div 
                   className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
                   onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.currentTarget.classList.add('border-primary', 'bg-primary/5');
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.currentTarget.classList.remove('border-primary', 'bg-primary/5');
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.currentTarget.classList.remove('border-primary', 'bg-primary/5');
+                    
+                    const files = e.dataTransfer.files;
+                    if (files && files.length > 0) {
+                      const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+                      if (imageFiles.length > 0) {
+                        const newImages = imageFiles.map(file => ({
+                          file,
+                          preview: URL.createObjectURL(file)
+                        }));
+                        setUploadedImages(prev => [...prev, ...newImages].slice(0, 5));
+                        toast({ title: `已上傳 ${imageFiles.length} 張圖片` });
+                      } else {
+                        toast({ title: '請上傳圖片文件', variant: 'destructive' });
+                      }
+                    }
+                  }}
                 >
                   <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
                   <p className="text-sm text-muted-foreground">點擊或拖拽產品/主角圖片到此處上傳</p>
