@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Sparkles, Copy, RefreshCw, Loader2, Home, FileText, Hash, Smile, Phone, Mail, Building2, Globe, Wand2, History, Trash2, Eye } from 'lucide-react';
+import { Sparkles, Copy, RefreshCw, Loader2, FileText, Hash, Smile, Phone, Mail, Building2, Globe, Wand2, History, Trash2, Eye } from 'lucide-react';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -123,7 +122,6 @@ const defaultEmailPrompt = `你是一位專業的商務郵件撰寫專家。請�
 [簽名內容]`;
 
 const CopywritingTool = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const { generateContent, isGenerating, generatedContent, setGeneratedContent } = useAIGeneration();
 
@@ -387,9 +385,6 @@ const CopywritingTool = () => {
     }
   };
 
-  const handleGoHome = () => {
-    navigate('/dashboard');
-  };
 
   const handleGenerateDefaultPrompt = () => {
     setEmailPrompt(defaultEmailPrompt);
@@ -417,10 +412,6 @@ const CopywritingTool = () => {
           </h1>
           <p className="text-muted-foreground">專業文案，一鍵生成</p>
         </div>
-        <Button variant="outline" onClick={handleGoHome} className="gap-2">
-          <Home className="w-4 h-4" />
-          返回主頁
-        </Button>
       </div>
 
       {/* Tabs */}
