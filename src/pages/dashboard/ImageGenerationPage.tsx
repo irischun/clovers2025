@@ -569,14 +569,14 @@ const ImageGenerationPage = () => {
                   </DialogContent>
                 </Dialog>
 
-                {/* Uploaded Images Preview */}
-                {(uploadedImages.length > 0 || selectedGalleryImage) && (
-                  <Collapsible defaultOpen>
-                    <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium">
-                      已上傳的圖片：
-                      <ChevronDown className="w-4 h-4" />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="pt-3">
+                {/* Uploaded Images Preview - Always show section */}
+                <Collapsible defaultOpen>
+                  <CollapsibleTrigger className="flex items-center justify-between w-full text-sm font-medium py-2">
+                    已上傳的圖片：
+                    <ChevronDown className="w-4 h-4" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pt-3">
+                    {(uploadedImages.length > 0 || selectedGalleryImage) ? (
                       <div className="flex flex-wrap gap-3">
                         {uploadedImages.map((img, index) => (
                           <div key={index} className="relative group">
@@ -612,9 +612,11 @@ const ImageGenerationPage = () => {
                           </div>
                         )}
                       </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                )}
+                    ) : (
+                      <p className="text-sm text-muted-foreground">尚未上傳任何圖片</p>
+                    )}
+                  </CollapsibleContent>
+                </Collapsible>
               </CardContent>
             </Card>
           )}
