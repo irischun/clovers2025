@@ -229,6 +229,7 @@ const ImageGenerationPage = () => {
   const [uploadedImages, setUploadedImages] = useState<Array<{ file: File; preview: string }>>([]);
   const [selectedGalleryImage, setSelectedGalleryImage] = useState<string | null>(null);
   const [showGalleryDialog, setShowGalleryDialog] = useState(false);
+  const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Prompt states
@@ -294,6 +295,30 @@ const ImageGenerationPage = () => {
       newImages.splice(index, 1);
       return newImages;
     });
+  };
+
+  // Handle image reordering via drag and drop
+  const handleImageDragStart = (index: number) => {
+    setDraggedImageIndex(index);
+  };
+
+  const handleImageDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedImageIndex === null || draggedImageIndex === index) return;
+    
+    // Reorder the images
+    setUploadedImages(prev => {
+      const newImages = [...prev];
+      const draggedImage = newImages[draggedImageIndex];
+      newImages.splice(draggedImageIndex, 1);
+      newImages.splice(index, 0, draggedImage);
+      return newImages;
+    });
+    setDraggedImageIndex(index);
+  };
+
+  const handleImageDragEnd = () => {
+    setDraggedImageIndex(null);
   };
 
   // Toggle style tag
@@ -607,41 +632,55 @@ const ImageGenerationPage = () => {
                   </CollapsibleTrigger>
                   <CollapsibleContent className="pt-3">
                     {(uploadedImages.length > 0 || selectedGalleryImage) ? (
-                      <div className="flex flex-wrap gap-3">
-                        {uploadedImages.map((img, index) => (
-                          <div key={index} className="relative group">
-                            <img 
-                              src={img.preview} 
-                              alt={`Uploaded ${index + 1}`}
-                              className="w-20 h-20 object-cover rounded-lg border"
-                            />
-                            <button
-                              onClick={() => removeUploadedImage(index)}
-                              className="absolute -top-2 -right-2 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                            {index === 0 && (
-                              <Badge className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] px-1">主角</Badge>
-                            )}
-                          </div>
-                        ))}
-                        {selectedGalleryImage && (
-                          <div className="relative group">
-                            <img 
-                              src={selectedGalleryImage} 
-                              alt="Selected from gallery"
-                              className="w-20 h-20 object-cover rounded-lg border border-primary"
-                            />
-                            <button
-                              onClick={() => setSelectedGalleryImage(null)}
-                              className="absolute -top-2 -right-2 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
+                      <>
+                        {uploadedImages.length > 1 && (
+                          <p className="text-xs text-muted-foreground mb-2">💡 拖拽圖片以重新排序，第一張將作為主角</p>
                         )}
-                      </div>
+                        <div className="flex flex-wrap gap-3">
+                          {uploadedImages.map((img, index) => (
+                            <div 
+                              key={img.preview} 
+                              className={`relative group cursor-grab active:cursor-grabbing transition-all duration-200 ${
+                                draggedImageIndex === index ? 'opacity-50 scale-95' : ''
+                              }`}
+                              draggable
+                              onDragStart={() => handleImageDragStart(index)}
+                              onDragOver={(e) => handleImageDragOver(e, index)}
+                              onDragEnd={handleImageDragEnd}
+                            >
+                              <img 
+                                src={img.preview} 
+                                alt={`Uploaded ${index + 1}`}
+                                className="w-20 h-20 object-cover rounded-lg border pointer-events-none"
+                              />
+                              <button
+                                onClick={() => removeUploadedImage(index)}
+                                className="absolute -top-2 -right-2 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                              {index === 0 && (
+                                <Badge className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] px-1 bg-primary">主角</Badge>
+                              )}
+                            </div>
+                          ))}
+                          {selectedGalleryImage && (
+                            <div className="relative group">
+                              <img 
+                                src={selectedGalleryImage} 
+                                alt="Selected from gallery"
+                                className="w-20 h-20 object-cover rounded-lg border border-primary"
+                              />
+                              <button
+                                onClick={() => setSelectedGalleryImage(null)}
+                                className="absolute -top-2 -right-2 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </>
                     ) : (
                       <p className="text-sm text-muted-foreground">尚未上傳任何圖片</p>
                     )}
