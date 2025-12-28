@@ -213,6 +213,34 @@ const models = [
   { id: 'seedream', label: 'Seedream', description: '創意夢境風格', model: 'google/gemini-2.5-flash-image-preview', points: 1 },
 ];
 
+// Upload quality options with size limits
+const uploadQualityOptions = [
+  { 
+    id: 'standard', 
+    label: '標準畫質 (5MB)', 
+    maxSize: 5 * 1024 * 1024, // 5MB
+    description: '社交媒體、網頁展示、小型海報 (A4/Letter)',
+    details: '適合 Instagram、Facebook、網站橫幅、小型印刷品。解析度足夠 300 DPI A4 尺寸印刷。',
+    recommended: true
+  },
+  { 
+    id: 'high', 
+    label: '高畫質 (15MB)', 
+    maxSize: 15 * 1024 * 1024, // 15MB
+    description: '大型海報 (A2/A1)、展覽印刷',
+    details: '適合大型海報、展覽看板、高質量印刷品。支援最大 A1 尺寸 300 DPI 印刷。',
+    recommended: false
+  },
+  { 
+    id: 'ultra', 
+    label: '超高畫質 (50MB)', 
+    maxSize: 50 * 1024 * 1024, // 50MB
+    description: '廣告看板、大型橫幅、專業印刷',
+    details: '適合戶外廣告看板、大型活動橫幅、專業級印刷。注意：較大檔案會增加儲存成本及上傳時間。',
+    recommended: false
+  },
+];
+
 // Aspect ratio options
 const aspectRatios = [
   { id: '16:9', label: '16:9 橫向', description: 'YouTube、電影', width: 1920, height: 1080 },
@@ -230,6 +258,7 @@ const ImageGenerationPage = () => {
   const [selectedGalleryImage, setSelectedGalleryImage] = useState<string | null>(null);
   const [showGalleryDialog, setShowGalleryDialog] = useState(false);
   const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null);
+  const [uploadQuality, setUploadQuality] = useState<'standard' | 'high' | 'ultra'>('standard');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Prompt states
@@ -272,20 +301,78 @@ const ImageGenerationPage = () => {
   const { toast } = useToast();
   const aspectRatio = aspectRatios.find(ar => ar.id === selectedAspectRatio);
   const currentModel = models.find(m => m.id === selectedModel);
+  const currentUploadQuality = uploadQualityOptions.find(q => q.id === uploadQuality);
   const totalPoints = quantity * (currentModel?.points || 1);
 
-  // Handle file upload
+  // Handle file upload with size validation
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
     
-    const newImages = Array.from(files).map(file => ({
-      file,
-      preview: URL.createObjectURL(file)
-    }));
+    const maxSize = currentUploadQuality?.maxSize || 5 * 1024 * 1024;
+    const validFiles: File[] = [];
+    const oversizedFiles: string[] = [];
     
-    setUploadedImages(prev => [...prev, ...newImages].slice(0, 5)); // Max 5 images
-    toast({ title: `已上傳 ${files.length} 張圖片` });
+    Array.from(files).forEach(file => {
+      if (file.size > maxSize) {
+        oversizedFiles.push(`${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+      } else {
+        validFiles.push(file);
+      }
+    });
+    
+    if (oversizedFiles.length > 0) {
+      toast({ 
+        title: '部分檔案超過大小限制', 
+        description: `已跳過: ${oversizedFiles.join(', ')}。當前限制: ${currentUploadQuality?.label}`,
+        variant: 'destructive' 
+      });
+    }
+    
+    if (validFiles.length > 0) {
+      const newImages = validFiles.map(file => ({
+        file,
+        preview: URL.createObjectURL(file)
+      }));
+      
+      setUploadedImages(prev => [...prev, ...newImages].slice(0, 5)); // Max 5 images
+      toast({ title: `已上傳 ${validFiles.length} 張圖片` });
+    }
+  };
+
+  // Handle drop with size validation
+  const handleFileDrop = (files: FileList) => {
+    const maxSize = currentUploadQuality?.maxSize || 5 * 1024 * 1024;
+    const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+    const validFiles: File[] = [];
+    const oversizedFiles: string[] = [];
+    
+    imageFiles.forEach(file => {
+      if (file.size > maxSize) {
+        oversizedFiles.push(`${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+      } else {
+        validFiles.push(file);
+      }
+    });
+    
+    if (oversizedFiles.length > 0) {
+      toast({ 
+        title: '部分檔案超過大小限制', 
+        description: `已跳過: ${oversizedFiles.join(', ')}。當前限制: ${currentUploadQuality?.label}`,
+        variant: 'destructive' 
+      });
+    }
+    
+    if (validFiles.length > 0) {
+      const newImages = validFiles.map(file => ({
+        file,
+        preview: URL.createObjectURL(file)
+      }));
+      setUploadedImages(prev => [...prev, ...newImages].slice(0, 5));
+      toast({ title: `已上傳 ${validFiles.length} 張圖片` });
+    } else if (imageFiles.length === 0) {
+      toast({ title: '請上傳圖片文件', variant: 'destructive' });
+    }
   };
 
   const removeUploadedImage = (index: number) => {
@@ -531,10 +618,36 @@ const ImageGenerationPage = () => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg">產品或主角圖片</CardTitle>
                 <CardDescription>
-                  上傳或選擇產品或主角圖片，或從圖庫選擇已生成的圖片 (支援各種圖片格式，最大 5MB)
+                  上傳或選擇產品或主角圖片，或從圖庫選擇已生成的圖片
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Upload Quality Selector */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">上傳畫質設定</Label>
+                  <p className="text-xs text-muted-foreground">根據您的用途選擇適合的畫質，較高畫質會增加儲存成本</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {uploadQualityOptions.map((option) => (
+                      <button
+                        key={option.id}
+                        onClick={() => setUploadQuality(option.id as 'standard' | 'high' | 'ultra')}
+                        className={`relative p-4 rounded-lg border-2 text-left transition-all ${
+                          uploadQuality === option.id 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        {option.recommended && (
+                          <Badge className="absolute -top-2 right-2 text-[10px]">推薦</Badge>
+                        )}
+                        <div className="font-medium text-sm mb-1">{option.label}</div>
+                        <div className="text-xs text-muted-foreground mb-2">{option.description}</div>
+                        <div className="text-xs text-muted-foreground/70">{option.details}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Upload Area with Drag and Drop */}
                 <div 
                   className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
@@ -556,23 +669,15 @@ const ImageGenerationPage = () => {
                     
                     const files = e.dataTransfer.files;
                     if (files && files.length > 0) {
-                      const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
-                      if (imageFiles.length > 0) {
-                        const newImages = imageFiles.map(file => ({
-                          file,
-                          preview: URL.createObjectURL(file)
-                        }));
-                        setUploadedImages(prev => [...prev, ...newImages].slice(0, 5));
-                        toast({ title: `已上傳 ${imageFiles.length} 張圖片` });
-                      } else {
-                        toast({ title: '請上傳圖片文件', variant: 'destructive' });
-                      }
+                      handleFileDrop(files);
                     }
                   }}
                 >
                   <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
                   <p className="text-sm text-muted-foreground">點擊或拖拽產品/主角圖片到此處上傳</p>
-                  <p className="text-xs text-muted-foreground mt-1">支援各種圖片格式，最大 5MB。第一張圖片將作為主角</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    支援各種圖片格式，當前限制: {currentUploadQuality?.label}。第一張圖片將作為主角
+                  </p>
                   <input
                     ref={fileInputRef}
                     type="file"
