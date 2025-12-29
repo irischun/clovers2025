@@ -30,28 +30,30 @@ const HeroSection = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left content */}
           <div className="animate-slide-up">
-            <h1 className="heading-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl mb-6">
-              <span className="text-foreground">Clover</span>
+            <h1 className="heading-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl mb-4">
+              <span className="text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Clover</span>
             </h1>
             
-            <p className="text-2xl sm:text-3xl text-muted-foreground mb-2 font-display">
+            <p className="text-base sm:text-lg text-muted-foreground/80 mb-6 font-light tracking-wide max-w-md italic">
               From a single seedling to a field of clover, nurtured on one united platform
             </p>
 
-            <p className="text-xl sm:text-2xl text-primary font-semibold mb-2">
-              一站式營銷AI生成系統
-            </p>
-            
-            <p className="text-lg text-muted-foreground mb-2 max-w-lg">
-              省時、省人力、不中斷的內容產出系統
-            </p>
+            <div className="space-y-1 mb-6">
+              <p className="text-2xl sm:text-3xl text-primary font-bold tracking-tight">
+                一站式營銷AI生成系統
+              </p>
+              
+              <p className="text-lg sm:text-xl text-foreground/90 font-medium">
+                省時、省人力、不中斷的內容產出系統
+              </p>
 
-            <p className="text-lg text-muted-foreground mb-8 max-w-lg">
-              再也不需要在多個工具之間來回奔波
-            </p>
+              <p className="text-base text-muted-foreground">
+                再也不需要在多個工具之間來回奔波
+              </p>
+            </div>
 
-            <Button className="btn-primary text-lg mb-10 group" onClick={() => navigate('/auth')}>
-              <span>開始使用 Start Now</span>
+            <Button className="btn-primary text-lg px-8 py-6 mb-10 group shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300" onClick={() => navigate('/auth')}>
+              <span>來播種你的靈感 Start Now</span>
               <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
             </Button>
 
