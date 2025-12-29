@@ -34,7 +34,7 @@ const HeroSection = () => {
               <span className="text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Clover</span>
             </h1>
             
-            <p className="text-base sm:text-lg text-muted-foreground/80 mb-6 font-light tracking-wide max-w-md italic">
+            <p className="text-base sm:text-lg text-muted-foreground/80 mb-6 font-light tracking-wide max-w-md">
               From a single seedling to a field of clover, nurtured on one united platform
             </p>
 
