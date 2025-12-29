@@ -3,7 +3,7 @@ import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Upload, Image as ImageIcon, Video, File, Trash2, Download, Search, Grid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useMediaFiles } from '@/hooks/useMediaFiles';
 import { useToast } from '@/hooks/use-toast';
 
@@ -234,6 +234,9 @@ const MediaPage = () => {
       {/* Image Preview Modal */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="max-w-4xl p-2 bg-background">
+          <DialogHeader className="sr-only">
+            <DialogTitle>圖片預覽</DialogTitle>
+          </DialogHeader>
           {selectedImage && (
             <img src={selectedImage} alt="Preview" className="w-full h-auto max-h-[80vh] object-contain rounded-lg" />
           )}

@@ -8,7 +8,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Toggle } from '@/components/ui/toggle';
 import { cn } from '@/lib/utils';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface GalleryItem {
   id: string;
@@ -253,6 +253,9 @@ const GalleryPage = () => {
       {/* Lightbox */}
       <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
         <DialogContent className="max-w-4xl p-2 bg-background border-border">
+          <DialogHeader className="sr-only">
+            <DialogTitle>{selectedItem?.title || '媒體預覽'}</DialogTitle>
+          </DialogHeader>
           {selectedItem && (
             <div className="space-y-3">
               {selectedItem.type === 'image' ? (

@@ -3,7 +3,7 @@ import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Globe, Share2, Play, Coins } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { WordPressSettings } from '@/components/publishing/WordPressSettings';
 import { ArticlePublisher } from '@/components/publishing/ArticlePublisher';
 import { ScheduledPostsManager } from '@/components/publishing/ScheduledPostsManager';
@@ -41,9 +41,11 @@ const SchedulerPage = () => {
       {/* Tutorial Video Modal */}
       <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
         <DialogContent className="max-w-4xl p-6">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl">教學影片即將推出</DialogTitle>
+          </DialogHeader>
           <div className="text-center space-y-4">
             <Play className="h-16 w-16 mx-auto text-muted-foreground" />
-            <h3 className="text-xl font-semibold">教學影片即將推出</h3>
             <p className="text-muted-foreground">
               我們正在準備詳細的教學影片，敬請期待！
             </p>
