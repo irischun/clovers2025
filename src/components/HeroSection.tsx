@@ -31,19 +31,23 @@ const HeroSection = () => {
           {/* Left content */}
           <div className="animate-slide-up">
             <h1 className="heading-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl mb-6">
-              <span className="text-foreground">CLOVER</span>
+              <span className="text-foreground">Clover</span>
             </h1>
             
             <p className="text-2xl sm:text-3xl text-muted-foreground mb-2 font-display">
-              AI 一人公司武器庫
+              From a single seedling to a field of clover, nurtured on one united platform
             </p>
 
             <p className="text-xl sm:text-2xl text-primary font-semibold mb-2">
               一站式營銷AI生成系統
             </p>
             
+            <p className="text-lg text-muted-foreground mb-2 max-w-lg">
+              省時、省人力、不中斷的內容產出系統
+            </p>
+
             <p className="text-lg text-muted-foreground mb-8 max-w-lg">
-              turns scattered tools into a clean single, intelligent workspace.
+              再也不需要在多個工具之間來回奔波
             </p>
 
             <Button className="btn-primary text-lg mb-10 group" onClick={() => navigate('/auth')}>
