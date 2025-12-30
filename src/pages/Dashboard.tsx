@@ -4,8 +4,32 @@ import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { Loader2 } from 'lucide-react';
+
+const DashboardContent = ({ user }: { user: User }) => {
+  const { open, openMobile, isMobile } = useSidebar();
+  
+  // Determine if sidebar is currently showing
+  const sidebarVisible = isMobile ? openMobile : open;
+
+  return (
+    <div className="min-h-screen flex w-full bg-background">
+      <DashboardSidebar user={user} />
+      <div 
+        className="flex-1 flex flex-col transition-all duration-200 ease-linear"
+        style={{
+          marginLeft: isMobile && sidebarVisible ? '18rem' : '0'
+        }}
+      >
+        <DashboardHeader user={user} />
+        <main className="flex-1 p-6 overflow-auto">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+};
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -46,15 +70,7 @@ const Dashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <DashboardSidebar user={user} />
-        <div className="flex-1 flex flex-col">
-          <DashboardHeader user={user} />
-          <main className="flex-1 p-6 overflow-auto">
-            <Outlet />
-          </main>
-        </div>
-      </div>
+      <DashboardContent user={user} />
     </SidebarProvider>
   );
 };
