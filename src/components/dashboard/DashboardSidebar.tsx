@@ -38,11 +38,13 @@ import {
   Send,
   CreditCard,
   Coins,
-  History
+  History,
+  Home
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const mainMenuItems = [
@@ -161,13 +163,22 @@ const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
 
   return (
     <Sidebar className="border-r border-border">
-      <SidebarHeader className="p-4 border-b border-border">
+      <SidebarHeader className="p-4 border-b border-border space-y-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
             <span className="text-lg">🍀</span>
           </div>
           <span className="font-display text-xl font-bold">CLOVER</span>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full gap-2"
+          onClick={() => navigate('/main')}
+        >
+          <Home className="w-4 h-4" />
+          返回主頁
+        </Button>
       </SidebarHeader>
 
       <SidebarContent className="overflow-y-auto">
