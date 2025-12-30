@@ -14,16 +14,17 @@ const DashboardContent = ({ user }: { user: User }) => {
   const sidebarVisible = isMobile ? openMobile : open;
 
   return (
-    <div className="min-h-screen flex w-full bg-background">
+    <div className="min-h-screen flex w-full bg-background overflow-hidden">
       <DashboardSidebar user={user} />
       <div 
-        className="flex-1 flex flex-col transition-all duration-200 ease-linear"
+        className="flex-1 flex flex-col min-w-0 transition-all duration-200 ease-linear"
         style={{
-          marginLeft: isMobile && sidebarVisible ? '18rem' : '0'
+          marginLeft: isMobile && sidebarVisible ? '18rem' : '0',
+          width: isMobile && sidebarVisible ? 'calc(100% - 18rem)' : '100%'
         }}
       >
         <DashboardHeader user={user} />
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden">
           <Outlet />
         </main>
       </div>
