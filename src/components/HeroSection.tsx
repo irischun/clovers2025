@@ -44,11 +44,7 @@ const HeroSection = () => {
               </p>
               
               <p className="text-lg sm:text-xl text-foreground/90 font-medium">
-                省時、省人力、不中斷的內容產出系統
-              </p>
-
-              <p className="text-base text-muted-foreground">
-                再也不需要在多個工具之間來回奔波
+                從一葉初生到綠野連天，孕育於一平台間。
               </p>
             </div>
 
