@@ -581,41 +581,41 @@ const ImageGenerationPage = () => {
   }, []);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 sm:space-y-6 animate-fade-in">
       {/* Points Balance */}
       <PointsBalanceCard />
 
       {/* Header with points info */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 className="heading-display text-2xl mb-1">AI 圖像生成</h1>
-          <p className="text-muted-foreground">選擇生成模式並創建精美圖像</p>
+          <h1 className="heading-display text-xl sm:text-2xl mb-1">AI 圖像生成</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">選擇生成模式並創建精美圖像</p>
         </div>
       </div>
 
       {/* Generation Mode Tabs */}
       <Tabs value={generationMode} onValueChange={(val) => setGenerationMode(val as 'image-to-image' | 'text-to-image')}>
-        <TabsList className="grid grid-cols-2 w-full max-w-md">
-          <TabsTrigger value="image-to-image" className="gap-2">
-            <ImagePlus className="w-4 h-4" />
-            產品/主角圖片生成
+        <TabsList className="grid grid-cols-2 w-full max-w-md h-auto">
+          <TabsTrigger value="image-to-image" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-2 sm:px-4">
+            <ImagePlus className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+            <span className="truncate">產品/主角圖片生成</span>
           </TabsTrigger>
-          <TabsTrigger value="text-to-image" className="gap-2">
-            <Type className="w-4 h-4" />
-            文字生成圖片
+          <TabsTrigger value="text-to-image" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-2 sm:px-4">
+            <Type className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+            <span className="truncate">文字生成圖片</span>
           </TabsTrigger>
         </TabsList>
         
-        <p className="text-sm text-muted-foreground mt-2">
+        <p className="text-xs sm:text-sm text-muted-foreground mt-2">
           {generationMode === 'image-to-image' 
             ? '📸 上傳圖片作為參考，生成風格化的新圖片'
             : '✨ 純文字描述生成全新圖片'}
         </p>
       </Tabs>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Left Panel - Controls */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           {/* Image Upload Section (only for image-to-image mode) */}
           {generationMode === 'image-to-image' && (
             <Card>
@@ -700,13 +700,13 @@ const ImageGenerationPage = () => {
                       從圖庫選擇圖片
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
+                  <DialogContent className="max-w-[95vw] sm:max-w-2xl mx-2 sm:mx-auto">
                     <DialogHeader>
                       <DialogTitle>從圖庫選擇圖片</DialogTitle>
                     </DialogHeader>
-                    <ScrollArea className="h-[400px]">
+                    <ScrollArea className="h-[300px] sm:h-[400px]">
                       {history.length > 0 ? (
-                        <div className="grid grid-cols-4 gap-3 p-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 p-2">
                           {history.map((item, index) => (
                             <button
                               key={index}
@@ -1042,7 +1042,7 @@ const ImageGenerationPage = () => {
               {/* Model Selection */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">生成模型選擇</label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {models.map((model) => (
                     <button
                       key={model.id}
@@ -1204,7 +1204,7 @@ const ImageGenerationPage = () => {
         </div>
 
         {/* Right Panel - Results */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <Card className="sticky top-6">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -1239,7 +1239,7 @@ const ImageGenerationPage = () => {
                   
                   {/* Thumbnails for multiple images */}
                   {generatedImages.length > 1 && (
-                    <div className="grid grid-cols-5 gap-2">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
                       {generatedImages.map((img, index) => (
                         <button
                           key={index}
@@ -1328,7 +1328,7 @@ const ImageGenerationPage = () => {
                   }
                   
                   return (
-                    <div className="grid grid-cols-3 gap-2 max-h-[400px] overflow-y-auto">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[400px] overflow-y-auto">
                       {filteredHistory.map((item, index) => (
                         <button 
                           key={index} 

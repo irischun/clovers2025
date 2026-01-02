@@ -51,35 +51,35 @@ const faqs = [
 
 const FAQSection = () => {
   return (
-    <section id="faq" className="py-24 bg-background">
-      <div className="container mx-auto px-4">
+    <section id="faq" className="py-16 sm:py-20 md:py-24 bg-background">
+      <div className="container mx-auto px-4 sm:px-6">
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-            <HelpCircle className="w-4 h-4" />
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12 md:mb-16">
+          <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium mb-4 sm:mb-6">
+            <HelpCircle className="w-3 h-3 sm:w-4 sm:h-4" />
             常見問題
           </span>
-          <h2 className="heading-display text-4xl md:text-5xl mb-6">
+          <h2 className="heading-display text-3xl sm:text-4xl md:text-5xl mb-4 sm:mb-6">
             您可能想知道的
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-base sm:text-lg text-muted-foreground px-4">
             找不到答案？歡迎聯繫我們的支援團隊，我們很樂意幫助您。
           </p>
         </div>
 
         {/* FAQ Accordion */}
         <div className="max-w-3xl mx-auto">
-          <Accordion type="single" collapsible className="space-y-4">
+          <Accordion type="single" collapsible className="space-y-3 sm:space-y-4">
             {faqs.map((faq, index) => (
               <AccordionItem
                 key={index}
                 value={`item-${index}`}
-                className="bg-card border border-border rounded-xl px-6 data-[state=open]:border-primary/50"
+                className="bg-card border border-border rounded-xl px-4 sm:px-6 data-[state=open]:border-primary/50"
               >
-                <AccordionTrigger className="text-left font-semibold hover:no-underline py-5">
+                <AccordionTrigger className="text-left text-sm sm:text-base font-semibold hover:no-underline py-4 sm:py-5">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-5">
+                <AccordionContent className="text-sm sm:text-base text-muted-foreground pb-4 sm:pb-5">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -88,8 +88,8 @@ const FAQSection = () => {
         </div>
 
         {/* Contact CTA */}
-        <div className="text-center mt-12">
-          <p className="text-muted-foreground">
+        <div className="text-center mt-8 sm:mt-12">
+          <p className="text-sm sm:text-base text-muted-foreground">
             還有其他問題？{' '}
             <a
               href="mailto:support@clover.app"

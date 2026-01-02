@@ -12,14 +12,14 @@ const PointsBalanceCard = ({ className = '' }: PointsBalanceCardProps) => {
 
   return (
     <Card className={`bg-primary/5 border-primary/20 ${className}`}>
-      <CardContent className="py-3 px-4">
-        <div className="flex items-center gap-2">
-          <Coins className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium">目前點數餘額：</span>
+      <CardContent className="py-2 sm:py-3 px-3 sm:px-4">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Coins className="w-3 h-3 sm:w-4 sm:h-4 text-primary shrink-0" />
+          <span className="text-xs sm:text-sm font-medium">目前點數餘額：</span>
           {isLoading ? (
-            <Skeleton className="h-5 w-12" />
+            <Skeleton className="h-4 sm:h-5 w-10 sm:w-12" />
           ) : (
-            <span className="text-primary font-bold">{points} 點</span>
+            <span className="text-primary font-bold text-xs sm:text-sm">{points} 點</span>
           )}
         </div>
       </CardContent>
