@@ -17,16 +17,16 @@ const GallerySection = ({ title, subtitle, items }: GalleryProps) => {
   const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
 
   return (
-    <section className="py-16 border-t border-border/50">
-      <div className="section-container">
+    <section className="py-12 sm:py-16 border-t border-border/50">
+      <div className="section-container px-4 sm:px-6">
         {/* Section header */}
-        <div className="mb-10">
-          <h3 className="heading-display text-2xl mb-2">{title}</h3>
-          <p className="text-muted-foreground">{subtitle}</p>
+        <div className="mb-6 sm:mb-10">
+          <h3 className="heading-display text-xl sm:text-2xl mb-2">{title}</h3>
+          <p className="text-sm sm:text-base text-muted-foreground">{subtitle}</p>
         </div>
 
         {/* Gallery grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
           {items.map((item, index) => (
             <div
               key={item.id}
@@ -54,7 +54,7 @@ const GallerySection = ({ title, subtitle, items }: GalleryProps) => {
 
       {/* Lightbox */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-4xl p-2 bg-background border-border">
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl p-2 bg-background border-border mx-2 sm:mx-auto">
           {selectedImage && (
             <div className="space-y-3">
               <img
@@ -102,7 +102,7 @@ const productItems: GalleryItem[] = [
 
 const GalleriesSection = () => {
   return (
-    <section className="py-24 bg-card">
+    <section className="py-16 sm:py-20 md:py-24 bg-card">
       <GallerySection
         title="漫畫生成案例"
         subtitle="查看AI生成的專業漫畫作品集"

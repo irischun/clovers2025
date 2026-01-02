@@ -26,35 +26,35 @@ const HeroSection = () => {
         }}
       />
 
-      <div className="section-container relative z-10 py-20">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <div className="section-container relative z-10 py-12 sm:py-16 md:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
           {/* Left content */}
-          <div className="animate-slide-up">
-            <h1 className="heading-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl mb-4">
+          <div className="animate-slide-up text-center lg:text-left order-2 lg:order-1">
+            <h1 className="heading-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl mb-4">
               <span className="text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Clover</span>
             </h1>
             
-            <p className="text-base sm:text-lg text-muted-foreground/80 mb-6 font-light tracking-wide max-w-md">
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground/80 mb-4 sm:mb-6 font-light tracking-wide max-w-md mx-auto lg:mx-0">
               From a single seedling to a field of clover, nurtured on one united platform
             </p>
 
-            <div className="space-y-1 mb-6">
-              <p className="text-2xl sm:text-3xl text-primary font-bold tracking-tight">
+            <div className="space-y-1 mb-4 sm:mb-6">
+              <p className="text-xl sm:text-2xl md:text-3xl text-primary font-bold tracking-tight">
                 一站式營銷AI生成系統
               </p>
               
-              <p className="text-lg sm:text-xl text-foreground/90 font-medium">
+              <p className="text-base sm:text-lg md:text-xl text-foreground/90 font-medium">
                 從一葉初生到綠野連天，孕育於一平台間。
               </p>
             </div>
 
-            <Button className="btn-primary text-lg px-8 py-6 mb-10 group shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300" onClick={() => navigate('/auth')}>
+            <Button className="btn-primary text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 mb-6 sm:mb-10 group shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300" onClick={() => navigate('/auth')}>
               <span>來播種你的靈感 Start Now</span>
               <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
             </Button>
 
             {/* Social links */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center lg:justify-start gap-3">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
@@ -78,12 +78,12 @@ const HeroSection = () => {
           </div>
 
           {/* Right content - Mascot */}
-          <div className="relative flex justify-center lg:justify-end animate-slide-in-right">
+          <div className="relative flex justify-center order-1 lg:order-2 animate-slide-in-right">
             <div className="relative">
               <img
                 src={cloverMascot}
                 alt="Clover mascot"
-                className="w-80 lg:w-[450px] animate-float drop-shadow-2xl"
+                className="w-48 sm:w-64 md:w-80 lg:w-[450px] animate-float drop-shadow-2xl"
               />
               {/* Glow effect behind mascot */}
               <div className="absolute inset-0 -z-10 blur-3xl bg-primary/20 rounded-full scale-75" />
