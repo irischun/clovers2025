@@ -292,6 +292,8 @@ const ImageGenerationPage = () => {
   const [selectedModel, setSelectedModel] = useState('nano-banana');
   const [selectedAspectRatio, setSelectedAspectRatio] = useState('1:1');
   const [quantity, setQuantity] = useState(1);
+  const [selectedResolution, setSelectedResolution] = useState<'1k' | '2k'>('2k');
+  const [selectedOutputFormat, setSelectedOutputFormat] = useState<'jpg' | 'png'>('jpg');
   
   // Results
   const [isGenerating, setIsGenerating] = useState(false);
@@ -1058,6 +1060,77 @@ const ImageGenerationPage = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Nano Banana Pro Options - Resolution & Output Format */}
+              {selectedModel === 'nano-banana-pro' && (
+                <div className="space-y-4 p-4 rounded-lg bg-secondary/30 border border-primary/20">
+                  <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                    <Star className="w-4 h-4" />
+                    Nano Banana Pro 專屬選項
+                  </div>
+                  
+                  {/* Resolution Selection */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">解析度:</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => setSelectedResolution('1k')}
+                        className={`p-3 rounded-lg border text-left transition-all ${
+                          selectedResolution === '1k' 
+                            ? 'border-primary bg-primary/10' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <div className="font-medium text-sm">1K (標準)</div>
+                        <div className="text-xs text-muted-foreground mt-1">適合社交媒體</div>
+                      </button>
+                      <button
+                        onClick={() => setSelectedResolution('2k')}
+                        className={`p-3 rounded-lg border text-left transition-all ${
+                          selectedResolution === '2k' 
+                            ? 'border-primary bg-primary/10' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <div className="font-medium text-sm flex items-center gap-1">
+                          2K (推薦)
+                          <Badge variant="default" className="text-[10px] px-1">推薦</Badge>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">高清輸出</div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Output Format Selection */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">輸出格式:</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => setSelectedOutputFormat('jpg')}
+                        className={`p-3 rounded-lg border text-left transition-all ${
+                          selectedOutputFormat === 'jpg' 
+                            ? 'border-primary bg-primary/10' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <div className="font-medium text-sm">JPG (較小檔案)</div>
+                        <div className="text-xs text-muted-foreground mt-1">檔案較小，適合分享</div>
+                      </button>
+                      <button
+                        onClick={() => setSelectedOutputFormat('png')}
+                        className={`p-3 rounded-lg border text-left transition-all ${
+                          selectedOutputFormat === 'png' 
+                            ? 'border-primary bg-primary/10' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <div className="font-medium text-sm">PNG (無損)</div>
+                        <div className="text-xs text-muted-foreground mt-1">無損壓縮，保留細節</div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Aspect Ratio */}
               <div className="space-y-2">
