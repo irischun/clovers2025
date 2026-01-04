@@ -1,4 +1,4 @@
-import { Play } from 'lucide-react';
+import { Play, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 
@@ -22,48 +22,64 @@ const FeaturesSection = () => {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
 
   return (
-    <section id="features" className="py-24 bg-background">
-      <div className="section-container">
+    <section id="features" className="py-24 sm:py-32 bg-background relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+      <div className="absolute top-40 right-0 w-96 h-96 rounded-full bg-primary/5 blur-3xl" />
+      <div className="absolute bottom-40 left-0 w-80 h-80 rounded-full bg-seedling/5 blur-3xl" />
+      
+      <div className="section-container relative z-10">
         {/* Section header */}
-        <div className="text-center mb-16">
-          <h2 className="heading-display text-3xl sm:text-4xl mb-4">
+        <div className="text-center mb-16 sm:mb-20">
+          <div className="badge-nature mb-6 inline-flex">
+            <Sparkles className="w-4 h-4" />
+            <span>Features</span>
+          </div>
+          <h2 className="heading-display text-4xl sm:text-5xl lg:text-6xl mb-6">
             Clover 有咩用？
           </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Explore the powerful tools designed to transform your marketing workflow
+          </p>
         </div>
 
         {/* Features grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {features.map((feature, index) => (
             <div
               key={feature.id}
-              className="feature-card cursor-pointer group animate-slide-up"
+              className="card-elevated cursor-pointer group animate-slide-up overflow-hidden"
               style={{ animationDelay: `${index * 100}ms` }}
               onClick={() => feature.videoId && setSelectedVideo(feature.videoId)}
             >
               {/* Thumbnail */}
-              <div className="relative aspect-video overflow-hidden">
+              <div className="relative aspect-video overflow-hidden rounded-t-3xl">
                 <img
                   src={feature.imageUrl || `https://img.youtube.com/vi/${feature.videoId}/hqdefault.jpg`}
                   alt={feature.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
+                {/* Overlay gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+                
                 {/* Play overlay */}
                 {feature.videoId && (
-                  <div className="absolute inset-0 bg-background/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center">
-                      <Play className="w-5 h-5 text-primary-foreground ml-0.5" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500">
+                    <div className="w-16 h-16 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center shadow-xl shadow-primary/30 transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                      <Play className="w-6 h-6 text-primary-foreground ml-1" />
                     </div>
                   </div>
                 )}
+                
                 {/* Number badge */}
-                <div className="absolute top-3 left-3 bg-background/80 backdrop-blur-sm text-foreground text-lg font-bold w-10 h-10 rounded-full flex items-center justify-center">
-                  {feature.id}.
+                <div className="absolute top-4 left-4 bg-background/80 backdrop-blur-md text-foreground text-base font-bold w-10 h-10 rounded-xl flex items-center justify-center border border-border/50">
+                  {feature.id}
                 </div>
               </div>
 
               {/* Title */}
-              <div className="p-5">
-                <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors leading-relaxed">
+              <div className="p-6">
+                <h3 className="font-heading font-semibold text-foreground group-hover:text-primary transition-colors duration-300 leading-relaxed">
                   {feature.title}
                 </h3>
               </div>
@@ -74,7 +90,7 @@ const FeaturesSection = () => {
 
       {/* Video modal */}
       <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
-        <DialogContent className="max-w-4xl p-0 bg-background border-border overflow-hidden">
+        <DialogContent className="max-w-5xl p-0 bg-background border-border/50 overflow-hidden rounded-2xl shadow-2xl">
           <div className="aspect-video">
             {selectedVideo && (
               <iframe

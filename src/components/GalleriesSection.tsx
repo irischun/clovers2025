@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { ImageIcon, Sparkles, Box, Palette } from 'lucide-react';
 
 interface GalleryItem {
   id: string;
@@ -11,26 +12,34 @@ interface GalleryProps {
   title: string;
   subtitle: string;
   items: GalleryItem[];
+  icon?: React.ReactNode;
 }
 
-const GallerySection = ({ title, subtitle, items }: GalleryProps) => {
+const GallerySection = ({ title, subtitle, items, icon }: GalleryProps) => {
   const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
 
   return (
-    <section className="py-12 sm:py-16 border-t border-border/50">
-      <div className="section-container px-4 sm:px-6">
+    <section className="py-16 first:pt-0 last:pb-0">
+      <div className="section-container">
         {/* Section header */}
-        <div className="mb-6 sm:mb-10">
-          <h3 className="heading-display text-xl sm:text-2xl mb-2">{title}</h3>
-          <p className="text-sm sm:text-base text-muted-foreground">{subtitle}</p>
+        <div className="mb-10 flex items-start gap-4">
+          {icon && (
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/10 to-seedling/5 flex items-center justify-center border border-primary/20 shrink-0">
+              {icon}
+            </div>
+          )}
+          <div>
+            <h3 className="font-heading text-2xl font-bold text-foreground mb-2">{title}</h3>
+            <p className="text-muted-foreground">{subtitle}</p>
+          </div>
         </div>
 
         {/* Gallery grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5">
           {items.map((item, index) => (
             <div
               key={item.id}
-              className="group cursor-pointer overflow-hidden rounded-xl bg-card border border-border/50 hover:border-primary/50 transition-all duration-300 animate-slide-up"
+              className="group cursor-pointer overflow-hidden rounded-2xl bg-card border border-border/50 hover:border-primary/40 transition-all duration-500 animate-slide-up hover:shadow-xl hover:shadow-primary/5"
               style={{ animationDelay: `${index * 50}ms` }}
               onClick={() => setSelectedImage(item)}
             >
@@ -38,11 +47,11 @@ const GallerySection = ({ title, subtitle, items }: GalleryProps) => {
                 <img
                   src={item.imageUrl}
                   alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 {/* Overlay with title */}
-                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                  <p className="text-sm font-medium text-foreground line-clamp-2">
+                <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-end p-4">
+                  <p className="text-sm font-medium text-foreground line-clamp-2 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                     {item.title}
                   </p>
                 </div>
@@ -54,15 +63,15 @@ const GallerySection = ({ title, subtitle, items }: GalleryProps) => {
 
       {/* Lightbox */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-[95vw] sm:max-w-4xl p-2 bg-background border-border mx-2 sm:mx-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl p-2 bg-background/95 backdrop-blur-xl border-border/50 rounded-2xl shadow-2xl">
           {selectedImage && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <img
                 src={selectedImage.imageUrl}
                 alt={selectedImage.title}
-                className="w-full h-auto rounded-lg"
+                className="w-full h-auto rounded-xl"
               />
-              <p className="text-center text-foreground font-medium px-4 pb-2">
+              <p className="text-center text-foreground font-heading font-semibold px-4 pb-2">
                 {selectedImage.title}
               </p>
             </div>
@@ -102,22 +111,48 @@ const productItems: GalleryItem[] = [
 
 const GalleriesSection = () => {
   return (
-    <section className="py-16 sm:py-20 md:py-24 bg-card">
-      <GallerySection
-        title="漫畫生成案例"
-        subtitle="查看AI生成的專業漫畫作品集"
-        items={mangaItems}
-      />
-      <GallerySection
-        title="封面圖生成案例"
-        subtitle="查看AI生成的專業封面圖作品集"
-        items={coverItems}
-      />
-      <GallerySection
-        title="產品圖片生成案例"
-        subtitle="查看AI生成的專業產品攝影作品集"
-        items={productItems}
-      />
+    <section className="py-24 sm:py-32 relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-card via-background to-card" />
+      
+      {/* Decorative elements */}
+      <div className="absolute top-40 left-10 w-72 h-72 rounded-full bg-primary/5 blur-3xl" />
+      <div className="absolute bottom-40 right-10 w-80 h-80 rounded-full bg-seedling/5 blur-3xl" />
+      
+      <div className="relative z-10">
+        {/* Main header */}
+        <div className="section-container text-center mb-16">
+          <div className="badge-nature mb-6 inline-flex">
+            <ImageIcon className="w-4 h-4" />
+            <span>Gallery</span>
+          </div>
+          <h2 className="heading-display text-4xl sm:text-5xl lg:text-6xl mb-6">
+            作品展示
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            探索 Clover 幫助創作者製作的精彩內容
+          </p>
+        </div>
+        
+        <GallerySection
+          title="漫畫生成案例"
+          subtitle="查看AI生成的專業漫畫作品集"
+          items={mangaItems}
+          icon={<Palette className="w-6 h-6 text-primary" />}
+        />
+        <GallerySection
+          title="封面圖生成案例"
+          subtitle="查看AI生成的專業封面圖作品集"
+          items={coverItems}
+          icon={<Sparkles className="w-6 h-6 text-primary" />}
+        />
+        <GallerySection
+          title="產品圖片生成案例"
+          subtitle="查看AI生成的專業產品攝影作品集"
+          items={productItems}
+          icon={<Box className="w-6 h-6 text-primary" />}
+        />
+      </div>
     </section>
   );
 };
