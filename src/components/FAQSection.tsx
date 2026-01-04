@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, Mail } from 'lucide-react';
 
 const faqs = [
   {
@@ -51,35 +51,42 @@ const faqs = [
 
 const FAQSection = () => {
   return (
-    <section id="faq" className="py-16 sm:py-20 md:py-24 bg-background">
-      <div className="container mx-auto px-4 sm:px-6">
+    <section id="faq" className="py-24 sm:py-32 bg-background relative overflow-hidden">
+      {/* Top border */}
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+      
+      {/* Decorative elements */}
+      <div className="absolute top-40 right-10 w-72 h-72 rounded-full bg-primary/5 blur-3xl" />
+      <div className="absolute bottom-40 left-10 w-64 h-64 rounded-full bg-seedling/5 blur-3xl" />
+      
+      <div className="section-container relative z-10">
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12 md:mb-16">
-          <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary/10 text-primary text-xs sm:text-sm font-medium mb-4 sm:mb-6">
-            <HelpCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-            常見問題
-          </span>
-          <h2 className="heading-display text-3xl sm:text-4xl md:text-5xl mb-4 sm:mb-6">
+        <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
+          <div className="badge-nature mb-6 inline-flex">
+            <HelpCircle className="w-4 h-4" />
+            <span>FAQ</span>
+          </div>
+          <h2 className="heading-display text-4xl sm:text-5xl lg:text-6xl mb-6">
             您可能想知道的
           </h2>
-          <p className="text-base sm:text-lg text-muted-foreground px-4">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             找不到答案？歡迎聯繫我們的支援團隊，我們很樂意幫助您。
           </p>
         </div>
 
         {/* FAQ Accordion */}
         <div className="max-w-3xl mx-auto">
-          <Accordion type="single" collapsible className="space-y-3 sm:space-y-4">
+          <Accordion type="single" collapsible className="space-y-4">
             {faqs.map((faq, index) => (
               <AccordionItem
                 key={index}
                 value={`item-${index}`}
-                className="bg-card border border-border rounded-xl px-4 sm:px-6 data-[state=open]:border-primary/50"
+                className="card-elevated overflow-hidden border-none px-0"
               >
-                <AccordionTrigger className="text-left text-sm sm:text-base font-semibold hover:no-underline py-4 sm:py-5">
+                <AccordionTrigger className="text-left text-base font-heading font-semibold hover:no-underline px-6 py-5 hover:text-primary transition-colors duration-300 [&[data-state=open]]:text-primary">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-sm sm:text-base text-muted-foreground pb-4 sm:pb-5">
+                <AccordionContent className="text-base text-muted-foreground px-6 pb-6 leading-relaxed">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -88,16 +95,19 @@ const FAQSection = () => {
         </div>
 
         {/* Contact CTA */}
-        <div className="text-center mt-8 sm:mt-12">
-          <p className="text-sm sm:text-base text-muted-foreground">
-            還有其他問題？{' '}
-            <a
-              href="mailto:support@clover.app"
-              className="text-primary hover:underline font-medium"
-            >
-              聯繫我們
-            </a>
-          </p>
+        <div className="text-center mt-16">
+          <div className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-secondary/50 border border-border/50">
+            <Mail className="w-5 h-5 text-primary" />
+            <p className="text-muted-foreground">
+              還有其他問題？{' '}
+              <a
+                href="mailto:support@clover.app"
+                className="text-primary hover:text-primary/80 font-medium transition-colors duration-300"
+              >
+                聯繫我們
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </section>

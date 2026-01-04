@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Linkedin, Twitter, Youtube } from 'lucide-react';
+import { Facebook, Instagram, Linkedin, Twitter, Youtube, Leaf, Sprout } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import cloverMascot from '@/assets/clover-mascot.png';
@@ -14,43 +14,67 @@ const HeroSection = () => {
   ];
 
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-      {/* Background gradient */}
+    <section className="relative min-h-[95vh] flex items-center overflow-hidden">
+      {/* Premium Background with organic gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-card" />
       
-      {/* Subtle grid pattern */}
+      {/* Organic decorative elements */}
+      <div className="absolute top-20 left-10 w-96 h-96 rounded-full bg-primary/5 blur-3xl" />
+      <div className="absolute bottom-20 right-10 w-80 h-80 rounded-full bg-seedling/5 blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/3 blur-3xl opacity-30" />
+      
+      {/* Subtle organic pattern */}
       <div 
-        className="absolute inset-0 opacity-[0.02]"
+        className="absolute inset-0 opacity-[0.015]"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 30c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10zm0 30c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z' fill='%2322c55e' fill-opacity='0.4'/%3E%3C/svg%3E")`,
         }}
       />
 
-      <div className="section-container relative z-10 py-12 sm:py-16 md:py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+      <div className="section-container relative z-10 py-16 sm:py-20 md:py-24">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16 items-center">
           {/* Left content */}
           <div className="animate-slide-up text-center lg:text-left order-2 lg:order-1">
-            <h1 className="heading-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl mb-4">
-              <span className="text-foreground bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Clover</span>
+            {/* Badge */}
+            <div className="badge-nature mb-6 sm:mb-8 inline-flex">
+              <Sprout className="w-4 h-4" />
+              <span>AI Marketing Platform</span>
+            </div>
+
+            {/* Main Heading - Premium Serif */}
+            <h1 className="heading-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl mb-6 leading-[0.9]">
+              <span className="text-gradient-nature">Clover</span>
             </h1>
             
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground/80 mb-4 sm:mb-6 font-light tracking-wide max-w-md mx-auto lg:mx-0">
-              From a single seedling to a field of clover, nurtured on one united platform
+            {/* English Tagline */}
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground/90 mb-6 sm:mb-8 font-light tracking-wide max-w-lg mx-auto lg:mx-0 leading-relaxed">
+              From a single seedling to a field of clover, 
+              <br className="hidden sm:block" />
+              nurtured on one united platform
             </p>
 
-            <div className="space-y-1 mb-4 sm:mb-6">
-              <p className="text-xl sm:text-2xl md:text-3xl text-primary font-bold tracking-tight">
+            {/* Chinese Content */}
+            <div className="space-y-3 mb-8 sm:mb-10">
+              <p className="text-2xl sm:text-3xl md:text-4xl text-primary font-heading font-bold tracking-tight">
                 一站式營銷AI生成系統
               </p>
               
-              <p className="text-base sm:text-lg md:text-xl text-foreground/90 font-medium">
-                從一葉初生到綠野連天，孕育於一平台間。
+              <p className="text-lg sm:text-xl md:text-2xl text-foreground/85 font-medium leading-relaxed">
+                從一葉初生到綠野連天，
+                <br className="sm:hidden" />
+                孕育於一平台間。
               </p>
             </div>
 
-            <Button className="btn-primary text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 mb-6 sm:mb-10 group shadow-lg hover:shadow-xl hover:shadow-primary/20 transition-all duration-300" onClick={() => navigate('/auth')}>
-              <span>來播種你的靈感 Start Now</span>
-              <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+            {/* CTA Button */}
+            <Button 
+              className="btn-primary text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 mb-10 sm:mb-12 group" 
+              onClick={() => navigate('/auth')}
+            >
+              <Leaf className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" />
+              <span>來播種你的靈感</span>
+              <span className="ml-2 text-primary-foreground/80">Start Now</span>
+              <span className="ml-3 group-hover:translate-x-1 transition-transform duration-300">→</span>
             </Button>
 
             {/* Social links */}
@@ -77,20 +101,25 @@ const HeroSection = () => {
             </div>
           </div>
 
-          {/* Right content - Mascot */}
+          {/* Right content - Mascot with premium effects */}
           <div className="relative flex justify-center order-1 lg:order-2 animate-slide-in-right">
             <div className="relative">
+              {/* Multi-layered glow effect */}
+              <div className="absolute inset-0 -z-10 blur-3xl bg-gradient-to-br from-primary/25 via-seedling/15 to-meadow/10 rounded-full scale-110 animate-pulse-glow" />
+              <div className="absolute inset-0 -z-20 blur-[100px] bg-primary/15 rounded-full scale-150" />
+              
               <img
                 src={cloverMascot}
                 alt="Clover mascot"
-                className="w-48 sm:w-64 md:w-80 lg:w-[450px] animate-float drop-shadow-2xl"
+                className="w-56 sm:w-72 md:w-96 lg:w-[500px] animate-float drop-shadow-2xl"
               />
-              {/* Glow effect behind mascot */}
-              <div className="absolute inset-0 -z-10 blur-3xl bg-primary/20 rounded-full scale-75" />
             </div>
           </div>
         </div>
       </div>
+      
+      {/* Bottom fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-card to-transparent" />
     </section>
   );
 };
