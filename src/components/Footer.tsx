@@ -1,4 +1,5 @@
-import { Facebook, Instagram, Linkedin, Twitter, Youtube, Mail, ArrowUp, Leaf, Heart } from 'lucide-react';
+import { Facebook, Instagram, Linkedin, Twitter, Youtube, Mail, ArrowUp, Heart } from 'lucide-react';
+import cloverLogo from '@/assets/clover-logo.png';
 
 const Footer = () => {
   const scrollToTop = () => {
@@ -28,9 +29,11 @@ const Footer = () => {
           {/* Brand section */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-seedling flex items-center justify-center shadow-lg shadow-primary/25">
-                <Leaf className="w-6 h-6 text-primary-foreground" />
-              </div>
+              <img 
+                src={cloverLogo} 
+                alt="Clover Logo" 
+                className="w-12 h-12 object-contain"
+              />
               <span className="font-display text-2xl text-foreground">
                 Clover
               </span>
