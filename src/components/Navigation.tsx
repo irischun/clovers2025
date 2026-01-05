@@ -78,7 +78,11 @@ const Navigation = () => {
         {/* Logo */}
         <a href="/" className="flex items-center gap-3 group">
           <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary to-seedling flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-primary/40 transition-all duration-300 group-hover:scale-105">
-            <Leaf className="w-6 h-6 text-primary-foreground" />
+            <svg className="w-6 h-6 text-primary-foreground" viewBox="0 0 24 24" fill="currentColor">
+              {/* 4-leaf clover */}
+              <path d="M12 2C9.5 2 7.5 4 7.5 6.5C7.5 7.5 7.8 8.4 8.3 9.1C7.6 8.6 6.7 8.3 5.7 8.3C3.2 8.3 1.2 10.3 1.2 12.8C1.2 15.3 3.2 17.3 5.7 17.3C6.7 17.3 7.6 17 8.3 16.5C7.8 17.2 7.5 18.1 7.5 19.1C7.5 21.6 9.5 23.6 12 23.6C14.5 23.6 16.5 21.6 16.5 19.1C16.5 18.1 16.2 17.2 15.7 16.5C16.4 17 17.3 17.3 18.3 17.3C20.8 17.3 22.8 15.3 22.8 12.8C22.8 10.3 20.8 8.3 18.3 8.3C17.3 8.3 16.4 8.6 15.7 9.1C16.2 8.4 16.5 7.5 16.5 6.5C16.5 4 14.5 2 12 2Z"/>
+              <circle cx="12" cy="12" r="2" fill="currentColor" opacity="0.6"/>
+            </svg>
           </div>
           <span className="font-display text-2xl text-foreground tracking-tight">
             Clover
