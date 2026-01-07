@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clover</title>
+  <script>
+    // SPA redirect script for GitHub Pages
+    // Redirects 404s to index.html with the path stored in sessionStorage
+    const path = window.location.pathname;
+    sessionStorage.setItem('redirect', path);
+    window.location.replace('/clovers2025/');
+  </script>
+</head>
+<body>
+  <p>Redirecting...</p>
+</body>
+</html>
