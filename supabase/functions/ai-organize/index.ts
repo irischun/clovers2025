@@ -6,6 +6,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Maximum content length (50,000 characters)
+const MAX_CONTENT_LENGTH = 50000;
+
+// Allowed actions
+const ALLOWED_ACTIONS = ['summarize', 'rewrite', 'translate_en', 'translate_zh', 'expand', 'simplify', 'keywords', 'outline'];
+
 async function verifyAuth(req: Request): Promise<{ userId: string } | null> {
   const authHeader = req.headers.get('Authorization');
   if (!authHeader?.startsWith('Bearer ')) {
@@ -29,6 +35,39 @@ async function verifyAuth(req: Request): Promise<{ userId: string } | null> {
   return { userId: data.claims.sub as string };
 }
 
+// Validate content input
+function validateContent(content: unknown): { valid: boolean; error?: string; sanitized?: string } {
+  if (!content || typeof content !== 'string') {
+    return { valid: false, error: 'Content is required and must be a string' };
+  }
+  
+  const trimmed = content.trim();
+  if (trimmed.length === 0) {
+    return { valid: false, error: 'Content cannot be empty' };
+  }
+  
+  if (trimmed.length > MAX_CONTENT_LENGTH) {
+    return { valid: false, error: `Content exceeds maximum length of ${MAX_CONTENT_LENGTH} characters` };
+  }
+  
+  return { valid: true, sanitized: trimmed };
+}
+
+// Validate action input
+function validateAction(action: unknown): { valid: boolean; error?: string; sanitized?: string } {
+  if (!action || typeof action !== 'string') {
+    // Default to summarize if no action provided
+    return { valid: true, sanitized: 'summarize' };
+  }
+  
+  const trimmed = action.trim().toLowerCase();
+  if (!ALLOWED_ACTIONS.includes(trimmed)) {
+    return { valid: false, error: `Invalid action. Allowed actions: ${ALLOWED_ACTIONS.join(', ')}` };
+  }
+  
+  return { valid: true, sanitized: trimmed };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -44,14 +83,28 @@ serve(async (req) => {
   }
 
   try {
-    const { content, action } = await req.json();
+    const body = await req.json();
     
-    if (!content) {
+    // Validate content
+    const contentValidation = validateContent(body.content);
+    if (!contentValidation.valid) {
       return new Response(
-        JSON.stringify({ error: "Content is required" }),
+        JSON.stringify({ error: contentValidation.error }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    
+    // Validate action
+    const actionValidation = validateAction(body.action);
+    if (!actionValidation.valid) {
+      return new Response(
+        JSON.stringify({ error: actionValidation.error }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const content = contentValidation.sanitized!;
+    const action = actionValidation.sanitized!;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
@@ -59,7 +112,7 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("Organizing content for user:", auth.userId, "action:", action);
+    console.log("Organizing content for user:", auth.userId, "action:", action, "content length:", content.length);
 
     const actionPrompts: Record<string, string> = {
       summarize: "請將以下內容總結為簡潔的要點，保留關鍵信息：",

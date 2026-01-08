@@ -53,6 +53,8 @@ serve(async (req) => {
       );
     }
 
+    const body = await req.json();
+    
     const { 
       text, 
       language, 
@@ -67,16 +69,69 @@ serve(async (req) => {
       bitrate,
       format,
       channel 
-    } = await req.json();
+    } = body;
 
-    if (!text || text.length > 5000) {
+    // Validate text
+    if (!text || typeof text !== 'string') {
       return new Response(
-        JSON.stringify({ error: 'Text is required and must be under 5000 characters' }),
+        JSON.stringify({ error: 'Text is required and must be a string' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Voice generation for user:', auth.userId, { language, voiceId, model, speed, volume, pitch, emotion });
+    const trimmedText = text.trim();
+    if (trimmedText.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Text cannot be empty' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (trimmedText.length > 5000) {
+      return new Response(
+        JSON.stringify({ error: 'Text must be under 5000 characters' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate speed (0.5 to 2.0)
+    const validatedSpeed = typeof speed === 'number' ? Math.max(0.5, Math.min(2.0, speed)) : 1.0;
+    
+    // Validate volume (0 to 2.0)
+    const validatedVolume = typeof volume === 'number' ? Math.max(0, Math.min(2.0, volume)) : 1.0;
+    
+    // Validate pitch (-12 to 12)
+    const validatedPitch = typeof pitch === 'number' ? Math.max(-12, Math.min(12, pitch)) : 0;
+    
+    // Validate sampleRate (allowed values)
+    const allowedSampleRates = [8000, 16000, 22050, 24000, 32000, 44100, 48000];
+    const validatedSampleRate = allowedSampleRates.includes(sampleRate) ? sampleRate : 44100;
+    
+    // Validate bitrate (allowed values)
+    const allowedBitrates = [64000, 128000, 192000, 256000, 320000];
+    const validatedBitrate = allowedBitrates.includes(bitrate) ? bitrate : 256000;
+    
+    // Validate format
+    const allowedFormats = ['mp3', 'wav', 'pcm', 'flac'];
+    const validatedFormat = allowedFormats.includes(format) ? format : 'mp3';
+    
+    // Validate channel (1 or 2)
+    const validatedChannel = channel === 2 ? 2 : 1;
+    
+    // Validate emotion
+    const allowedEmotions = ['neutral', 'happy', 'sad', 'angry', 'fear', 'disgust', 'surprise'];
+    const validatedEmotion = allowedEmotions.includes(emotion) ? emotion : 'neutral';
+
+    console.log('Voice generation for user:', auth.userId, { 
+      language, 
+      voiceId, 
+      model, 
+      speed: validatedSpeed, 
+      volume: validatedVolume, 
+      pitch: validatedPitch, 
+      emotion: validatedEmotion,
+      textLength: trimmedText.length 
+    });
 
     // MiniMax TTS API
     const response = await fetch('https://api.minimax.chat/v1/t2a_v2', {
@@ -87,19 +142,19 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: model === 'hd' ? 'speech-01-hd' : 'speech-01-turbo',
-        text: text,
+        text: trimmedText,
         voice_setting: {
           voice_id: voiceId,
-          speed: speed || 1.0,
-          vol: volume || 1.0,
-          pitch: pitch || 0,
-          emotion: emotion || 'neutral',
+          speed: validatedSpeed,
+          vol: validatedVolume,
+          pitch: validatedPitch,
+          emotion: validatedEmotion,
         },
         audio_setting: {
-          sample_rate: sampleRate || 44100,
-          bitrate: bitrate || 256000,
-          format: format || 'mp3',
-          channel: channel || 1,
+          sample_rate: validatedSampleRate,
+          bitrate: validatedBitrate,
+          format: validatedFormat,
+          channel: validatedChannel,
         },
         language_boost: language,
         text_normalization: textNormalization ?? true,

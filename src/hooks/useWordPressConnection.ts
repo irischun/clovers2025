@@ -87,18 +87,18 @@ export function useWordPressConnection() {
   const testConnection = async (siteUrl: string, username: string, appPassword: string) => {
     setTesting(true);
     try {
-      // Test WordPress REST API connection
-      const apiUrl = `${siteUrl.replace(/\/$/, '')}/wp-json/wp/v2/posts?per_page=1`;
-      const credentials = btoa(`${username}:${appPassword}`);
-
-      const response = await fetch(apiUrl, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Basic ${credentials}`,
-        },
+      // Test WordPress connection via server-side edge function
+      const { data, error } = await supabase.functions.invoke('wordpress-test', {
+        body: { siteUrl, username, appPassword }
       });
 
-      if (response.ok) {
+      if (error) {
+        console.error('Edge function error:', error);
+        toast({ title: '連接失敗', description: '無法連接到 WordPress 網站', variant: 'destructive' });
+        return false;
+      }
+
+      if (data?.success) {
         // Update connection status
         if (connection) {
           await supabase
@@ -111,7 +111,7 @@ export function useWordPressConnection() {
         toast({ title: '連接成功！', description: 'WordPress 連接測試通過' });
         return true;
       } else {
-        toast({ title: '連接失敗', description: '請檢查您的認證資訊', variant: 'destructive' });
+        toast({ title: '連接失敗', description: data?.error || '請檢查您的認證資訊', variant: 'destructive' });
         return false;
       }
     } catch (error) {

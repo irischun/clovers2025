@@ -29,6 +29,59 @@ async function verifyAuth(req: Request): Promise<{ userId: string } | null> {
   return { userId: data.claims.sub as string };
 }
 
+// Validate and sanitize RSS URL to prevent SSRF attacks
+function validateRssUrl(url: string): { valid: boolean; error?: string; normalized?: string } {
+  if (!url || typeof url !== 'string') {
+    return { valid: false, error: 'RSS URL is required' };
+  }
+
+  const trimmedUrl = url.trim();
+  if (trimmedUrl.length > 2000) {
+    return { valid: false, error: 'URL is too long (max 2000 characters)' };
+  }
+
+  let urlObj: URL;
+  try {
+    urlObj = new URL(trimmedUrl);
+  } catch {
+    return { valid: false, error: 'Invalid URL format' };
+  }
+
+  // Only allow http and https protocols
+  if (!['http:', 'https:'].includes(urlObj.protocol)) {
+    return { valid: false, error: 'Only HTTP and HTTPS protocols are allowed' };
+  }
+
+  // Block internal/private IP ranges to prevent SSRF
+  const hostname = urlObj.hostname.toLowerCase();
+  const blockedPatterns = [
+    /^localhost$/i,
+    /^127\./,
+    /^10\./,
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./,
+    /^192\.168\./,
+    /^169\.254\./, // AWS metadata endpoint
+    /^0\./,
+    /^::1$/,
+    /^fc00:/i,
+    /^fe80:/i,
+    /^fd[0-9a-f]{2}:/i,
+  ];
+
+  for (const pattern of blockedPatterns) {
+    if (pattern.test(hostname)) {
+      return { valid: false, error: 'Internal/private addresses are not allowed' };
+    }
+  }
+
+  // Block cloud metadata endpoints
+  if (hostname === '169.254.169.254' || hostname.includes('metadata')) {
+    return { valid: false, error: 'Access to metadata endpoints is not allowed' };
+  }
+
+  return { valid: true, normalized: trimmedUrl };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -46,16 +99,18 @@ serve(async (req) => {
   try {
     const { url } = await req.json();
     
-    if (!url) {
+    // Validate URL
+    const urlValidation = validateRssUrl(url);
+    if (!urlValidation.valid) {
       return new Response(
-        JSON.stringify({ error: "RSS URL is required" }),
+        JSON.stringify({ error: urlValidation.error }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log("Fetching RSS for user:", auth.userId, "from:", url);
+    console.log("Fetching RSS for user:", auth.userId, "from:", urlValidation.normalized);
 
-    const response = await fetch(url, {
+    const response = await fetch(urlValidation.normalized!, {
       headers: {
         'Accept': 'application/rss+xml, application/xml, text/xml, */*',
         'User-Agent': 'Clover RSS Reader/1.0'
@@ -106,7 +161,7 @@ serve(async (req) => {
         feed: {
           title: titleMatch?.[1]?.trim() || 'Unknown Feed',
           description: descMatch?.[1]?.trim() || '',
-          url: url
+          url: urlValidation.normalized
         },
         items: items.slice(0, 20)
       }),
