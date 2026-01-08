@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Upload, Images, Loader2, Sparkles, Download, X, GripVertical, Image as ImageIcon, AlertCircle, Sticker } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -43,7 +43,8 @@ const StickerMakerPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textFileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const { files: mediaFiles, loading: mediaLoading, getPublicUrl } = useMediaFiles();
+  const { files: mediaFiles, loading: mediaLoading, getSignedUrl } = useMediaFiles();
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
 
   const MAX_FRAMES = 10;
 
@@ -224,6 +225,23 @@ const StickerMakerPage = () => {
 
   const imageMediaFiles = mediaFiles.filter(f => f.file_type.startsWith('image/'));
 
+  // Generate signed URLs for gallery images
+  useEffect(() => {
+    const generateUrls = async () => {
+      const urls: Record<string, string> = {};
+      for (const file of imageMediaFiles) {
+        const url = await getSignedUrl(file.file_path);
+        if (url) {
+          urls[file.file_path] = url;
+        }
+      }
+      setSignedUrls(urls);
+    };
+    
+    if ((isGalleryOpen || isTextGalleryOpen) && imageMediaFiles.length > 0) {
+      generateUrls();
+    }
+  }, [isGalleryOpen, isTextGalleryOpen, imageMediaFiles.length, getSignedUrl]);
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Points Balance */}
@@ -301,18 +319,24 @@ const StickerMakerPage = () => {
                   ) : (
                     <div className="grid grid-cols-4 gap-3">
                       {imageMediaFiles.map((file) => {
-                        const publicUrl = getPublicUrl(file.file_path);
+                        const url = signedUrls[file.file_path];
                         return (
                           <button
                             key={file.id}
-                            onClick={() => handleSelectFromGallery(publicUrl)}
+                            onClick={() => url && handleSelectFromGallery(url)}
                             className="aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-primary transition-colors"
                           >
-                            <img
-                              src={publicUrl}
-                              alt={file.name}
-                              className="w-full h-full object-cover"
-                            />
+                            {url ? (
+                              <img
+                                src={url}
+                                alt={file.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-muted flex items-center justify-center">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              </div>
+                            )}
                           </button>
                         );
                       })}
@@ -498,18 +522,24 @@ const StickerMakerPage = () => {
                   ) : (
                     <div className="grid grid-cols-4 gap-3">
                       {imageMediaFiles.map((file) => {
-                        const publicUrl = getPublicUrl(file.file_path);
+                        const url = signedUrls[file.file_path];
                         return (
                           <button
                             key={file.id}
-                            onClick={() => handleTextGallerySelect(publicUrl)}
+                            onClick={() => url && handleTextGallerySelect(url)}
                             className="aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-primary transition-colors"
                           >
-                            <img
-                              src={publicUrl}
-                              alt={file.name}
-                              className="w-full h-full object-cover"
-                            />
+                            {url ? (
+                              <img
+                                src={url}
+                                alt={file.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-muted flex items-center justify-center">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              </div>
+                            )}
                           </button>
                         );
                       })}

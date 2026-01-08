@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { 
   Send, Image, Video, Upload, Loader2, Calendar as CalendarIcon, 
   Clock, Search, FileText, Globe, Linkedin, MessageCircle
@@ -42,7 +42,7 @@ const timeOptions = Array.from({ length: 24 }, (_, hour) =>
 export function SocialMediaPublisher() {
   const { settings: uploadPostSettings } = useUploadPostSettings();
   const { connection: wpConnection } = useWordPressConnection();
-  const { files, getPublicUrl } = useMediaFiles();
+  const { files, getSignedUrl } = useMediaFiles();
   const { records: historyRecords } = usePublishingHistory();
   const { createPost } = useScheduledPosts();
   const { toast } = useToast();
@@ -57,8 +57,31 @@ export function SocialMediaPublisher() {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [historySearch, setHistorySearch] = useState('');
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const imageFiles = files.filter(f => f.file_type.startsWith('image/'));
+  const videoFiles = files.filter(f => f.file_type.startsWith('video/'));
+
+  // Generate signed URLs for gallery
+  useEffect(() => {
+    const generateUrls = async () => {
+      const filesToProcess = mediaType === 'image' ? imageFiles : videoFiles;
+      const urls: Record<string, string> = {};
+      for (const file of filesToProcess) {
+        const url = await getSignedUrl(file.file_path);
+        if (url) {
+          urls[file.file_path] = url;
+        }
+      }
+      setSignedUrls(urls);
+    };
+    
+    if (isGalleryOpen && (imageFiles.length > 0 || videoFiles.length > 0)) {
+      generateUrls();
+    }
+  }, [isGalleryOpen, mediaType, imageFiles.length, videoFiles.length, getSignedUrl]);
 
   const isPlatformConfigured = (platformId: string) => {
     if (platformId === 'wordpress') return !!wpConnection?.is_connected;
@@ -73,9 +96,9 @@ export function SocialMediaPublisher() {
     );
   };
 
-  const handleSelectFromGallery = (filePath: string) => {
-    const url = getPublicUrl(filePath);
-    if (!selectedMedia.includes(url)) {
+  const handleSelectFromGallery = async (filePath: string) => {
+    const url = await getSignedUrl(filePath);
+    if (url && !selectedMedia.includes(url)) {
       setSelectedMedia([...selectedMedia, url]);
     }
   };
@@ -150,9 +173,6 @@ export function SocialMediaPublisher() {
       setIsPublishing(false);
     }
   };
-
-  const imageFiles = files.filter(f => f.file_type.startsWith('image/'));
-  const videoFiles = files.filter(f => f.file_type.startsWith('video/'));
 
   return (
     <>
@@ -376,26 +396,35 @@ export function SocialMediaPublisher() {
                 {mediaType === 'image' ? '圖庫中沒有圖片' : '圖庫中沒有視頻'}
               </div>
             ) : (
-              (mediaType === 'image' ? imageFiles : videoFiles).map((file) => (
-                <button
-                  key={file.id}
-                  onClick={() => handleSelectFromGallery(file.file_path)}
-                  className="relative aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-primary transition-colors"
-                >
-                  {mediaType === 'image' ? (
-                    <img
-                      src={getPublicUrl(file.file_path)}
-                      alt={file.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <video
-                      src={getPublicUrl(file.file_path)}
-                      className="w-full h-full object-cover"
-                    />
-                  )}
-                </button>
-              ))
+              (mediaType === 'image' ? imageFiles : videoFiles).map((file) => {
+                const url = signedUrls[file.file_path];
+                return (
+                  <button
+                    key={file.id}
+                    onClick={() => handleSelectFromGallery(file.file_path)}
+                    className="relative aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-primary transition-colors"
+                  >
+                    {url ? (
+                      mediaType === 'image' ? (
+                        <img
+                          src={url}
+                          alt={file.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <video
+                          src={url}
+                          className="w-full h-full object-cover"
+                        />
+                      )
+                    ) : (
+                      <div className="w-full h-full bg-muted flex items-center justify-center">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })
             )}
           </div>
         </DialogContent>
@@ -405,34 +434,30 @@ export function SocialMediaPublisher() {
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
         <DialogContent className="max-w-2xl" aria-describedby={undefined}>
           <DialogHeader>
-            <DialogTitle>選擇內容記錄</DialogTitle>
+            <DialogTitle>整理內容記錄</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="搜尋標題或內容"
-                value={historySearch}
-                onChange={(e) => setHistorySearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <div className="max-h-96 overflow-y-auto space-y-2">
+            <Input
+              placeholder="搜尋記錄..."
+              value={historySearch}
+              onChange={(e) => setHistorySearch(e.target.value)}
+            />
+            <div className="space-y-2 max-h-96 overflow-y-auto">
               {filteredHistory.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground">
-                  尚無內容記錄
+                  沒有找到記錄
                 </div>
               ) : (
                 filteredHistory.map((record) => (
                   <button
                     key={record.id}
                     onClick={() => handleSelectHistory(record)}
-                    className="w-full p-3 text-left rounded-lg border hover:border-primary transition-colors"
+                    className="w-full text-left p-3 rounded-lg border border-border hover:border-primary transition-colors"
                   >
-                    <div className="font-medium text-sm line-clamp-1">{record.title}</div>
-                    <div className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                    <p className="font-medium truncate">{record.title}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
                       {record.content}
-                    </div>
+                    </p>
                   </button>
                 ))
               )}

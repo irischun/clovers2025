@@ -119,8 +119,8 @@ serve(async (req) => {
         continue;
       }
 
-      const { data: urlData } = supabase.storage.from('media').getPublicUrl(fileName);
-      subtitleUrls[language] = urlData.publicUrl;
+      const { data: urlData } = await supabase.storage.from('media').createSignedUrl(fileName, 86400); // 24 hour expiry
+      subtitleUrls[language] = urlData?.signedUrl || '';
     }
 
     // Update conversion record with results
