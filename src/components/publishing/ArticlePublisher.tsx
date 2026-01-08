@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { FileText, Upload, Image, Send, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,7 @@ import {
 export function ArticlePublisher() {
   const { connection } = useWordPressConnection();
   const { addRecord } = usePublishingHistory();
-  const { files, uploadFile, getPublicUrl } = useMediaFiles();
+  const { files, uploadFile, getSignedUrl } = useMediaFiles();
   const { toast } = useToast();
   
   const [title, setTitle] = useState('');
@@ -30,8 +30,29 @@ export function ArticlePublisher() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const imageFiles = files.filter(f => f.file_type.startsWith('image/'));
+
+  // Generate signed URLs for gallery images
+  useEffect(() => {
+    const generateUrls = async () => {
+      const urls: Record<string, string> = {};
+      for (const file of imageFiles) {
+        const url = await getSignedUrl(file.file_path);
+        if (url) {
+          urls[file.file_path] = url;
+        }
+      }
+      setSignedUrls(urls);
+    };
+    
+    if (imageFiles.length > 0 && isGalleryOpen) {
+      generateUrls();
+    }
+  }, [imageFiles.length, isGalleryOpen, getSignedUrl]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -46,7 +67,7 @@ export function ArticlePublisher() {
     try {
       const uploaded = await uploadFile(file);
       if (uploaded) {
-        const url = getPublicUrl(uploaded.file_path);
+        const url = await getSignedUrl(uploaded.file_path);
         setSelectedImage(url);
         toast({ title: '圖片上傳成功' });
       }
@@ -57,8 +78,8 @@ export function ArticlePublisher() {
     }
   };
 
-  const handleSelectFromGallery = (filePath: string) => {
-    const url = getPublicUrl(filePath);
+  const handleSelectFromGallery = async (filePath: string) => {
+    const url = await getSignedUrl(filePath);
     setSelectedImage(url);
     setIsGalleryOpen(false);
     toast({ title: '已選擇圖片' });
@@ -143,8 +164,6 @@ export function ArticlePublisher() {
       setIsPublishing(false);
     }
   };
-
-  const imageFiles = files.filter(f => f.file_type.startsWith('image/'));
 
   return (
     <>
@@ -290,19 +309,28 @@ export function ArticlePublisher() {
                 圖庫中沒有圖片
               </div>
             ) : (
-              imageFiles.map((file) => (
-                <button
-                  key={file.id}
-                  onClick={() => handleSelectFromGallery(file.file_path)}
-                  className="relative aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-primary transition-colors"
-                >
-                  <img
-                    src={getPublicUrl(file.file_path)}
-                    alt={file.name}
-                    className="w-full h-full object-cover"
-                  />
-                </button>
-              ))
+              imageFiles.map((file) => {
+                const url = signedUrls[file.file_path];
+                return (
+                  <button
+                    key={file.id}
+                    onClick={() => handleSelectFromGallery(file.file_path)}
+                    className="relative aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-primary transition-colors"
+                  >
+                    {url ? (
+                      <img
+                        src={url}
+                        alt={file.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-muted flex items-center justify-center">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })
             )}
           </div>
         </DialogContent>

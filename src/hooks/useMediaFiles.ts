@@ -97,9 +97,13 @@ export function useMediaFiles() {
     }
   };
 
-  const getPublicUrl = (filePath: string) => {
-    const { data } = supabase.storage.from('media').getPublicUrl(filePath);
-    return data.publicUrl;
+  const getSignedUrl = async (filePath: string): Promise<string> => {
+    const { data, error } = await supabase.storage.from('media').createSignedUrl(filePath, 3600);
+    if (error || !data?.signedUrl) {
+      console.error('Error creating signed URL:', error);
+      return '';
+    }
+    return data.signedUrl;
   };
 
   useEffect(() => {
@@ -111,7 +115,7 @@ export function useMediaFiles() {
     loading,
     uploadFile,
     deleteFile,
-    getPublicUrl,
+    getSignedUrl,
     refetch: fetchFiles,
   };
 }

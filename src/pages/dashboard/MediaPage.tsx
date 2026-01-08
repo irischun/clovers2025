@@ -1,14 +1,14 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Upload, Image as ImageIcon, Video, File, Trash2, Download, Search, Grid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useMediaFiles } from '@/hooks/useMediaFiles';
+import { useMediaFiles, MediaFile } from '@/hooks/useMediaFiles';
 import { useToast } from '@/hooks/use-toast';
 
 const MediaPage = () => {
-  const { files, loading, uploadFile, deleteFile, getPublicUrl } = useMediaFiles();
+  const { files, loading, uploadFile, deleteFile, getSignedUrl } = useMediaFiles();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -16,6 +16,25 @@ const MediaPage = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [uploading, setUploading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+
+  // Generate signed URLs for all files
+  useEffect(() => {
+    const generateUrls = async () => {
+      const urls: Record<string, string> = {};
+      for (const file of files) {
+        const url = await getSignedUrl(file.file_path);
+        if (url) {
+          urls[file.file_path] = url;
+        }
+      }
+      setSignedUrls(urls);
+    };
+    
+    if (files.length > 0) {
+      generateUrls();
+    }
+  }, [files, getSignedUrl]);
 
   const filteredFiles = files.filter(file => 
     file.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -72,6 +91,13 @@ const MediaPage = () => {
   };
 
   const isImage = (type: string) => type.startsWith('image/');
+
+  const handleImageClick = (file: MediaFile) => {
+    const url = signedUrls[file.file_path];
+    if (url && isImage(file.file_type)) {
+      setSelectedImage(url);
+    }
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -158,76 +184,86 @@ const MediaPage = () => {
         </div>
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredFiles.map(file => (
-            <div 
-              key={file.id} 
-              className="bg-card border border-border rounded-xl overflow-hidden group hover:border-primary/50 transition-colors"
-            >
+          {filteredFiles.map(file => {
+            const url = signedUrls[file.file_path];
+            return (
               <div 
-                className="aspect-square bg-muted flex items-center justify-center cursor-pointer relative"
-                onClick={() => isImage(file.file_type) && setSelectedImage(getPublicUrl(file.file_path))}
+                key={file.id} 
+                className="bg-card border border-border rounded-xl overflow-hidden group hover:border-primary/50 transition-colors"
               >
-                {isImage(file.file_type) ? (
-                  <img 
-                    src={getPublicUrl(file.file_path)} 
-                    alt={file.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  getFileIcon(file.file_type)
-                )}
-                <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <Button size="icon" variant="secondary" asChild>
-                    <a href={getPublicUrl(file.file_path)} download={file.name} target="_blank">
-                      <Download className="w-4 h-4" />
-                    </a>
-                  </Button>
-                  <Button size="icon" variant="destructive" onClick={() => deleteFile(file.id, file.file_path)}>
+                <div 
+                  className="aspect-square bg-muted flex items-center justify-center cursor-pointer relative"
+                  onClick={() => handleImageClick(file)}
+                >
+                  {isImage(file.file_type) && url ? (
+                    <img 
+                      src={url} 
+                      alt={file.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    getFileIcon(file.file_type)
+                  )}
+                  <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    {url && (
+                      <Button size="icon" variant="secondary" asChild>
+                        <a href={url} download={file.name} target="_blank">
+                          <Download className="w-4 h-4" />
+                        </a>
+                      </Button>
+                    )}
+                    <Button size="icon" variant="destructive" onClick={() => deleteFile(file.id, file.file_path)}>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="p-3">
+                  <p className="text-sm font-medium truncate">{file.name}</p>
+                  <p className="text-xs text-muted-foreground">{formatFileSize(file.file_size)}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filteredFiles.map(file => {
+            const url = signedUrls[file.file_path];
+            return (
+              <div 
+                key={file.id} 
+                className="bg-card border border-border rounded-lg p-4 flex items-center gap-4 group hover:border-primary/50 transition-colors"
+              >
+                <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                  {isImage(file.file_type) && url ? (
+                    <img 
+                      src={url} 
+                      alt={file.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    getFileIcon(file.file_type)
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{file.name}</p>
+                  <p className="text-sm text-muted-foreground">{formatFileSize(file.file_size)}</p>
+                </div>
+                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {url && (
+                    <Button size="icon" variant="ghost" asChild>
+                      <a href={url} download={file.name} target="_blank">
+                        <Download className="w-4 h-4" />
+                      </a>
+                    </Button>
+                  )}
+                  <Button size="icon" variant="ghost" onClick={() => deleteFile(file.id, file.file_path)}>
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
-              <div className="p-3">
-                <p className="text-sm font-medium truncate">{file.name}</p>
-                <p className="text-xs text-muted-foreground">{formatFileSize(file.file_size)}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {filteredFiles.map(file => (
-            <div 
-              key={file.id} 
-              className="bg-card border border-border rounded-lg p-4 flex items-center gap-4 group hover:border-primary/50 transition-colors"
-            >
-              <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
-                {isImage(file.file_type) ? (
-                  <img 
-                    src={getPublicUrl(file.file_path)} 
-                    alt={file.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  getFileIcon(file.file_type)
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{file.name}</p>
-                <p className="text-sm text-muted-foreground">{formatFileSize(file.file_size)}</p>
-              </div>
-              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button size="icon" variant="ghost" asChild>
-                  <a href={getPublicUrl(file.file_path)} download={file.name} target="_blank">
-                    <Download className="w-4 h-4" />
-                  </a>
-                </Button>
-                <Button size="icon" variant="ghost" onClick={() => deleteFile(file.id, file.file_path)}>
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
