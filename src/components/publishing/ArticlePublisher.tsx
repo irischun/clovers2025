@@ -10,6 +10,7 @@ import { useWordPressConnection } from '@/hooks/useWordPressConnection';
 import { usePublishingHistory } from '@/hooks/usePublishingHistory';
 import { useMediaFiles } from '@/hooks/useMediaFiles';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
   DialogContent,
@@ -98,47 +99,31 @@ export function ArticlePublisher() {
 
     setIsPublishing(true);
     try {
-      const apiUrl = `${connection.site_url.replace(/\/$/, '')}/wp-json/wp/v2/posts`;
-      const credentials = btoa(`${connection.username}:${connection.app_password}`);
-
-      // Prepare post content with SEO if enabled
-      let postContent = content;
-      if (seoEnabled) {
-        postContent = `<!-- SEO Optimized -->\n${content}`;
-      }
-
-      const postData: Record<string, unknown> = {
-        title,
-        content: postContent,
-        status: 'publish',
-      };
-
-      // If image selected, we need to first upload it to WordPress
-      // For now, we'll include the image URL in the content
-      if (selectedImage) {
-        postContent = `<img src="${selectedImage}" alt="${title}" />\n${postContent}`;
-        postData.content = postContent;
-      }
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${credentials}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(postData),
+      // Publish via secure edge function - credentials handled server-side
+      const { data, error } = await supabase.functions.invoke('wordpress-publish', {
+        body: {
+          title,
+          content,
+          status: 'publish',
+          imageUrl: selectedImage,
+          seoEnabled,
+        }
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        
+      if (error) {
+        console.error('Edge function error:', error);
+        toast({ title: '發佈失敗', description: '無法連接到發佈服務', variant: 'destructive' });
+        return;
+      }
+
+      if (data?.success) {
         // Add to publishing history
         await addRecord({
           title,
           content,
           platform: 'wordpress',
           status: 'published',
-          published_url: result.link || null,
+          published_url: data.link || null,
           image_url: selectedImage,
         });
 
@@ -150,10 +135,9 @@ export function ArticlePublisher() {
         setSelectedImage(null);
         setSeoEnabled(false);
       } else {
-        const error = await response.json();
         toast({ 
           title: '發佈失敗', 
-          description: error.message || '無法發佈到 WordPress',
+          description: data?.error || '無法發佈到 WordPress',
           variant: 'destructive' 
         });
       }
