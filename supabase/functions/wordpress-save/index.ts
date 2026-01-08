@@ -29,7 +29,6 @@ async function verifyAuth(req: Request): Promise<{ userId: string } | null> {
   return { userId: data.claims.sub as string };
 }
 
-// Validate URL format and ensure it's a valid WordPress site URL
 function validateWordPressSiteUrl(url: string): { valid: boolean; error?: string; normalized?: string } {
   if (!url || typeof url !== 'string') {
     return { valid: false, error: 'Site URL is required' };
@@ -47,12 +46,10 @@ function validateWordPressSiteUrl(url: string): { valid: boolean; error?: string
     return { valid: false, error: 'Invalid URL format' };
   }
 
-  // Only allow http and https protocols
   if (!['http:', 'https:'].includes(urlObj.protocol)) {
     return { valid: false, error: 'Only HTTP and HTTPS protocols are allowed' };
   }
 
-  // Block internal/private IP ranges
   const hostname = urlObj.hostname.toLowerCase();
   const blockedPatterns = [
     /^localhost$/i,
@@ -73,12 +70,10 @@ function validateWordPressSiteUrl(url: string): { valid: boolean; error?: string
     }
   }
 
-  // Normalize the URL (remove trailing slash)
   const normalized = trimmedUrl.replace(/\/$/, '');
   return { valid: true, normalized };
 }
 
-// Validate username
 function validateUsername(username: string): { valid: boolean; error?: string } {
   if (!username || typeof username !== 'string') {
     return { valid: false, error: 'Username is required' };
@@ -92,7 +87,6 @@ function validateUsername(username: string): { valid: boolean; error?: string } 
   return { valid: true };
 }
 
-// Validate app password
 function validateAppPassword(appPassword: string): { valid: boolean; error?: string } {
   if (!appPassword || typeof appPassword !== 'string') {
     return { valid: false, error: 'App password is required' };
@@ -111,7 +105,6 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Verify authentication
   const auth = await verifyAuth(req);
   if (!auth) {
     return new Response(
@@ -148,37 +141,63 @@ serve(async (req) => {
       );
     }
 
-    console.log('WordPress connection test for user:', auth.userId, 'site:', urlValidation.normalized);
+    console.log('Saving WordPress connection for user:', auth.userId);
 
-    // Test WordPress REST API connection server-side
-    const apiUrl = `${urlValidation.normalized}/wp-json/wp/v2/posts?per_page=1`;
-    const credentials = btoa(`${username.trim()}:${appPassword.trim()}`);
+    // Use service role to save credentials securely
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const response = await fetch(apiUrl, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Basic ${credentials}`,
-        'User-Agent': 'Clover WordPress Connector/1.0',
-      },
-    });
+    // Check if connection exists
+    const { data: existing } = await supabase
+      .from('wordpress_connections')
+      .select('id')
+      .eq('user_id', auth.userId)
+      .maybeSingle();
 
-    if (response.ok) {
-      console.log('WordPress connection successful for user:', auth.userId);
-      return new Response(
-        JSON.stringify({ success: true }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const connectionData = {
+      user_id: auth.userId,
+      site_url: urlValidation.normalized,
+      username: username.trim(),
+      app_password: appPassword.trim(),
+      is_connected: false,
+      updated_at: new Date().toISOString(),
+    };
+
+    let result;
+    if (existing) {
+      result = await supabase
+        .from('wordpress_connections')
+        .update(connectionData)
+        .eq('id', existing.id)
+        .select('id, site_url, username, is_connected, created_at, updated_at')
+        .single();
     } else {
-      console.log('WordPress connection failed for user:', auth.userId, 'status:', response.status);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Authentication failed. Please check your credentials.' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      result = await supabase
+        .from('wordpress_connections')
+        .insert(connectionData)
+        .select('id, site_url, username, is_connected, created_at, updated_at')
+        .single();
     }
-  } catch (error) {
-    console.error('WordPress test error:', error);
+
+    if (result.error) {
+      console.error('Database error:', result.error);
+      throw new Error('Failed to save connection');
+    }
+
+    console.log('WordPress connection saved for user:', auth.userId);
+    
     return new Response(
-      JSON.stringify({ success: false, error: 'Failed to connect to WordPress site' }),
+      JSON.stringify({ 
+        success: true, 
+        connection: result.data 
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('WordPress save error:', error);
+    return new Response(
+      JSON.stringify({ success: false, error: 'Failed to save WordPress connection' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

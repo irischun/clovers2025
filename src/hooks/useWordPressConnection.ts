@@ -2,19 +2,18 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export interface WordPressConnection {
+// Only expose non-sensitive connection info to client
+export interface WordPressConnectionInfo {
   id: string;
-  user_id: string;
   site_url: string;
   username: string;
-  app_password: string;
   is_connected: boolean;
   created_at: string;
   updated_at: string;
 }
 
 export function useWordPressConnection() {
-  const [connection, setConnection] = useState<WordPressConnection | null>(null);
+  const [connection, setConnection] = useState<WordPressConnectionInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [testing, setTesting] = useState(false);
   const { toast } = useToast();
@@ -27,14 +26,15 @@ export function useWordPressConnection() {
         return;
       }
 
+      // Only fetch non-sensitive fields - never fetch app_password
       const { data, error } = await supabase
         .from('wordpress_connections')
-        .select('*')
+        .select('id, site_url, username, is_connected, created_at, updated_at')
         .eq('user_id', user.id)
         .maybeSingle();
 
       if (error) throw error;
-      setConnection(data as WordPressConnection | null);
+      setConnection(data as WordPressConnectionInfo | null);
     } catch (error) {
       console.error('Error fetching WordPress connection:', error);
     } finally {
@@ -42,54 +42,38 @@ export function useWordPressConnection() {
     }
   };
 
+  // Save credentials via edge function - credentials go directly to server
   const saveConnection = async (siteUrl: string, username: string, appPassword: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const { data, error } = await supabase.functions.invoke('wordpress-save', {
+        body: { siteUrl, username, appPassword }
+      });
 
-      const connectionData = {
-        user_id: user.id,
-        site_url: siteUrl,
-        username,
-        app_password: appPassword,
-        is_connected: false,
-      };
-
-      if (connection) {
-        const { data, error } = await supabase
-          .from('wordpress_connections')
-          .update(connectionData)
-          .eq('id', connection.id)
-          .select()
-          .single();
-
-        if (error) throw error;
-        setConnection(data as WordPressConnection);
-      } else {
-        const { data, error } = await supabase
-          .from('wordpress_connections')
-          .insert(connectionData)
-          .select()
-          .single();
-
-        if (error) throw error;
-        setConnection(data as WordPressConnection);
+      if (error) {
+        console.error('Edge function error:', error);
+        toast({ title: '保存失敗', variant: 'destructive' });
+        throw error;
       }
 
-      toast({ title: '設定已保存' });
+      if (data?.success && data?.connection) {
+        setConnection(data.connection as WordPressConnectionInfo);
+        toast({ title: '設定已保存' });
+      } else {
+        toast({ title: '保存失敗', description: data?.error || '請稍後再試', variant: 'destructive' });
+        throw new Error(data?.error || 'Save failed');
+      }
     } catch (error) {
       console.error('Error saving WordPress connection:', error);
-      toast({ title: '保存失敗', variant: 'destructive' });
       throw error;
     }
   };
 
-  const testConnection = async (siteUrl: string, username: string, appPassword: string) => {
+  // Test using stored credentials - credentials never leave server
+  const testConnection = async () => {
     setTesting(true);
     try {
-      // Test WordPress connection via server-side edge function
-      const { data, error } = await supabase.functions.invoke('wordpress-test', {
-        body: { siteUrl, username, appPassword }
+      const { data, error } = await supabase.functions.invoke('wordpress-test-stored', {
+        body: {}
       });
 
       if (error) {
@@ -99,18 +83,15 @@ export function useWordPressConnection() {
       }
 
       if (data?.success) {
-        // Update connection status
         if (connection) {
-          await supabase
-            .from('wordpress_connections')
-            .update({ is_connected: true })
-            .eq('id', connection.id);
-          
           setConnection({ ...connection, is_connected: true });
         }
         toast({ title: '連接成功！', description: 'WordPress 連接測試通過' });
         return true;
       } else {
+        if (connection) {
+          setConnection({ ...connection, is_connected: false });
+        }
         toast({ title: '連接失敗', description: data?.error || '請檢查您的認證資訊', variant: 'destructive' });
         return false;
       }
