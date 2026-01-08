@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { Sparkles, Copy, RefreshCw, Loader2, FileText, Hash, Smile, Phone, Mail, Building2, Globe, Wand2, History, Trash2, Eye } from 'lucide-react';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Button } from '@/components/ui/button';
@@ -628,7 +629,7 @@ const CopywritingTool = () => {
                     {outputFormat === 'html' ? (
                       <div 
                         className="bg-muted/50 rounded-lg p-4 text-sm leading-relaxed max-h-[600px] overflow-y-auto"
-                        dangerouslySetInnerHTML={{ __html: generatedContent }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(generatedContent) }}
                       />
                     ) : (
                       <div className="bg-muted/50 rounded-lg p-4 whitespace-pre-wrap text-sm leading-relaxed max-h-[600px] overflow-y-auto">
