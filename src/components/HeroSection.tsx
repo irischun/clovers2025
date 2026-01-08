@@ -35,16 +35,16 @@ const HeroSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16 items-center">
           {/* Left content */}
           <div className="animate-slide-up text-center lg:text-left order-2 lg:order-1">
+            {/* Main Heading - Premium Serif */}
+            <h1 className="heading-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl mb-4 leading-[0.9]">
+              <span className="text-gradient-nature">Clovers</span>
+            </h1>
+
             {/* Badge */}
             <div className="badge-nature mb-6 sm:mb-8 inline-flex">
               <Sprout className="w-4 h-4" />
               <span>AI Marketing Platform</span>
             </div>
-
-            {/* Main Heading - Premium Serif */}
-            <h1 className="heading-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl mb-6 leading-[0.9]">
-              <span className="text-gradient-nature">Clovers</span>
-            </h1>
             
             {/* English Tagline */}
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground/90 mb-6 sm:mb-8 font-light tracking-wide max-w-lg mx-auto lg:mx-0 leading-relaxed">
