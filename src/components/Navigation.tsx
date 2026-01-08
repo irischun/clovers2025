@@ -84,7 +84,7 @@ const Navigation = () => {
             className="w-11 h-11 object-contain group-hover:scale-105 transition-transform duration-300"
           />
           <span className="font-display text-2xl text-foreground tracking-tight">
-            Clover
+            Clovers
           </span>
         </a>
 
