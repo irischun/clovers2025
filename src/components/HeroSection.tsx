@@ -43,12 +43,12 @@ const HeroSection = () => {
 
             {/* Main Heading - Premium Serif */}
             <h1 className="heading-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl mb-6 leading-[0.9]">
-              <span className="text-gradient-nature">Clover</span>
+              <span className="text-gradient-nature">Clovers</span>
             </h1>
             
             {/* English Tagline */}
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground/90 mb-6 sm:mb-8 font-light tracking-wide max-w-lg mx-auto lg:mx-0 leading-relaxed">
-              From a single seedling to a field of clover, 
+              From a single seedling to a field of clovers, 
               <br className="hidden sm:block" />
               nurtured on one united platform
             </p>
