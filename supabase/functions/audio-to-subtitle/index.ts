@@ -7,22 +7,54 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function verifyAuth(req: Request): Promise<{ userId: string } | null> {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return null;
+  }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+  
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } }
+  });
+
+  const token = authHeader.replace('Bearer ', '');
+  const { data, error } = await supabase.auth.getClaims(token);
+  
+  if (error || !data?.claims) {
+    return null;
+  }
+
+  return { userId: data.claims.sub as string };
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Verify authentication
+  const auth = await verifyAuth(req);
+  if (!auth) {
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
   try {
     const { conversionId, sourceUrl, languages } = await req.json();
 
-    console.log('Audio to Subtitle conversion started:', { conversionId, sourceUrl, languages });
+    console.log('Audio to Subtitle conversion for user:', auth.userId, { conversionId, sourceUrl, languages });
 
     if (!conversionId || !sourceUrl || !languages || languages.length === 0) {
       throw new Error('Missing required parameters: conversionId, sourceUrl, or languages');
     }
 
-    // Initialize Supabase client
+    // Initialize Supabase client with service role for storage operations
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
