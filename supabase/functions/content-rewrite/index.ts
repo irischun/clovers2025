@@ -111,6 +111,47 @@ async function verifyAuth(req: Request): Promise<{ userId: string } | null> {
   return { userId: data.claims.sub as string };
 }
 
+// Validate URL format
+function validateUrl(url: string): { valid: boolean; error?: string } {
+  if (!url || typeof url !== 'string') {
+    return { valid: false, error: 'URL is required' };
+  }
+
+  const trimmed = url.trim();
+  if (trimmed.length > 2000) {
+    return { valid: false, error: 'URL is too long (max 2000 characters)' };
+  }
+
+  try {
+    const urlObj = new URL(trimmed);
+    if (!['http:', 'https:'].includes(urlObj.protocol)) {
+      return { valid: false, error: 'Only HTTP and HTTPS protocols are allowed' };
+    }
+  } catch {
+    return { valid: false, error: 'Invalid URL format' };
+  }
+
+  return { valid: true };
+}
+
+// Validate string with length limit
+function validateString(value: unknown, fieldName: string, maxLength: number): { valid: boolean; error?: string; sanitized?: string } {
+  if (value === undefined || value === null || value === '') {
+    return { valid: true, sanitized: '' };
+  }
+  
+  if (typeof value !== 'string') {
+    return { valid: false, error: `${fieldName} must be a string` };
+  }
+  
+  const trimmed = value.trim();
+  if (trimmed.length > maxLength) {
+    return { valid: false, error: `${fieldName} exceeds maximum length of ${maxLength} characters` };
+  }
+  
+  return { valid: true, sanitized: trimmed };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -126,6 +167,8 @@ serve(async (req) => {
   }
 
   try {
+    const body = await req.json();
+    
     const { 
       url, 
       outputLanguage = 'zh-TW', 
@@ -138,7 +181,80 @@ serve(async (req) => {
       isBatch = false,
       urls = [],
       directPrompt = ''
-    } = await req.json();
+    } = body;
+
+    // Validate directPrompt
+    const directPromptValidation = validateString(directPrompt, 'directPrompt', 10000);
+    if (!directPromptValidation.valid) {
+      return new Response(
+        JSON.stringify({ error: directPromptValidation.error }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate customStyle
+    const customStyleValidation = validateString(customStyle, 'customStyle', 2000);
+    if (!customStyleValidation.valid) {
+      return new Response(
+        JSON.stringify({ error: customStyleValidation.error }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate customEndingText
+    const customEndingValidation = validateString(customEndingText, 'customEndingText', 1000);
+    if (!customEndingValidation.valid) {
+      return new Response(
+        JSON.stringify({ error: customEndingValidation.error }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate URLs
+    if (isBatch) {
+      if (!Array.isArray(urls) || urls.length === 0) {
+        return new Response(
+          JSON.stringify({ error: 'URLs array is required for batch processing' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (urls.length > 10) {
+        return new Response(
+          JSON.stringify({ error: 'Maximum 10 URLs allowed for batch processing' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      for (const u of urls) {
+        const urlValidation = validateUrl(u);
+        if (!urlValidation.valid) {
+          return new Response(
+            JSON.stringify({ error: `Invalid URL: ${urlValidation.error}` }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+    } else if (!directPromptValidation.sanitized) {
+      // If not using directPrompt, URL is required
+      if (url) {
+        const urlValidation = validateUrl(url);
+        if (!urlValidation.valid) {
+          return new Response(
+            JSON.stringify({ error: urlValidation.error }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+    }
+
+    // Validate targetWordCount
+    if (targetWordCount !== undefined && targetWordCount !== null) {
+      if (typeof targetWordCount !== 'number' || targetWordCount < 0 || targetWordCount > 100000) {
+        return new Response(
+          JSON.stringify({ error: 'targetWordCount must be a number between 0 and 100000' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -148,7 +264,7 @@ serve(async (req) => {
     console.log('Content rewrite request from user:', auth.userId);
 
     // Handle direct prompt actions (summarize, translate, etc.)
-    if (directPrompt) {
+    if (directPromptValidation.sanitized) {
       console.log('Processing direct prompt action');
       
       const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -164,7 +280,7 @@ serve(async (req) => {
               role: 'system', 
               content: `你是一位專業的內容處理專家。請根據用戶的要求處理內容。輸出語言：${languageMap[outputLanguage] || '繁體中文'}。`
             },
-            { role: 'user', content: directPrompt }
+            { role: 'user', content: directPromptValidation.sanitized }
           ],
         }),
       });
@@ -207,8 +323,8 @@ serve(async (req) => {
       try {
         // Build the rewrite prompt
         let stylePrompt = '';
-        if (style === 'custom' && customStyle) {
-          stylePrompt = `請按照以下自訂風格改寫內容：\n${customStyle}`;
+        if (style === 'custom' && customStyleValidation.sanitized) {
+          stylePrompt = `請按照以下自訂風格改寫內容：\n${customStyleValidation.sanitized}`;
         } else if (style && stylePrompts[style]) {
           stylePrompt = stylePrompts[style];
         } else {
@@ -237,8 +353,8 @@ ${stylePrompt}`;
 - 優化meta描述`;
         }
 
-        if (customEnding && customEndingText) {
-          prompt += `\n\n請在文章結尾加入以下內容：\n${customEndingText}`;
+        if (customEnding && customEndingValidation.sanitized) {
+          prompt += `\n\n請在文章結尾加入以下內容：\n${customEndingValidation.sanitized}`;
         }
 
         console.log('Processing URL:', targetUrl);
