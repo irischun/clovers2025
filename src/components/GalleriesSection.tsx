@@ -94,7 +94,7 @@ const mangaItems: GalleryItem[] = [
 // Cover images data
 const coverItems: GalleryItem[] = [
   { id: 'cover-1', title: 'Nano Banana Pro - 谷歌全新AI生成模型', imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=400&fit=crop' },
-  { id: 'cover-2', title: 'Clover一人公司 - 雙子塔檸檬角色', imageUrl: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=400&h=400&fit=crop' },
+  { id: 'cover-2', title: 'Clovers一人公司 - 雙子塔檸檬角色', imageUrl: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=400&h=400&fit=crop' },
   { id: 'cover-3', title: '未來出行 - 智能電動車系列', imageUrl: 'https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=400&h=400&fit=crop' },
   { id: 'cover-4', title: 'AI實戰工作坊 - 一人公司武器庫', imageUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=400&fit=crop' },
   { id: 'cover-5', title: 'Nano Banana Pro - 爆炸網絡熱潮', imageUrl: 'https://images.unsplash.com/photo-1676299081847-5c0c7bdf3e3f?w=400&h=400&fit=crop' },
@@ -130,7 +130,7 @@ const GalleriesSection = () => {
             作品展示
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            探索 Clover 幫助創作者製作的精彩內容
+            探索 Clovers 幫助創作者製作的精彩內容
           </p>
         </div>
         

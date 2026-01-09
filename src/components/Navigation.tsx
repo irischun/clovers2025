@@ -80,7 +80,7 @@ const Navigation = () => {
         <a href="/" className="flex items-center gap-3 group">
           <img 
             src={cloverLogo} 
-            alt="Clover Logo" 
+            alt="Clovers Logo" 
             className="w-11 h-11 object-contain group-hover:scale-105 transition-transform duration-300"
           />
           <span className="font-display text-2xl text-foreground tracking-tight">

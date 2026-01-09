@@ -36,7 +36,7 @@ const FeaturesSection = () => {
             <span>Features</span>
           </div>
           <h2 className="heading-display text-4xl sm:text-5xl lg:text-6xl mb-6">
-            Clover 有咩用？
+            Clovers 有咩用？
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Explore the powerful tools designed to transform your marketing workflow

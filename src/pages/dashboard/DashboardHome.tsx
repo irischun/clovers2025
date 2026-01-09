@@ -154,7 +154,7 @@ const DashboardHome = () => {
         <div>
           <h1 className="heading-display text-2xl sm:text-3xl mb-1 sm:mb-2">儀表板</h1>
           <p className="text-sm sm:text-base text-muted-foreground">
-            歡迎回來！這是您的 Clover 儀表板，開始創建精彩內容吧。
+            歡迎回來！這是您的 Clovers 儀表板，開始創建精彩內容吧。
           </p>
         </div>
       </div>
@@ -344,7 +344,7 @@ const DashboardHome = () => {
               </div>
               <p className="text-muted-foreground font-medium">暫無活動記錄</p>
               <p className="text-sm text-muted-foreground mt-1 mb-4">
-                開始使用 Clover 後，您的活動將會顯示在這裡。
+                開始使用 Clovers 後，您的活動將會顯示在這裡。
               </p>
               <Link 
                 to="/dashboard/ai-tools" 
