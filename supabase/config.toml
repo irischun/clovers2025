@@ -33,9 +33,6 @@ verify_jwt = false
 [functions.content-rewrite]
 verify_jwt = false
 
-[functions.wordpress-test]
-verify_jwt = false
-
 [functions.wordpress-save]
 verify_jwt = false
 

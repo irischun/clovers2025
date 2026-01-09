@@ -503,6 +503,7 @@ export type Database = {
           created_at: string
           id: string
           is_connected: boolean | null
+          is_encrypted: boolean | null
           site_url: string
           updated_at: string
           user_id: string
@@ -513,6 +514,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_connected?: boolean | null
+          is_encrypted?: boolean | null
           site_url: string
           updated_at?: string
           user_id: string
@@ -523,6 +525,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_connected?: boolean | null
+          is_encrypted?: boolean | null
           site_url?: string
           updated_at?: string
           user_id?: string
@@ -535,7 +538,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      decrypt_wordpress_password: {
+        Args: { p_encrypted_password: string; p_user_id: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
