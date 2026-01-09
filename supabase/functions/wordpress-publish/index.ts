@@ -73,15 +73,15 @@ serve(async (req) => {
 
     console.log('Publishing to WordPress for user:', auth.userId);
 
-    // Use service role to access stored credentials
+    // Use service role to access stored credentials and decrypt
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch stored connection with credentials (server-side only)
+    // Fetch stored connection
     const { data: connection, error } = await supabase
       .from('wordpress_connections')
-      .select('id, site_url, username, app_password')
+      .select('id, site_url, username, app_password, is_encrypted')
       .eq('user_id', auth.userId)
       .maybeSingle();
 
@@ -97,6 +97,22 @@ serve(async (req) => {
       );
     }
 
+    // Decrypt password using database function
+    let decryptedPassword = connection.app_password;
+    if (connection.is_encrypted) {
+      const { data: decryptResult, error: decryptError } = await supabase
+        .rpc('decrypt_wordpress_password', {
+          p_user_id: auth.userId,
+          p_encrypted_password: connection.app_password
+        });
+      
+      if (decryptError) {
+        console.error('Decryption error:', decryptError);
+        throw new Error('Failed to decrypt credentials');
+      }
+      decryptedPassword = decryptResult;
+    }
+
     // Prepare post content
     let postContent = sanitizedContent;
     if (seoEnabled) {
@@ -106,9 +122,9 @@ serve(async (req) => {
       postContent = `<img src="${imageUrl}" alt="${sanitizedTitle}" />\n${postContent}`;
     }
 
-    // Publish to WordPress
+    // Publish to WordPress using decrypted credentials
     const apiUrl = `${connection.site_url}/wp-json/wp/v2/posts`;
-    const credentials = btoa(`${connection.username}:${connection.app_password}`);
+    const credentials = btoa(`${connection.username}:${decryptedPassword}`);
 
     const response = await fetch(apiUrl, {
       method: 'POST',

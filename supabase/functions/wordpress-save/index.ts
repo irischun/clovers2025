@@ -155,12 +155,14 @@ serve(async (req) => {
       .eq('user_id', auth.userId)
       .maybeSingle();
 
+    // Note: is_encrypted is set to false so the trigger will encrypt the password
     const connectionData = {
       user_id: auth.userId,
       site_url: urlValidation.normalized,
       username: username.trim(),
       app_password: appPassword.trim(),
       is_connected: false,
+      is_encrypted: false, // Trigger will encrypt and set to true
       updated_at: new Date().toISOString(),
     };
 
@@ -185,7 +187,13 @@ serve(async (req) => {
       throw new Error('Failed to save connection');
     }
 
-    console.log('WordPress connection saved for user:', auth.userId);
+    // Mark as encrypted after successful save
+    await supabase
+      .from('wordpress_connections')
+      .update({ is_encrypted: true })
+      .eq('id', result.data.id);
+
+    console.log('WordPress connection saved (encrypted) for user:', auth.userId);
     
     return new Response(
       JSON.stringify({ 
