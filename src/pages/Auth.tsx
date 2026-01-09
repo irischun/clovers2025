@@ -96,7 +96,7 @@ const Auth = () => {
 
         toast({
           title: '註冊成功！',
-          description: '歡迎加入 Clover！',
+          description: '歡迎加入 Clovers！',
         });
       }
     } catch (error) {
@@ -120,7 +120,7 @@ const Auth = () => {
             <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
               <span className="text-2xl">🍀</span>
             </div>
-            <span className="font-display text-2xl font-bold">CLOVER</span>
+            <span className="font-display text-2xl font-bold">CLOVERS</span>
           </div>
           <p className="text-muted-foreground">
             {isLogin ? '登入您的帳戶' : '建立新帳戶'}

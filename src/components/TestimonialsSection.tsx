@@ -9,11 +9,11 @@ interface Testimonial {
 }
 
 const testimonials: Testimonial[] = [
-  { id: 1, title: 'Clover 分享篇 01', videoId: 'dDXg2ZQWE7Q' },
-  { id: 2, title: 'Clover 分享篇 02', videoId: 'tzTO2o-SUH4' },
-  { id: 3, title: 'Clover 分享篇 03', videoId: 'dOnZAJwIA3w' },
-  { id: 4, title: 'Clover 分享篇 04', videoId: 'Jb0mNtye-WQ' },
-  { id: 5, title: 'Clover 分享篇 05', videoId: 'RIs8C2jI3Uc' },
+  { id: 1, title: 'Clovers 分享篇 01', videoId: 'dDXg2ZQWE7Q' },
+  { id: 2, title: 'Clovers 分享篇 02', videoId: 'tzTO2o-SUH4' },
+  { id: 3, title: 'Clovers 分享篇 03', videoId: 'dOnZAJwIA3w' },
+  { id: 4, title: 'Clovers 分享篇 04', videoId: 'Jb0mNtye-WQ' },
+  { id: 5, title: 'Clovers 分享篇 05', videoId: 'RIs8C2jI3Uc' },
 ];
 
 const TestimonialsSection = () => {

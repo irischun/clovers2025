@@ -12,8 +12,8 @@ const Index = () => {
   return (
     <>
       <Helmet>
-        <title>Clover - 一站式營銷AI生成系統</title>
-        <meta name="description" content="Clover 一站式營銷AI生成系統 - 省時、省人力、不中斷的內容產出系統。再也不需要在多個工具之間來回奔波。" />
+        <title>Clovers - 一站式營銷AI生成系統</title>
+        <meta name="description" content="Clovers 一站式營銷AI生成系統 - 省時、省人力、不中斷的內容產出系統。再也不需要在多個工具之間來回奔波。" />
       </Helmet>
       
       <div className="min-h-screen bg-background">

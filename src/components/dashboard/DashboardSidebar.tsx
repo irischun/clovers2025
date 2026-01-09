@@ -168,7 +168,7 @@ const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
           <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
             <span className="text-lg">🍀</span>
           </div>
-          <span className="font-display text-xl font-bold">CLOVER</span>
+          <span className="font-display text-xl font-bold">CLOVERS</span>
         </div>
         <Button
           variant="outline"

@@ -563,7 +563,7 @@ const ImageGenerationPage = () => {
     try {
       const link = document.createElement('a');
       link.href = url;
-      link.download = `clover-image-${Date.now()}.png`;
+      link.download = `clovers-image-${Date.now()}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

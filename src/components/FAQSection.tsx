@@ -8,19 +8,19 @@ import { HelpCircle, Mail } from 'lucide-react';
 
 const faqs = [
   {
-    question: '什麼是 Clover？',
+    question: '什麼是 Clovers？',
     answer:
-      'Clover 是一個專為一人公司和獨立創業者設計的 AI 驅動工作平台。它整合了提示詞管理、內容排程、媒體庫和 AI 生成工具，讓您可以在一個地方完成所有內容創作工作。',
+      'Clovers 是一個專為一人公司和獨立創業者設計的 AI 驅動工作平台。它整合了提示詞管理、內容排程、媒體庫和 AI 生成工具，讓您可以在一個地方完成所有內容創作工作。',
   },
   {
     question: '我需要技術背景才能使用嗎？',
     answer:
-      '完全不需要！Clover 設計得非常直觀易用。我們的介面簡潔明瞭，即使是技術新手也能快速上手。如果遇到任何問題，我們的支援團隊隨時為您服務。',
+      '完全不需要！Clovers 設計得非常直觀易用。我們的介面簡潔明瞭，即使是技術新手也能快速上手。如果遇到任何問題，我們的支援團隊隨時為您服務。',
   },
   {
     question: 'AI 生成的內容品質如何？',
     answer:
-      'Clover 使用最先進的 AI 模型，能夠生成高品質、符合語境的內容。您可以根據自己的品牌調性自訂提示詞，確保生成的內容符合您的需求。所有內容都可以在發布前編輯和調整。',
+      'Clovers 使用最先進的 AI 模型，能夠生成高品質、符合語境的內容。您可以根據自己的品牌調性自訂提示詞，確保生成的內容符合您的需求。所有內容都可以在發布前編輯和調整。',
   },
   {
     question: '可以取消訂閱嗎？',
@@ -30,7 +30,7 @@ const faqs = [
   {
     question: '支援哪些社交媒體平台？',
     answer:
-      '目前 Clover 支援 Instagram、YouTube、Twitter/X 和 LinkedIn 的內容排程。我們持續增加更多平台支援，包括 TikTok、Facebook 和 Pinterest。',
+      '目前 Clovers 支援 Instagram、YouTube、Twitter/X 和 LinkedIn 的內容排程。我們持續增加更多平台支援，包括 TikTok、Facebook 和 Pinterest。',
   },
   {
     question: '我的資料安全嗎？',
@@ -40,7 +40,7 @@ const faqs = [
   {
     question: '免費版有什麼限制？',
     answer:
-      '免費版包含基本功能：10 個提示詞模板、每月 5 次 AI 生成、基本排程功能和 100 MB 媒體儲存。對於剛開始的創業者來說，這足以體驗 Clover 的核心價值。',
+      '免費版包含基本功能：10 個提示詞模板、每月 5 次 AI 生成、基本排程功能和 100 MB 媒體儲存。對於剛開始的創業者來說，這足以體驗 Clovers 的核心價值。',
   },
   {
     question: '如何升級到付費方案？',
@@ -101,7 +101,7 @@ const FAQSection = () => {
             <p className="text-muted-foreground">
               還有其他問題？{' '}
               <a
-                href="mailto:support@clover.app"
+                href="mailto:support@clovers.app"
                 className="text-primary hover:text-primary/80 font-medium transition-colors duration-300"
               >
                 聯繫我們

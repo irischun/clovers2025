@@ -110,7 +110,7 @@ const HeroSection = () => {
               
               <img
                 src={cloverMascot}
-                alt="Clover mascot"
+                alt="Clovers mascot"
                 className="w-56 sm:w-72 md:w-96 lg:w-[500px] animate-float drop-shadow-2xl"
               />
             </div>

@@ -31,16 +31,16 @@ const Footer = () => {
             <div className="flex items-center gap-3 mb-6">
               <img 
                 src={cloverLogo} 
-                alt="Clover Logo" 
+                alt="Clovers Logo" 
                 className="w-12 h-12 object-contain"
               />
               <span className="font-display text-2xl text-foreground">
-                Clover
+                Clovers
               </span>
             </div>
             
             <p className="text-muted-foreground mb-6 max-w-md leading-relaxed">
-              From a single seedling to a field of clover, nurtured on one united platform.
+              From a single seedling to a field of clovers, nurtured on one united platform.
               <br />
               一站式營銷AI生成系統
             </p>
@@ -98,7 +98,7 @@ const Footer = () => {
         {/* Bottom section */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground flex items-center gap-1">
-            © {new Date().getFullYear()} Clover. Made with 
+            © {new Date().getFullYear()} Clovers. Made with
             <Heart className="w-4 h-4 text-primary fill-primary" /> 
             for creators.
           </p>
