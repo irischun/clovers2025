@@ -1,5 +1,5 @@
 import { Facebook, Instagram, Linkedin, Twitter, Youtube, Mail, ArrowUp, Heart } from 'lucide-react';
-import cloverLogo from '@/assets/clover-logo.png';
+import cloversLogo from '@/assets/clovers-logo.png';
 
 const Footer = () => {
   const scrollToTop = () => {
@@ -30,7 +30,7 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-6">
               <img 
-                src={cloverLogo} 
+                src={cloversLogo} 
                 alt="Clovers Logo" 
                 className="w-12 h-12 object-contain"
               />

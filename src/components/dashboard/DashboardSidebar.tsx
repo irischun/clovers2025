@@ -1,6 +1,7 @@
 import { User } from '@supabase/supabase-js';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
+import cloversLogo from '@/assets/clovers-logo.png';
 import {
   Sidebar,
   SidebarContent,
@@ -165,9 +166,11 @@ const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
     <Sidebar className="border-r border-border">
       <SidebarHeader className="p-4 border-b border-border space-y-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-lg">🍀</span>
-          </div>
+          <img 
+            src={cloversLogo} 
+            alt="Clovers Logo" 
+            className="w-10 h-10 object-contain"
+          />
           <span className="font-display text-xl font-bold">CLOVERS</span>
         </div>
         <Button

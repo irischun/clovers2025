@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import cloversLogo from '@/assets/clovers-logo.png';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -117,9 +118,11 @@ const Auth = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-2xl">🍀</span>
-            </div>
+            <img 
+              src={cloversLogo} 
+              alt="Clovers Logo" 
+              className="w-12 h-12 object-contain"
+            />
             <span className="font-display text-2xl font-bold">CLOVERS</span>
           </div>
           <p className="text-muted-foreground">
