@@ -562,6 +562,11 @@ const ImageGenerationPage = () => {
         }
         
         toast({ title: `成功生成 ${images.length} 張圖片！` });
+        
+        // Auto-refresh the page after successful generation
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       }
     } catch (error) {
       console.error('Image generation error:', error);
@@ -1237,14 +1242,20 @@ const ImageGenerationPage = () => {
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  onClick={() => setHistory([])}
-                  disabled={history.length === 0}
+                  asChild
                 >
-                  <Grid3X3 className="w-4 h-4 mr-1" />
-                  圖庫
+                  <Link to="/dashboard/gallery">
+                    <Grid3X3 className="w-4 h-4 mr-1" />
+                    圖庫
+                  </Link>
                 </Button>
               </div>
-              <CardDescription>您生成的圖像將顯示在這裡</CardDescription>
+              <CardDescription>
+                您生成的圖像將顯示在這裡。
+                <Link to="/dashboard/gallery" className="ml-1 text-primary hover:underline">
+                  Check your generated image here.
+                </Link>
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {selectedImage ? (
@@ -1290,10 +1301,20 @@ const ImageGenerationPage = () => {
                   <p className="text-sm mt-1">請稍候</p>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
-                  <Image className="w-16 h-16 mb-4 opacity-50" />
-                  <p>尚未生成任何圖像</p>
-                  <p className="text-sm mt-1">完成設定後點擊生成按鈕開始</p>
+                <div className="space-y-4">
+                  {/* Empty placeholder grid based on quantity */}
+                  <div className={`grid gap-2 ${quantity <= 2 ? 'grid-cols-2' : quantity <= 4 ? 'grid-cols-2' : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5'}`}>
+                    {Array.from({ length: quantity }).map((_, index) => (
+                      <div
+                        key={index}
+                        className="aspect-square rounded-lg bg-muted flex flex-col items-center justify-center text-muted-foreground"
+                      >
+                        <Image className="w-8 h-8 mb-2 opacity-50" />
+                        <p className="text-xs">{index + 1}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-center text-sm text-muted-foreground">完成設定後點擊生成按鈕開始</p>
                 </div>
               )}
             </CardContent>
