@@ -1,5 +1,6 @@
 import { Facebook, Instagram, Linkedin, Twitter, Youtube, Mail, ArrowUp, Heart } from 'lucide-react';
 import cloversLogo from '@/assets/clovers-logo.png';
+import { APP_VERSION } from '@/config/version';
 
 const Footer = () => {
   const scrollToTop = () => {
@@ -101,6 +102,9 @@ const Footer = () => {
             © {new Date().getFullYear()} Clovers. Made with
             <Heart className="w-4 h-4 text-primary fill-primary" /> 
             for creators.
+          </p>
+          <p className="text-xs text-muted-foreground/60">
+            v{APP_VERSION}
           </p>
         </div>
       </div>
