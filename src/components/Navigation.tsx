@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import cloverLogo from '@/assets/clover-logo.png';
+import cloversLogo from '@/assets/clovers-logo.png';
 
 const Navigation = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -79,7 +79,7 @@ const Navigation = () => {
         {/* Logo */}
         <a href="/" className="flex items-center gap-3 group">
           <img 
-            src={cloverLogo} 
+            src={cloversLogo} 
             alt="Clovers Logo" 
             className="w-11 h-11 object-contain group-hover:scale-105 transition-transform duration-300"
           />
