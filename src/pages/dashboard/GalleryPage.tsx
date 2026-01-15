@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Star, Youtube, Grid3X3, ImageIcon, Video, Filter } from 'lucide-react';
+import { Calendar as CalendarIcon, Star, Youtube, Grid3X3, ImageIcon, Video, Filter, Trash2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Toggle } from '@/components/ui/toggle';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useGeneratedImages, GeneratedImage } from '@/hooks/useGeneratedImages';
+import { useToast } from '@/hooks/use-toast';
 
 interface GalleryItem {
   id: string;
@@ -19,10 +20,14 @@ interface GalleryItem {
   createdAt: Date;
   isFavorite: boolean;
   isYouTube?: boolean;
+  prompt?: string;
 }
 
 const GalleryPage = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { images: generatedImages, loading, toggleFavorite, deleteImage } = useGeneratedImages();
+  
   const [activeTab, setActiveTab] = useState<'images' | 'videos'>('images');
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
@@ -30,8 +35,16 @@ const GalleryPage = () => {
   const [showYouTube, setShowYouTube] = useState(true);
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
 
-  // Mock data - will be replaced with actual data from database
-  const [galleryItems] = useState<GalleryItem[]>([]);
+  // Convert generated images to gallery items
+  const galleryItems: GalleryItem[] = generatedImages.map(img => ({
+    id: img.id,
+    type: 'image' as const,
+    url: img.image_url,
+    title: img.title || img.prompt.substring(0, 50) + (img.prompt.length > 50 ? '...' : ''),
+    createdAt: new Date(img.created_at),
+    isFavorite: img.is_favorite,
+    prompt: img.prompt,
+  }));
 
   // Filter items based on current filters
   const filteredItems = galleryItems.filter(item => {
@@ -41,7 +54,11 @@ const GalleryPage = () => {
 
     // Filter by date range
     if (startDate && item.createdAt < startDate) return false;
-    if (endDate && item.createdAt > endDate) return false;
+    if (endDate) {
+      const endOfDay = new Date(endDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      if (item.createdAt > endOfDay) return false;
+    }
 
     // Filter by favorites
     if (showFavoritesOnly && !item.isFavorite) return false;
@@ -54,6 +71,34 @@ const GalleryPage = () => {
 
   const imageCount = filteredItems.filter(item => item.type === 'image').length;
   const videoCount = filteredItems.filter(item => item.type === 'video').length;
+
+  const handleToggleFavorite = async (id: string, isFavorite: boolean, e: React.MouseEvent) => {
+    e.stopPropagation();
+    await toggleFavorite(id, isFavorite);
+  };
+
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    await deleteImage(id);
+    if (selectedItem?.id === id) {
+      setSelectedItem(null);
+    }
+  };
+
+  const handleDownload = async (url: string, title: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    try {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `clovers-${title.substring(0, 30)}-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast({ title: '下載開始' });
+    } catch (error) {
+      toast({ title: '下載失敗', variant: 'destructive' });
+    }
+  };
 
   const renderEmptyState = () => (
     <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -114,11 +159,31 @@ const GalleryPage = () => {
               )}
             </div>
           )}
-          {item.isFavorite && (
-            <div className="absolute top-2 left-2">
-              <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-            </div>
-          )}
+          
+          {/* Favorite button */}
+          <button
+            onClick={(e) => handleToggleFavorite(item.id, item.isFavorite, e)}
+            className="absolute top-2 left-2 p-1 rounded-full bg-background/80 hover:bg-background transition-colors"
+          >
+            <Star className={cn("w-4 h-4", item.isFavorite ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground")} />
+          </button>
+          
+          {/* Action buttons on hover */}
+          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={(e) => handleDownload(item.url, item.title, e)}
+              className="p-1 rounded-full bg-background/80 hover:bg-background transition-colors"
+            >
+              <Download className="w-4 h-4 text-muted-foreground" />
+            </button>
+            <button
+              onClick={(e) => handleDelete(item.id, e)}
+              className="p-1 rounded-full bg-background/80 hover:bg-destructive/80 transition-colors"
+            >
+              <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive-foreground" />
+            </button>
+          </div>
+          
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 via-background/50 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <p className="text-xs text-foreground truncate">{item.title}</p>
           </div>
@@ -126,6 +191,14 @@ const GalleryPage = () => {
       ))}
     </div>
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -220,15 +293,20 @@ const GalleryPage = () => {
             {showFavoritesOnly ? '只顯示收藏' : '全部'}
           </Button>
 
-          {/* YouTube Toggle Button */}
-          <Button
-            variant={showYouTube ? "default" : "outline"}
-            onClick={() => setShowYouTube(!showYouTube)}
-            className="gap-2"
-          >
-            <Youtube className="w-4 h-4" />
-            {showYouTube ? '顯示YouTube' : '隱藏YouTube'}
-          </Button>
+          {/* Clear filters */}
+          {(startDate || endDate || showFavoritesOnly) && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setStartDate(undefined);
+                setEndDate(undefined);
+                setShowFavoritesOnly(false);
+              }}
+              className="gap-2 text-muted-foreground"
+            >
+              清除篩選
+            </Button>
+          )}
         </div>
 
         {/* Count */}
@@ -272,10 +350,30 @@ const GalleryPage = () => {
                 />
               )}
               <div className="flex items-center justify-between px-4 pb-2">
-                <p className="text-foreground font-medium">{selectedItem.title}</p>
-                {selectedItem.isFavorite && (
-                  <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                )}
+                <div className="flex-1">
+                  <p className="text-foreground font-medium">{selectedItem.title}</p>
+                  {selectedItem.prompt && (
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{selectedItem.prompt}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDownload(selectedItem.url, selectedItem.title)}
+                    className="gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    下載
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleFavorite(selectedItem.id, selectedItem.isFavorite)}
+                  >
+                    <Star className={cn("w-5 h-5", selectedItem.isFavorite ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground")} />
+                  </Button>
+                </div>
               </div>
             </div>
           )}

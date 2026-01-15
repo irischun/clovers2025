@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { useUserPoints } from '@/hooks/useUserPoints';
-import { Image, Loader2, Download, Wand2, Camera, Film, Palette, ShoppingBag, Share2, ChevronDown, ChevronUp, Sparkles, Upload, X, Languages, Shirt, Zap, ImagePlus, Type, Grid3X3, User, Star } from 'lucide-react';
+import { useGeneratedImages } from '@/hooks/useGeneratedImages';
+import { Image, Loader2, Download, Wand2, Camera, Film, Palette, ShoppingBag, Share2, ChevronDown, ChevronUp, Sparkles, Upload, X, Languages, Shirt, Zap, ImagePlus, Type, Grid3X3, User, Star, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -252,8 +254,9 @@ const aspectRatios = [
 ];
 
 const ImageGenerationPage = () => {
-  // Get user points
+  // Get user points and generated images
   const { points: userPoints } = useUserPoints();
+  const { images: savedImages, saveImage, toggleFavorite } = useGeneratedImages();
   
   // Generation mode
   const [generationMode, setGenerationMode] = useState<'image-to-image' | 'text-to-image'>('image-to-image');
@@ -539,9 +542,25 @@ const ImageGenerationPage = () => {
       if (images.length > 0) {
         setSelectedImage(images[0]);
         const isAvatarImage = avatarGeneration && generationMode === 'text-to-image';
-        images.forEach(imageUrl => {
+        
+        // Save to database and local history
+        for (const imageUrl of images) {
+          try {
+            await saveImage({
+              prompt,
+              image_url: imageUrl,
+              title: title || undefined,
+              is_avatar: isAvatarImage,
+              style: selectedPosterStyle || selectedStyleTags[0] || undefined,
+              model: selectedModel,
+              aspect_ratio: selectedAspectRatio,
+            });
+          } catch (saveError) {
+            console.error('Failed to save image to database:', saveError);
+          }
           setHistory(prev => [{ prompt, imageUrl, isAvatar: isAvatarImage }, ...prev.slice(0, 49)]);
-        });
+        }
+        
         toast({ title: `成功生成 ${images.length} 張圖片！` });
       }
     } catch (error) {
@@ -591,6 +610,12 @@ const ImageGenerationPage = () => {
           <h1 className="heading-display text-xl sm:text-2xl mb-1">AI 圖像生成</h1>
           <p className="text-sm sm:text-base text-muted-foreground">選擇生成模式並創建精美圖像</p>
         </div>
+        <Link to="/dashboard/gallery">
+          <Button variant="outline" className="gap-2">
+            <FolderOpen className="w-4 h-4" />
+            圖庫
+          </Button>
+        </Link>
       </div>
 
       {/* Generation Mode Tabs */}
