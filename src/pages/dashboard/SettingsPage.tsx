@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { User, Mail, Lock, Save, Loader2 } from 'lucide-react';
+import { User, Mail, Lock, Save, Loader2, Info } from 'lucide-react';
+import { APP_VERSION, VERSION_NAME, VERSION_DATE } from '@/config/version';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -259,6 +260,31 @@ const SettingsPage = () => {
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
             更新密碼
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Version Info */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Info className="w-5 h-5" />
+            版本資訊
+          </CardTitle>
+          <CardDescription>系統版本與更新資訊</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="flex justify-between items-center py-2 border-b border-border/50">
+            <span className="text-sm text-muted-foreground">版本號碼</span>
+            <span className="font-mono text-sm">v{APP_VERSION}</span>
+          </div>
+          <div className="flex justify-between items-center py-2 border-b border-border/50">
+            <span className="text-sm text-muted-foreground">版本名稱</span>
+            <span className="text-sm">{VERSION_NAME}</span>
+          </div>
+          <div className="flex justify-between items-center py-2">
+            <span className="text-sm text-muted-foreground">發布日期</span>
+            <span className="text-sm">{VERSION_DATE}</span>
+          </div>
         </CardContent>
       </Card>
     </div>
