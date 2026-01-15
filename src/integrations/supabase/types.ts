@@ -104,6 +104,48 @@ export type Database = {
         }
         Relationships: []
       }
+      generated_images: {
+        Row: {
+          aspect_ratio: string | null
+          created_at: string
+          id: string
+          image_url: string
+          is_avatar: boolean | null
+          is_favorite: boolean | null
+          model: string | null
+          prompt: string
+          style: string | null
+          title: string | null
+          user_id: string
+        }
+        Insert: {
+          aspect_ratio?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          is_avatar?: boolean | null
+          is_favorite?: boolean | null
+          model?: string | null
+          prompt: string
+          style?: string | null
+          title?: string | null
+          user_id: string
+        }
+        Update: {
+          aspect_ratio?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          is_avatar?: boolean | null
+          is_favorite?: boolean | null
+          model?: string | null
+          prompt?: string
+          style?: string | null
+          title?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       media_files: {
         Row: {
           created_at: string
