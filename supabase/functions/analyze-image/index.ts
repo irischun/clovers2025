@@ -31,8 +31,9 @@ async function verifyAuth(req: Request): Promise<{ userId: string } | null> {
 
 // Build the analysis prompt
 function buildAnalysisPrompt(): string {
-  return `Analyze this image and provide a detailed description of any people visible. For each person, identify and describe:
+  return `Analyze this image thoroughly and provide detailed descriptions of any people AND animals visible. 
 
+## For each PERSON detected, identify:
 1. **Gender**: Perceived gender (male, female, or ambiguous)
 2. **Estimated Age Range**: Approximate age group (child, teenager, young adult 20-30, adult 30-45, middle-aged 45-60, senior 60+)
 3. **Ethnicity/Race**: Perceived ethnic background (e.g., East Asian, South Asian, Caucasian/European, African/Black, Middle Eastern, Latino/Hispanic, Mixed, etc.)
@@ -43,23 +44,45 @@ function buildAnalysisPrompt(): string {
    - Lip shape (thin, full, medium)
    - Eyebrow style (thick, thin, arched, straight)
    - Any distinctive features (dimples, freckles, beauty marks, etc.)
-5. **Hair**:
-   - Color (black, brown, blonde, red, gray, white, dyed colors)
-   - Style (short, medium, long, curly, straight, wavy, bald, etc.)
+5. **Hair**: Color and style
 6. **Expression**: Current facial expression or mood
-7. **Skin Characteristics**: Skin tone, texture, any notable features
+7. **Skin Characteristics**: Skin tone, texture
 8. **Body Type**: If visible (slim, athletic, average, plus-size, etc.)
-9. **Attire/Style**: Clothing style and any notable accessories
+9. **Attire/Style**: Clothing style and accessories
 10. **Overall Vibe**: General impression or personality conveyed
 
-If no people are visible, describe the main subjects in the image instead (objects, animals, scenery, etc.).
+## For each ANIMAL detected, identify:
+1. **Species**: Specific animal species (e.g., Golden Retriever dog, Persian cat, African elephant)
+2. **Breed/Subspecies**: If applicable and identifiable
+3. **Age Estimate**: Baby/juvenile, young adult, adult, senior
+4. **Size**: Small, medium, large, or specific size description
+5. **Color/Markings**: Fur/skin color, patterns, distinctive markings
+6. **Coat/Texture**: Fur type (short, long, curly, smooth), feather type, scales, etc.
+7. **Physical Features**:
+   - Body shape and build
+   - Ear shape and position
+   - Eye color and shape
+   - Tail characteristics
+   - Any distinctive features (spots, stripes, scars, etc.)
+8. **Expression/Mood**: Apparent emotional state (happy, alert, relaxed, playful, scared, etc.)
+9. **Pose/Activity**: What the animal is doing (sitting, running, sleeping, etc.)
+10. **Accessories**: Collars, harnesses, clothing, tags, etc.
+11. **Health Appearance**: General health indicators (healthy coat, body condition)
+12. **Overall Character**: Personality impression (friendly, majestic, cute, fierce, etc.)
 
-Respond in a structured JSON format like this:
+## Scene Context:
+- Describe the overall scene and environment
+- Note any interaction between people and animals if both are present
+
+Respond in this JSON format:
 {
   "peopleDetected": true/false,
   "numberOfPeople": number,
+  "animalsDetected": true/false,
+  "numberOfAnimals": number,
   "subjects": [
     {
+      "type": "person",
       "gender": "string",
       "ageRange": "string",
       "ethnicity": "string",
@@ -79,8 +102,30 @@ Respond in a structured JSON format like this:
       "descriptionPrompt": "A detailed text description suitable for image generation prompts"
     }
   ],
-  "sceneDescription": "Overall scene description",
-  "suggestedPromptAdditions": "Suggested text to add to image generation prompts to maintain consistency"
+  "animals": [
+    {
+      "type": "animal",
+      "species": "string",
+      "breed": "string",
+      "ageEstimate": "string",
+      "size": "string",
+      "colorMarkings": "string",
+      "coatTexture": "string",
+      "bodyShape": "string",
+      "earShape": "string",
+      "eyeColor": "string",
+      "tailFeatures": "string",
+      "distinctiveFeatures": "string",
+      "expression": "string",
+      "pose": "string",
+      "accessories": "string",
+      "healthAppearance": "string",
+      "overallCharacter": "string",
+      "descriptionPrompt": "A detailed text description suitable for image generation prompts"
+    }
+  ],
+  "sceneDescription": "Overall scene description including environment and any interactions",
+  "suggestedPromptAdditions": "Suggested text to add to image generation prompts to maintain consistency with detected subjects"
 }`;
 }
 
