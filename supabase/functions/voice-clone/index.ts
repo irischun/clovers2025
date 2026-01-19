@@ -93,10 +93,32 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('MiniMax API error:', errorText);
+      
+      // Log detailed error server-side only
+      console.error('Voice API error:', {
+        status: response.status,
+        error: errorText,
+        userId: auth.userId,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Return generic error to client
+      let clientMessage = 'Voice cloning failed. Please try again.';
+      
+      if (response.status === 429) {
+        clientMessage = 'Too many requests. Please wait and try again.';
+      } else if (response.status >= 500) {
+        clientMessage = 'Service temporarily unavailable. Please try again later.';
+      } else if (response.status === 400) {
+        clientMessage = 'Invalid request. Please check your audio file.';
+      }
+      
       return new Response(
-        JSON.stringify({ error: `MiniMax API error: ${errorText}` }),
-        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          error: clientMessage,
+          errorId: crypto.randomUUID() // For support correlation
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
