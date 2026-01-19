@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { useUserPoints } from '@/hooks/useUserPoints';
 import { useGeneratedImages } from '@/hooks/useGeneratedImages';
-import { Image, Loader2, Download, Wand2, Camera, Film, Palette, ShoppingBag, Share2, ChevronDown, ChevronUp, Sparkles, Upload, X, Languages, Shirt, Zap, ImagePlus, Type, Grid3X3, User, Star, FolderOpen } from 'lucide-react';
+import { Image, Loader2, Download, Wand2, Camera, Film, Palette, ShoppingBag, Share2, ChevronDown, ChevronUp, Sparkles, Upload, X, Languages, Shirt, Zap, ImagePlus, Type, Grid3X3, User, Star, FolderOpen, ScanFace } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,36 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+
+// Image analysis result interface
+interface ImageAnalysisSubject {
+  gender?: string;
+  ageRange?: string;
+  ethnicity?: string;
+  faceShape?: string;
+  eyeFeatures?: string;
+  noseType?: string;
+  lipShape?: string;
+  eyebrows?: string;
+  distinctiveFeatures?: string;
+  hairColor?: string;
+  hairStyle?: string;
+  expression?: string;
+  skinTone?: string;
+  bodyType?: string;
+  attire?: string;
+  overallVibe?: string;
+  descriptionPrompt?: string;
+}
+
+interface ImageAnalysisResult {
+  peopleDetected?: boolean;
+  numberOfPeople?: number;
+  subjects?: ImageAnalysisSubject[];
+  sceneDescription?: string;
+  suggestedPromptAdditions?: string;
+  rawAnalysis?: string;
+}
 
 // Camera angle presets - comprehensive list from reference
 const cameraAngles = [
@@ -305,6 +335,12 @@ const ImageGenerationPage = () => {
   const [history, setHistory] = useState<Array<{ prompt: string; imageUrl: string; isAvatar: boolean }>>([]);
   const [activeGalleryTab, setActiveGalleryTab] = useState<'all' | 'avatars'>('all');
   
+  // Image analysis states
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [imageAnalysis, setImageAnalysis] = useState<ImageAnalysisResult | null>(null);
+  const [showAnalysisDialog, setShowAnalysisDialog] = useState(false);
+  const [autoAnalyze, setAutoAnalyze] = useState(true);
+  
   const { toast } = useToast();
   const aspectRatio = aspectRatios.find(ar => ar.id === selectedAspectRatio);
   const currentModel = models.find(m => m.id === selectedModel);
@@ -389,7 +425,86 @@ const ImageGenerationPage = () => {
       newImages.splice(index, 1);
       return newImages;
     });
+    // Clear analysis if no images left
+    if (uploadedImages.length <= 1) {
+      setImageAnalysis(null);
+    }
   };
+
+  // Analyze uploaded image for demographics and features
+  const analyzeImage = async (imageFile?: File, imageUrl?: string) => {
+    setIsAnalyzing(true);
+    setImageAnalysis(null);
+    
+    try {
+      let imageBase64: string | undefined;
+      
+      if (imageFile) {
+        // Convert file to base64
+        imageBase64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(imageFile);
+        });
+      }
+      
+      const { data, error } = await supabase.functions.invoke('analyze-image', {
+        body: { 
+          imageUrl: imageUrl,
+          imageBase64: imageBase64
+        }
+      });
+      
+      if (error) throw error;
+      
+      if (data.success && data.analysis) {
+        setImageAnalysis(data.analysis);
+        toast({ 
+          title: '圖片分析完成', 
+          description: data.analysis.peopleDetected 
+            ? `檢測到 ${data.analysis.numberOfPeople || 1} 個人物` 
+            : '已分析圖片內容'
+        });
+        
+        // If there's a suggested prompt addition, offer to add it
+        if (data.analysis.suggestedPromptAdditions && !prompt.includes(data.analysis.suggestedPromptAdditions)) {
+          // Auto-add to prompt if it's short or empty
+          if (prompt.length < 50) {
+            setPrompt(prev => {
+              const addition = data.analysis.suggestedPromptAdditions;
+              return prev ? `${prev}, ${addition}` : addition;
+            });
+          }
+        }
+      } else if (data.error) {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('Image analysis error:', error);
+      toast({ 
+        title: '圖片分析失敗', 
+        description: error instanceof Error ? error.message : '請稍後重試',
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  // Auto-analyze when first image is uploaded
+  useEffect(() => {
+    if (autoAnalyze && uploadedImages.length > 0 && !imageAnalysis && !isAnalyzing) {
+      analyzeImage(uploadedImages[0].file);
+    }
+  }, [uploadedImages.length, autoAnalyze]);
+
+  // Auto-analyze when gallery image is selected
+  useEffect(() => {
+    if (autoAnalyze && selectedGalleryImage && !imageAnalysis && !isAnalyzing) {
+      analyzeImage(undefined, selectedGalleryImage);
+    }
+  }, [selectedGalleryImage, autoAnalyze]);
 
   // Handle image reordering via drag and drop
   const handleImageDragStart = (index: number) => {
@@ -825,6 +940,142 @@ const ImageGenerationPage = () => {
                     )}
                   </CollapsibleContent>
                 </Collapsible>
+
+                {/* Image Analysis Section */}
+                {(uploadedImages.length > 0 || selectedGalleryImage) && (
+                  <div className="border-t pt-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ScanFace className="w-4 h-4 text-primary" />
+                        <Label className="text-sm font-medium">AI 圖片分析</Label>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <Switch 
+                            id="auto-analyze" 
+                            checked={autoAnalyze}
+                            onCheckedChange={setAutoAnalyze}
+                          />
+                          <Label htmlFor="auto-analyze" className="text-xs text-muted-foreground">自動分析</Label>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            if (uploadedImages.length > 0) {
+                              analyzeImage(uploadedImages[0].file);
+                            } else if (selectedGalleryImage) {
+                              analyzeImage(undefined, selectedGalleryImage);
+                            }
+                          }}
+                          disabled={isAnalyzing}
+                        >
+                          {isAnalyzing ? (
+                            <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> 分析中...</>
+                          ) : (
+                            <><ScanFace className="w-3 h-3 mr-1" /> 分析圖片</>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {/* Analysis Results */}
+                    {imageAnalysis && (
+                      <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                        {imageAnalysis.peopleDetected ? (
+                          <>
+                            <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                              <User className="w-4 h-4" />
+                              檢測到 {imageAnalysis.numberOfPeople || 1} 個人物
+                            </div>
+                            {imageAnalysis.subjects && imageAnalysis.subjects.length > 0 && (
+                              <div className="space-y-3">
+                                {imageAnalysis.subjects.map((subject, idx) => (
+                                  <div key={idx} className="text-xs space-y-1.5 p-2 bg-background rounded border">
+                                    <div className="font-medium text-sm mb-2">人物 {idx + 1}</div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1">
+                                      {subject.gender && (
+                                        <div><span className="text-muted-foreground">性別：</span>{subject.gender}</div>
+                                      )}
+                                      {subject.ageRange && (
+                                        <div><span className="text-muted-foreground">年齡：</span>{subject.ageRange}</div>
+                                      )}
+                                      {subject.ethnicity && (
+                                        <div><span className="text-muted-foreground">種族：</span>{subject.ethnicity}</div>
+                                      )}
+                                      {subject.faceShape && (
+                                        <div><span className="text-muted-foreground">臉型：</span>{subject.faceShape}</div>
+                                      )}
+                                      {subject.skinTone && (
+                                        <div><span className="text-muted-foreground">膚色：</span>{subject.skinTone}</div>
+                                      )}
+                                      {subject.hairColor && (
+                                        <div><span className="text-muted-foreground">髮色：</span>{subject.hairColor}</div>
+                                      )}
+                                      {subject.hairStyle && (
+                                        <div><span className="text-muted-foreground">髮型：</span>{subject.hairStyle}</div>
+                                      )}
+                                      {subject.eyeFeatures && (
+                                        <div><span className="text-muted-foreground">眼睛：</span>{subject.eyeFeatures}</div>
+                                      )}
+                                      {subject.expression && (
+                                        <div><span className="text-muted-foreground">表情：</span>{subject.expression}</div>
+                                      )}
+                                      {subject.bodyType && (
+                                        <div><span className="text-muted-foreground">體型：</span>{subject.bodyType}</div>
+                                      )}
+                                      {subject.attire && (
+                                        <div className="col-span-2 sm:col-span-3"><span className="text-muted-foreground">服裝：</span>{subject.attire}</div>
+                                      )}
+                                    </div>
+                                    {subject.overallVibe && (
+                                      <div className="mt-2 pt-2 border-t">
+                                        <span className="text-muted-foreground">整體感覺：</span>{subject.overallVibe}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="text-sm">
+                            <span className="text-muted-foreground">場景描述：</span>
+                            {imageAnalysis.sceneDescription || imageAnalysis.rawAnalysis?.slice(0, 200)}
+                          </div>
+                        )}
+                        
+                        {imageAnalysis.suggestedPromptAdditions && (
+                          <div className="flex items-center justify-between pt-2 border-t mt-2">
+                            <div className="text-xs text-muted-foreground">
+                              建議提示詞：<span className="text-foreground">{imageAnalysis.suggestedPromptAdditions.slice(0, 100)}</span>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              className="text-xs h-7"
+                              onClick={() => {
+                                if (imageAnalysis.suggestedPromptAdditions) {
+                                  setPrompt(prev => prev ? `${prev}, ${imageAnalysis.suggestedPromptAdditions}` : imageAnalysis.suggestedPromptAdditions!);
+                                  toast({ title: '已添加建議提示詞' });
+                                }
+                              }}
+                            >
+                              添加到提示詞
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {isAnalyzing && (
+                      <div className="flex items-center justify-center py-4 text-muted-foreground">
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        <span className="text-sm">正在分析圖片特徵...</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
