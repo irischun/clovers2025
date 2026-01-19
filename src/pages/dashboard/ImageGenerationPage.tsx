@@ -22,6 +22,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Image analysis result interface
 interface ImageAnalysisSubject {
+  type?: string;
   gender?: string;
   ageRange?: string;
   ethnicity?: string;
@@ -41,10 +42,34 @@ interface ImageAnalysisSubject {
   descriptionPrompt?: string;
 }
 
+interface ImageAnalysisAnimal {
+  type?: string;
+  species?: string;
+  breed?: string;
+  ageEstimate?: string;
+  size?: string;
+  colorMarkings?: string;
+  coatTexture?: string;
+  bodyShape?: string;
+  earShape?: string;
+  eyeColor?: string;
+  tailFeatures?: string;
+  distinctiveFeatures?: string;
+  expression?: string;
+  pose?: string;
+  accessories?: string;
+  healthAppearance?: string;
+  overallCharacter?: string;
+  descriptionPrompt?: string;
+}
+
 interface ImageAnalysisResult {
   peopleDetected?: boolean;
   numberOfPeople?: number;
+  animalsDetected?: boolean;
+  numberOfAnimals?: number;
   subjects?: ImageAnalysisSubject[];
+  animals?: ImageAnalysisAnimal[];
   sceneDescription?: string;
   suggestedPromptAdditions?: string;
   rawAnalysis?: string;
@@ -460,10 +485,20 @@ const ImageGenerationPage = () => {
       
       if (data.success && data.analysis) {
         setImageAnalysis(data.analysis);
+        
+        // Build detection message
+        const detections: string[] = [];
+        if (data.analysis.peopleDetected) {
+          detections.push(`${data.analysis.numberOfPeople || 1} 個人物`);
+        }
+        if (data.analysis.animalsDetected) {
+          detections.push(`${data.analysis.numberOfAnimals || 1} 個動物`);
+        }
+        
         toast({ 
           title: '圖片分析完成', 
-          description: data.analysis.peopleDetected 
-            ? `檢測到 ${data.analysis.numberOfPeople || 1} 個人物` 
+          description: detections.length > 0 
+            ? `檢測到 ${detections.join('、')}` 
             : '已分析圖片內容'
         });
         
@@ -981,8 +1016,9 @@ const ImageGenerationPage = () => {
                     
                     {/* Analysis Results */}
                     {imageAnalysis && (
-                      <div className="bg-muted/50 rounded-lg p-3 space-y-2">
-                        {imageAnalysis.peopleDetected ? (
+                      <div className="bg-muted/50 rounded-lg p-3 space-y-3">
+                        {/* People Detection */}
+                        {imageAnalysis.peopleDetected && (
                           <>
                             <div className="flex items-center gap-2 text-sm font-medium text-primary">
                               <User className="w-4 h-4" />
@@ -1038,10 +1074,90 @@ const ImageGenerationPage = () => {
                               </div>
                             )}
                           </>
-                        ) : (
+                        )}
+
+                        {/* Animal Detection */}
+                        {imageAnalysis.animalsDetected && (
+                          <>
+                            <div className="flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400">
+                              🐾 檢測到 {imageAnalysis.numberOfAnimals || 1} 個動物
+                            </div>
+                            {imageAnalysis.animals && imageAnalysis.animals.length > 0 && (
+                              <div className="space-y-3">
+                                {imageAnalysis.animals.map((animal, idx) => (
+                                  <div key={idx} className="text-xs space-y-1.5 p-2 bg-background rounded border border-green-200 dark:border-green-800">
+                                    <div className="font-medium text-sm mb-2 text-green-700 dark:text-green-300">
+                                      動物 {idx + 1}: {animal.species || '未知物種'}
+                                    </div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1">
+                                      {animal.species && (
+                                        <div><span className="text-muted-foreground">物種：</span>{animal.species}</div>
+                                      )}
+                                      {animal.breed && (
+                                        <div><span className="text-muted-foreground">品種：</span>{animal.breed}</div>
+                                      )}
+                                      {animal.ageEstimate && (
+                                        <div><span className="text-muted-foreground">年齡：</span>{animal.ageEstimate}</div>
+                                      )}
+                                      {animal.size && (
+                                        <div><span className="text-muted-foreground">體型：</span>{animal.size}</div>
+                                      )}
+                                      {animal.colorMarkings && (
+                                        <div><span className="text-muted-foreground">顏色/花紋：</span>{animal.colorMarkings}</div>
+                                      )}
+                                      {animal.coatTexture && (
+                                        <div><span className="text-muted-foreground">毛質：</span>{animal.coatTexture}</div>
+                                      )}
+                                      {animal.bodyShape && (
+                                        <div><span className="text-muted-foreground">體態：</span>{animal.bodyShape}</div>
+                                      )}
+                                      {animal.eyeColor && (
+                                        <div><span className="text-muted-foreground">眼睛顏色：</span>{animal.eyeColor}</div>
+                                      )}
+                                      {animal.earShape && (
+                                        <div><span className="text-muted-foreground">耳朵：</span>{animal.earShape}</div>
+                                      )}
+                                      {animal.tailFeatures && (
+                                        <div><span className="text-muted-foreground">尾巴：</span>{animal.tailFeatures}</div>
+                                      )}
+                                      {animal.expression && (
+                                        <div><span className="text-muted-foreground">表情：</span>{animal.expression}</div>
+                                      )}
+                                      {animal.pose && (
+                                        <div><span className="text-muted-foreground">姿態：</span>{animal.pose}</div>
+                                      )}
+                                      {animal.accessories && (
+                                        <div><span className="text-muted-foreground">配件：</span>{animal.accessories}</div>
+                                      )}
+                                      {animal.distinctiveFeatures && (
+                                        <div className="col-span-2 sm:col-span-3"><span className="text-muted-foreground">特徵：</span>{animal.distinctiveFeatures}</div>
+                                      )}
+                                    </div>
+                                    {animal.overallCharacter && (
+                                      <div className="mt-2 pt-2 border-t">
+                                        <span className="text-muted-foreground">整體特質：</span>{animal.overallCharacter}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        )}
+
+                        {/* Scene description if no people or animals */}
+                        {!imageAnalysis.peopleDetected && !imageAnalysis.animalsDetected && (
                           <div className="text-sm">
                             <span className="text-muted-foreground">場景描述：</span>
                             {imageAnalysis.sceneDescription || imageAnalysis.rawAnalysis?.slice(0, 200)}
+                          </div>
+                        )}
+
+                        {/* Scene description when both exist */}
+                        {(imageAnalysis.peopleDetected || imageAnalysis.animalsDetected) && imageAnalysis.sceneDescription && (
+                          <div className="text-xs pt-2 border-t">
+                            <span className="text-muted-foreground">場景描述：</span>
+                            {imageAnalysis.sceneDescription}
                           </div>
                         )}
                         
