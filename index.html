@@ -24,6 +24,28 @@
 
   <body>
     <div id="root"></div>
+    <!-- SPA redirect handler for GitHub Pages - must run before React -->
+    <script>
+      (function() {
+        var redirect = sessionStorage.getItem('spa-redirect');
+        if (redirect) {
+          sessionStorage.removeItem('spa-redirect');
+          var basePath = '/clovers2025';
+          
+          // Extract the route part (remove base path if present)
+          var route = redirect;
+          if (redirect.startsWith(basePath)) {
+            route = redirect.substring(basePath.length);
+          }
+          
+          // If there's a route to restore, update the URL
+          if (route && route !== '/') {
+            // Use replaceState to set the correct URL before React initializes
+            window.history.replaceState(null, '', basePath + route);
+          }
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
