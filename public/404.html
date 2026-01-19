@@ -3,16 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clover</title>
+  <title>Clovers - Redirecting...</title>
   <script>
     // SPA redirect script for GitHub Pages
-    // Redirects 404s to index.html with the path stored in sessionStorage
-    const path = window.location.pathname;
-    sessionStorage.setItem('redirect', path);
-    window.location.replace('/clovers2025/');
+    // Store the full path and redirect to the base URL
+    // The index.html will pick up this path and handle client-side routing
+    (function() {
+      var basePath = '/clovers2025';
+      var fullPath = window.location.pathname;
+      var search = window.location.search;
+      var hash = window.location.hash;
+      
+      // Store the path that was requested
+      sessionStorage.setItem('spa-redirect', fullPath + search + hash);
+      
+      // Redirect to the base URL
+      window.location.replace(basePath + '/');
+    })();
   </script>
 </head>
 <body>
-  <p>Redirecting...</p>
+  <noscript>
+    <meta http-equiv="refresh" content="0; url=/clovers2025/">
+  </noscript>
+  <p style="font-family: system-ui, sans-serif; text-align: center; margin-top: 100px;">Redirecting to Clovers...</p>
 </body>
 </html>
