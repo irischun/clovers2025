@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import cloversLogo from '@/assets/clovers-logo.png';
+import cloversLogo from '@/assets/clovers-logo-new.png';
 
 const Navigation = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);

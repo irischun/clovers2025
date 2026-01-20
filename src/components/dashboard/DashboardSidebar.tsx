@@ -1,7 +1,7 @@
 import { User } from '@supabase/supabase-js';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import cloversLogo from '@/assets/clovers-logo.png';
+import cloversLogo from '@/assets/clovers-logo-new.png';
 import {
   Sidebar,
   SidebarContent,
