@@ -1,5 +1,5 @@
 import { Facebook, Instagram, Linkedin, Twitter, Youtube, Mail, ArrowUp, Heart } from 'lucide-react';
-import cloversLogo from '@/assets/clovers-logo.png';
+import cloversLogo from '@/assets/clovers-logo-new.png';
 import { APP_VERSION } from '@/config/version';
 
 const Footer = () => {
