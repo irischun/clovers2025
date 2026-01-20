@@ -158,8 +158,8 @@ function buildEnhancedPrompt(
 }
 
 // Build system message for better guidance
-function buildSystemMessage(): string {
-  return `You are an expert AI image generator. Create exactly what the user requests with the following quality standards:
+function buildSystemMessage(hasReferenceImage: boolean, preserveFace: boolean): string {
+  let baseMessage = `You are an expert AI image generator. Create exactly what the user requests with the following quality standards:
 
 1. COMPOSITION: Follow professional photography and art composition rules. Use rule of thirds, leading lines, and proper framing.
 
@@ -173,9 +173,49 @@ function buildSystemMessage(): string {
 
 6. TECHNICAL QUALITY: Generate at the highest quality possible - sharp, well-exposed, properly composed.
 
-7. SUBJECT FOCUS: The main subject should be clear and prominent. Avoid cluttered backgrounds unless specifically requested.
+7. SUBJECT FOCUS: The main subject should be clear and prominent. Avoid cluttered backgrounds unless specifically requested.`;
+
+  if (hasReferenceImage) {
+    baseMessage += `
+
+CRITICAL - REFERENCE IMAGE INSTRUCTIONS:
+You have been provided with a reference image. You MUST use this reference image as the PRIMARY basis for your generation:
+
+1. SUBJECT PRESERVATION: The main subject(s) in the reference image (person, animal, product, object) MUST appear in your generated image with the SAME identity, appearance, and key features.
+
+2. FACIAL FEATURES: If there is a person in the reference, their face, hair, body type, and distinctive features MUST be preserved exactly. Do NOT generate a different person.
+
+3. PRODUCT/OBJECT IDENTITY: If the reference shows a product or object, that EXACT product/object must appear in the generated image - same shape, color, design, brand elements.
+
+4. ANIMAL IDENTITY: If the reference shows an animal, that specific animal (same species, coloring, markings, size) must appear in the generated image.
+
+5. STYLE APPLICATION: Apply the requested style/effects to the reference subject, but the IDENTITY of the subject must remain recognizable as the same subject from the reference.
+
+6. ENHANCEMENT NOT REPLACEMENT: You are enhancing and stylizing the reference image content, NOT creating something completely different.
+
+The reference image is your ground truth - the generated image should be clearly based on and recognizable as being derived from that reference.`;
+  }
+
+  if (preserveFace) {
+    baseMessage += `
+
+FACE PRESERVATION MODE ACTIVE:
+You MUST preserve ALL facial features from the reference image with extreme precision:
+- Exact face shape and structure
+- Eye shape, color, and spacing
+- Nose shape and size
+- Lip shape and expression
+- Eyebrow shape and thickness
+- Skin tone and texture
+- Any distinctive marks, moles, or features
+The face in the generated image must be IDENTICAL to the reference.`;
+  }
+
+  baseMessage += `
 
 Generate the image now with these principles in mind.`;
+
+  return baseMessage;
 }
 
 serve(async (req) => {
@@ -193,14 +233,26 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, style = "realistic", model, width, height, referenceImage } = await req.json();
+    const { prompt, style = "realistic", model, width, height, referenceImage, mode, preserveFace = false } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("Image generation request from user:", auth.userId, { prompt, style, model, width, height, hasReference: !!referenceImage });
+    const hasReferenceImage = !!referenceImage;
+    const isImageToImageMode = mode === 'image-to-image';
+    
+    console.log("Image generation request from user:", auth.userId, { 
+      prompt: prompt?.substring(0, 100), 
+      style, 
+      model, 
+      width, 
+      height, 
+      hasReference: hasReferenceImage,
+      mode,
+      preserveFace
+    });
 
     // Use the provided model or default to pro for better quality
     const aiModel = model || "google/gemini-2.5-flash-image-preview";
@@ -213,16 +265,35 @@ serve(async (req) => {
     // Build messages array
     const messages: Array<{role: string; content: string | Array<{type: string; text?: string; image_url?: {url: string}}>}> = [];
     
-    // Add system message for better guidance
-    messages.push({ role: "system", content: buildSystemMessage() });
+    // Add system message for better guidance - now aware of reference image context
+    messages.push({ role: "system", content: buildSystemMessage(hasReferenceImage, preserveFace) });
     
-    // If there's a reference image, include it in the message
+    // If there's a reference image, include it with strong instructions
     if (referenceImage) {
+      // Build a much stronger reference-aware prompt
+      let referencePrompt: string;
+      
+      if (isImageToImageMode) {
+        // Image-to-image mode: The reference is the primary source
+        referencePrompt = `IMPORTANT: This reference image contains the EXACT subject I want you to use. 
+
+The subject(s) in this reference image MUST appear in the generated image with the SAME identity and key features.
+
+Your task: Take the subject(s) from this reference image and generate a new image with them, applying the following style and modifications:
+
+${enhancedPrompt}
+
+Remember: The generated image must feature the SAME subject(s) from the reference, not a different subject. The subject's identity (face, body, product shape, animal appearance, etc.) must be preserved while applying the requested style.`;
+      } else {
+        // Text-to-image with reference: Use as style/composition reference
+        referencePrompt = `Use this reference image as inspiration for the style, composition, and quality. Generate: ${enhancedPrompt}`;
+      }
+      
       messages.push({
         role: "user",
         content: [
-          { type: "text", text: `Using this reference image as inspiration and guidance, create: ${enhancedPrompt}` },
-          { type: "image_url", image_url: { url: referenceImage } }
+          { type: "image_url", image_url: { url: referenceImage } },
+          { type: "text", text: referencePrompt }
         ]
       });
     } else {

@@ -643,6 +643,30 @@ const ImageGenerationPage = () => {
     return parts.join('. ') + '. Ultra high resolution, professional quality.';
   };
 
+  // Convert File to base64 data URL
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  // Get reference image as base64 for the API
+  const getReferenceImage = async (): Promise<string | null> => {
+    // Priority: uploaded images first, then gallery selection
+    if (uploadedImages.length > 0) {
+      // Use the first uploaded image as the primary reference
+      return await fileToBase64(uploadedImages[0].file);
+    }
+    if (selectedGalleryImage) {
+      // Gallery images are already URLs, return as-is
+      return selectedGalleryImage;
+    }
+    return null;
+  };
+
   const handleGenerate = async () => {
     if (!prompt.trim() && generationMode === 'text-to-image') {
       toast({ title: '請輸入圖片描述', variant: 'destructive' });
@@ -666,6 +690,17 @@ const ImageGenerationPage = () => {
       const fullPrompt = buildFullPrompt();
       const model = models.find(m => m.id === selectedModel)?.model || 'google/gemini-2.5-flash-image-preview';
       
+      // Get reference image for image-to-image mode
+      let referenceImage: string | null = null;
+      if (generationMode === 'image-to-image') {
+        referenceImage = await getReferenceImage();
+        if (!referenceImage) {
+          toast({ title: '無法讀取參考圖片', variant: 'destructive' });
+          setIsGenerating(false);
+          return;
+        }
+      }
+      
       const images: string[] = [];
       
       for (let i = 0; i < quantity; i++) {
@@ -676,6 +711,12 @@ const ImageGenerationPage = () => {
             model,
             width: aspectRatio?.width,
             height: aspectRatio?.height,
+            // Pass reference image for image-to-image mode
+            referenceImage: referenceImage,
+            // Pass mode so edge function knows the user's intent
+            mode: generationMode,
+            // Pass face preservation flag
+            preserveFace: preserveFace,
           }
         });
 
