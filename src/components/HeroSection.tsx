@@ -1,7 +1,7 @@
 import { Facebook, Instagram, Linkedin, Twitter, Youtube, Leaf, Gem } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import cloversLogo from '@/assets/clovers-ai-logo.jpeg';
+import cloversLogo from '@/assets/clovers-hero-logo.jpeg';
 
 const HeroSection = () => {
   const navigate = useNavigate();
