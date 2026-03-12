@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import cloversLogo from '@/assets/clovers-new-logo.jpeg';
+import cloversLogo from '@/assets/clovers-ai-logo.jpeg';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
