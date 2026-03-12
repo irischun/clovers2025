@@ -1,5 +1,5 @@
 import { Facebook, Instagram, Linkedin, Twitter, Youtube, Mail, ArrowUp, Heart } from 'lucide-react';
-import cloversLogo from '@/assets/clovers-logo-new.png';
+import cloversLogo from '@/assets/clovers-ai-logo.jpeg';
 import { APP_VERSION } from '@/config/version';
 
 const Footer = () => {
@@ -17,104 +17,68 @@ const Footer = () => {
 
   return (
     <footer className="relative bg-background pt-20 pb-8 overflow-hidden">
-      {/* Top border gradient - gold */}
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-      
-      {/* Decorative elements */}
       <div className="absolute top-10 left-10 w-64 h-64 rounded-full bg-primary/3 blur-3xl" />
       <div className="absolute bottom-10 right-10 w-48 h-48 rounded-full bg-accent/3 blur-3xl" />
       
       <div className="section-container relative z-10">
-        {/* Main footer content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
-          {/* Brand section */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-6">
-              <img 
-                src={cloversLogo} 
-                alt="Clovers Logo" 
-                className="w-12 h-12 object-contain"
-              />
-              <span className="font-display text-2xl text-foreground">
-                Clovers
+              <img src={cloversLogo} alt="Clovers AI Logo" className="w-12 h-12 object-contain rounded-lg" />
+              <span className="font-heading text-xl font-bold text-foreground uppercase">
+                Clovers <span className="text-primary">AI</span>
               </span>
             </div>
-            
             <p className="text-muted-foreground mb-6 max-w-md leading-relaxed">
               From a single seedling to a field of clovers, nurtured on one united platform.
-              <br />
-              一站式營銷AI生成系統
+              <br />一站式營銷AI生成系統
             </p>
-            
-            {/* Social links */}
             <div className="flex items-center gap-3">
               {socialLinks.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  className="social-icon"
-                  aria-label={social.label}
-                >
+                <a key={social.label} href={social.href} className="social-icon" aria-label={social.label}>
                   <social.icon className="w-5 h-5" />
                 </a>
               ))}
             </div>
           </div>
           
-          {/* Quick links */}
           <div>
             <h4 className="font-heading font-bold text-foreground mb-6 uppercase tracking-widest text-sm">快速連結</h4>
             <ul className="space-y-4">
               {['功能', '定價', 'FAQ', '聯繫我們'].map((link) => (
                 <li key={link}>
-                  <a 
-                    href={`#${link === '功能' ? 'features' : link === '定價' ? 'pricing' : link === 'FAQ' ? 'faq' : 'contact'}`}
-                    className="text-muted-foreground hover:text-primary transition-colors duration-300"
-                  >
-                    {link}
-                  </a>
+                  <a href={`#${link === '功能' ? 'features' : link === '定價' ? 'pricing' : link === 'FAQ' ? 'faq' : 'contact'}`}
+                    className="text-muted-foreground hover:text-primary transition-colors duration-300">{link}</a>
                 </li>
               ))}
             </ul>
           </div>
           
-          {/* Contact */}
           <div>
             <h4 className="font-heading font-bold text-foreground mb-6 uppercase tracking-widest text-sm">聯繫方式</h4>
             <div className="space-y-4">
-              <a 
-                href="mailto:hello@clover.com" 
-                className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors duration-300"
-              >
-                <Mail className="w-5 h-5" />
-                <span>hello@clover.com</span>
+              <a href="mailto:hello@clover.com" className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors duration-300">
+                <Mail className="w-5 h-5" /><span>hello@clover.com</span>
               </a>
             </div>
           </div>
         </div>
         
-        {/* Divider */}
         <div className="divider-organic mb-8" />
         
-        {/* Bottom section */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground flex items-center gap-1">
-            © {new Date().getFullYear()} Clovers. Made with
-            <Heart className="w-4 h-4 text-primary fill-primary" /> 
-            for creators.
+            © {new Date().getFullYear()} Clovers AI. Made with
+            <Heart className="w-4 h-4 text-primary fill-primary" /> for creators.
           </p>
-          <p className="text-xs text-muted-foreground/60">
-            v{APP_VERSION}
-          </p>
+          <p className="text-xs text-muted-foreground/60">v{APP_VERSION}</p>
         </div>
       </div>
 
-      {/* Back to top button */}
-      <button
-        onClick={scrollToTop}
+      <button onClick={scrollToTop}
         className="fixed bottom-6 right-6 w-12 h-12 bg-gradient-to-br from-primary to-accent text-primary-foreground rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30 hover:scale-110 transition-all duration-300 z-50 group"
-        aria-label="Back to top"
-      >
+        aria-label="Back to top">
         <ArrowUp className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform duration-300" />
       </button>
     </footer>
