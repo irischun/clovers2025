@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import cloversLogo from '@/assets/clovers-logo-new.png';
+import cloversLogo from '@/assets/clovers-ai-logo.jpeg';
 
 const Navigation = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -80,11 +80,11 @@ const Navigation = () => {
         <a href="/" className="flex items-center gap-3 group">
           <img 
             src={cloversLogo} 
-            alt="Clovers Logo" 
-            className="w-11 h-11 object-contain group-hover:scale-105 transition-transform duration-300"
+            alt="Clovers AI Logo" 
+            className="w-11 h-11 object-contain rounded-lg group-hover:scale-105 transition-transform duration-300"
           />
-          <span className="font-display text-2xl text-foreground tracking-tight">
-            Clovers
+          <span className="font-heading text-xl font-bold text-foreground tracking-tight uppercase">
+            Clovers <span className="text-primary">AI</span>
           </span>
         </a>
 
@@ -102,9 +102,8 @@ const Navigation = () => {
           ))}
         </div>
 
-        {/* Right side: Auth + Mobile Menu Toggle */}
+        {/* Right side */}
         <div className="flex items-center gap-3">
-          {/* Auth buttons */}
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -141,7 +140,6 @@ const Navigation = () => {
             </Button>
           )}
 
-          {/* Mobile Menu Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden p-2.5 text-muted-foreground hover:text-foreground hover:bg-secondary/50 rounded-xl transition-all duration-300"

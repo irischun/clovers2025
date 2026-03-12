@@ -9,7 +9,7 @@ const AnnouncementBanner = () => {
   return (
     <div className="bg-primary/10 border-b border-primary/20 text-primary py-2 px-4 relative">
       <div className="section-container flex items-center justify-center gap-2 text-sm">
-        <span>✦</span>
+        <span>🍀</span>
         <span className="font-medium">系統升級中，網絡可能會較慢，請耐心等待</span>
       </div>
       <button
