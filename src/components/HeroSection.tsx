@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Linkedin, Twitter, Youtube, Leaf, Sprout } from 'lucide-react';
+import { Facebook, Instagram, Linkedin, Twitter, Youtube, Diamond, Gem } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import cloverMascot from '@/assets/clover-mascot.png';
@@ -15,19 +15,19 @@ const HeroSection = () => {
 
   return (
     <section className="relative min-h-[95vh] flex items-center overflow-hidden">
-      {/* Premium Background with organic gradient */}
+      {/* Dark luxury background */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-card" />
       
-      {/* Organic decorative elements */}
+      {/* Gold glow elements */}
       <div className="absolute top-20 left-10 w-96 h-96 rounded-full bg-primary/5 blur-3xl" />
-      <div className="absolute bottom-20 right-10 w-80 h-80 rounded-full bg-seedling/5 blur-3xl" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/3 blur-3xl opacity-30" />
+      <div className="absolute bottom-20 right-10 w-80 h-80 rounded-full bg-accent/5 blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/3 blur-3xl opacity-20" />
       
-      {/* Subtle organic pattern */}
+      {/* Subtle geometric pattern */}
       <div 
-        className="absolute inset-0 opacity-[0.015]"
+        className="absolute inset-0 opacity-[0.02]"
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 30c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10zm0 30c-5.5 0-10-4.5-10-10s4.5-10 10-10 10 4.5 10 10-4.5 10-10 10z' fill='%2322c55e' fill-opacity='0.4'/%3E%3C/svg%3E")`,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0L60 30L30 60L0 30Z' fill='none' stroke='%23C8A960' stroke-opacity='0.5' stroke-width='0.5'/%3E%3C/svg%3E")`,
         }}
       />
 
@@ -35,14 +35,14 @@ const HeroSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16 items-center">
           {/* Left content */}
           <div className="animate-slide-up text-center lg:text-left order-2 lg:order-1">
-            {/* Main Heading - Premium Serif */}
+            {/* Main Heading - Luxury Serif */}
             <h1 className="heading-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl mb-4 leading-[0.9]">
               <span className="text-gradient-nature">Clovers</span>
             </h1>
 
             {/* Badge */}
             <div className="badge-nature mb-6 sm:mb-8 inline-flex">
-              <Sprout className="w-4 h-4" />
+              <Gem className="w-4 h-4" />
               <span>AI Marketing Platform</span>
             </div>
             
@@ -71,7 +71,7 @@ const HeroSection = () => {
               className="btn-primary text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 mb-10 sm:mb-12 group" 
               onClick={() => navigate('/auth')}
             >
-              <Leaf className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" />
+              <Diamond className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" />
               <span>來播種你的靈感</span>
               <span className="ml-2 text-primary-foreground/80">Start Now</span>
               <span className="ml-3 group-hover:translate-x-1 transition-transform duration-300">→</span>
@@ -101,12 +101,12 @@ const HeroSection = () => {
             </div>
           </div>
 
-          {/* Right content - Mascot with premium effects */}
+          {/* Right content - Mascot with luxury effects */}
           <div className="relative flex justify-center order-1 lg:order-2 animate-slide-in-right">
             <div className="relative">
-              {/* Multi-layered glow effect */}
-              <div className="absolute inset-0 -z-10 blur-3xl bg-gradient-to-br from-primary/25 via-seedling/15 to-meadow/10 rounded-full scale-110 animate-pulse-glow" />
-              <div className="absolute inset-0 -z-20 blur-[100px] bg-primary/15 rounded-full scale-150" />
+              {/* Multi-layered glow effect - gold tones */}
+              <div className="absolute inset-0 -z-10 blur-3xl bg-gradient-to-br from-primary/20 via-accent/10 to-meadow/10 rounded-full scale-110 animate-pulse-glow" />
+              <div className="absolute inset-0 -z-20 blur-[100px] bg-primary/10 rounded-full scale-150" />
               
               <img
                 src={cloverMascot}

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, ArrowRight, Users, Sparkles, Star } from 'lucide-react';
+import { Diamond, ArrowRight, Users, Sparkles, Star } from 'lucide-react';
 
 const CTASection = () => {
   const navigate = useNavigate();
@@ -10,16 +10,16 @@ const CTASection = () => {
       {/* Premium Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background" />
       
-      {/* Decorative organic blobs */}
-      <div className="absolute top-1/2 left-1/4 w-80 h-80 bg-primary/15 rounded-full blur-3xl -translate-y-1/2 animate-pulse-glow" />
-      <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-seedling/15 rounded-full blur-3xl -translate-y-1/2" />
-      <div className="absolute bottom-20 left-1/2 w-96 h-32 bg-meadow/10 rounded-full blur-3xl -translate-x-1/2" />
+      {/* Decorative luxury blobs */}
+      <div className="absolute top-1/2 left-1/4 w-80 h-80 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 animate-pulse-glow" />
+      <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-accent/10 rounded-full blur-3xl -translate-y-1/2" />
+      <div className="absolute bottom-20 left-1/2 w-96 h-32 bg-meadow/8 rounded-full blur-3xl -translate-x-1/2" />
 
       <div className="section-container relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           {/* Badge */}
           <div className="badge-nature mb-8 animate-slide-up inline-flex">
-            <Leaf className="w-4 h-4" />
+            <Diamond className="w-4 h-4" />
             <span>開始您的 AI 旅程</span>
           </div>
 
@@ -42,7 +42,7 @@ const CTASection = () => {
               className="btn-primary text-lg px-10 py-7 gap-3 group"
               onClick={() => navigate('/auth')}
             >
-              <Leaf className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+              <Diamond className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
               免費開始使用
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
             </Button>
@@ -72,7 +72,7 @@ const CTASection = () => {
               <div className="hidden sm:block w-px h-12 bg-border" />
               
               <div className="flex flex-col items-center gap-2">
-                <div className="flex items-center gap-2 text-seedling">
+                <div className="flex items-center gap-2 text-accent">
                   <Sparkles className="w-5 h-5" />
                   <span className="text-3xl sm:text-4xl font-bold text-foreground">100K+</span>
                 </div>

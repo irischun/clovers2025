@@ -4,93 +4,93 @@
 
 @layer base {
   :root {
-    /* Light Khaki Nature Palette */
-    --background: 42 35% 92%;
-    --foreground: 150 30% 15%;
+    /* Dark Luxury Noir Palette */
+    --background: 240 6% 6%;
+    --foreground: 40 20% 95%;
 
-    --card: 45 30% 96%;
-    --card-foreground: 150 30% 15%;
+    --card: 240 5% 10%;
+    --card-foreground: 40 20% 95%;
 
-    --popover: 45 30% 98%;
-    --popover-foreground: 150 30% 15%;
+    --popover: 240 5% 12%;
+    --popover-foreground: 40 20% 95%;
 
-    /* Primary - Rich Forest Green */
-    --primary: 152 60% 35%;
-    --primary-foreground: 45 30% 98%;
+    /* Primary - Champagne Gold */
+    --primary: 38 65% 55%;
+    --primary-foreground: 240 6% 6%;
 
-    --secondary: 42 25% 85%;
-    --secondary-foreground: 150 30% 15%;
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 40 15% 85%;
 
-    --muted: 42 20% 88%;
-    --muted-foreground: 150 15% 40%;
+    --muted: 240 4% 18%;
+    --muted-foreground: 40 8% 55%;
 
-    /* Accent - Sage with warmth */
-    --accent: 145 45% 42%;
-    --accent-foreground: 45 30% 98%;
+    /* Accent - Rose Gold */
+    --accent: 15 50% 60%;
+    --accent-foreground: 240 6% 6%;
 
     --destructive: 0 65% 50%;
-    --destructive-foreground: 45 30% 98%;
+    --destructive-foreground: 40 20% 95%;
 
-    --border: 42 20% 80%;
-    --input: 42 20% 80%;
-    --ring: 152 60% 35%;
+    --border: 240 5% 18%;
+    --input: 240 5% 18%;
+    --ring: 38 65% 55%;
 
     --radius: 0.75rem;
 
-    /* Brand Colors - Clover Nature System */
-    --clover: 152 60% 35%;
-    --clover-light: 148 50% 48%;
-    --clover-dark: 155 55% 25%;
-    --clover-muted: 150 25% 45%;
+    /* Brand Colors - Luxury System */
+    --clover: 38 65% 55%;
+    --clover-light: 38 60% 68%;
+    --clover-dark: 38 70% 40%;
+    --clover-muted: 38 30% 45%;
     
-    /* Earthy Accents */
-    --seedling: 85 45% 42%;
-    --field: 140 50% 30%;
-    --meadow: 135 30% 55%;
-    --soil: 35 25% 25%;
+    /* Luxury Accents */
+    --seedling: 15 50% 60%;
+    --field: 38 70% 40%;
+    --meadow: 280 30% 50%;
+    --soil: 20 15% 20%;
     
-    /* Gradients - Organic & Premium */
-    --gradient-hero: linear-gradient(180deg, hsl(42, 35%, 94%) 0%, hsl(42, 35%, 90%) 100%);
-    --gradient-nature: linear-gradient(135deg, hsl(152, 60%, 35%) 0%, hsl(145, 50%, 45%) 50%, hsl(85, 45%, 42%) 100%);
-    --gradient-field: linear-gradient(180deg, hsl(45, 30%, 96%) 0%, hsl(42, 35%, 92%) 100%);
-    --gradient-glow: radial-gradient(ellipse at center, hsl(152, 60%, 35%, 0.12) 0%, transparent 70%);
+    /* Gradients - Luxury & Editorial */
+    --gradient-hero: linear-gradient(180deg, hsl(240, 6%, 4%) 0%, hsl(240, 6%, 8%) 100%);
+    --gradient-nature: linear-gradient(135deg, hsl(38, 65%, 55%) 0%, hsl(15, 50%, 60%) 50%, hsl(280, 30%, 50%) 100%);
+    --gradient-field: linear-gradient(180deg, hsl(240, 5%, 10%) 0%, hsl(240, 6%, 6%) 100%);
+    --gradient-glow: radial-gradient(ellipse at center, hsl(38, 65%, 55%, 0.08) 0%, transparent 70%);
     
-    /* Shadows - Soft & Natural */
-    --shadow-glow: 0 0 80px hsl(152, 60%, 35%, 0.2);
-    --shadow-card: 0 8px 32px hsl(35, 20%, 30%, 0.1);
-    --shadow-elevated: 0 24px 48px -12px hsl(35, 20%, 30%, 0.15);
+    /* Shadows - Dramatic & Luxurious */
+    --shadow-glow: 0 0 80px hsl(38, 65%, 55%, 0.15);
+    --shadow-card: 0 8px 32px hsl(0, 0%, 0%, 0.4);
+    --shadow-elevated: 0 24px 48px -12px hsl(0, 0%, 0%, 0.5);
 
     /* Sidebar */
-    --sidebar-background: 42 30% 95%;
-    --sidebar-foreground: 150 30% 15%;
-    --sidebar-primary: 152 60% 35%;
-    --sidebar-primary-foreground: 45 30% 98%;
-    --sidebar-accent: 42 25% 88%;
-    --sidebar-accent-foreground: 150 30% 15%;
-    --sidebar-border: 42 20% 80%;
-    --sidebar-ring: 152 60% 35%;
+    --sidebar-background: 240 5% 8%;
+    --sidebar-foreground: 40 20% 95%;
+    --sidebar-primary: 38 65% 55%;
+    --sidebar-primary-foreground: 240 6% 6%;
+    --sidebar-accent: 240 4% 16%;
+    --sidebar-accent-foreground: 40 15% 85%;
+    --sidebar-border: 240 5% 16%;
+    --sidebar-ring: 38 65% 55%;
   }
 
   .dark {
-    --background: 150 10% 4%;
-    --foreground: 60 20% 96%;
-    --card: 150 8% 7%;
-    --card-foreground: 60 20% 96%;
-    --popover: 150 8% 7%;
-    --popover-foreground: 60 20% 96%;
-    --primary: 152 60% 42%;
-    --primary-foreground: 60 20% 98%;
-    --secondary: 150 6% 12%;
-    --secondary-foreground: 60 20% 96%;
-    --muted: 150 5% 18%;
-    --muted-foreground: 150 8% 55%;
-    --accent: 145 40% 52%;
-    --accent-foreground: 60 20% 98%;
+    --background: 240 6% 4%;
+    --foreground: 40 20% 96%;
+    --card: 240 5% 8%;
+    --card-foreground: 40 20% 96%;
+    --popover: 240 5% 8%;
+    --popover-foreground: 40 20% 96%;
+    --primary: 38 65% 58%;
+    --primary-foreground: 240 6% 6%;
+    --secondary: 240 4% 14%;
+    --secondary-foreground: 40 15% 85%;
+    --muted: 240 4% 16%;
+    --muted-foreground: 40 8% 50%;
+    --accent: 15 50% 62%;
+    --accent-foreground: 240 6% 6%;
     --destructive: 0 62% 30%;
-    --destructive-foreground: 60 20% 98%;
-    --border: 150 8% 16%;
-    --input: 150 8% 16%;
-    --ring: 152 60% 42%;
+    --destructive-foreground: 40 20% 96%;
+    --border: 240 5% 14%;
+    --input: 240 5% 14%;
+    --ring: 38 65% 58%;
   }
 }
 
@@ -105,7 +105,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Manrope', system-ui, sans-serif;
+    font-family: 'DM Sans', system-ui, sans-serif;
     letter-spacing: -0.01em;
   }
 }
@@ -114,65 +114,65 @@
   /* Premium Text Gradients */
   .text-gradient-nature {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(152, 60%, 30%), hsl(145, 55%, 38%), hsl(85, 45%, 35%));
+    background-image: linear-gradient(135deg, hsl(38, 65%, 60%), hsl(15, 55%, 62%), hsl(38, 70%, 50%));
   }
 
   .text-gradient-clover {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(152, 60%, 32%), hsl(148, 50%, 42%));
+    background-image: linear-gradient(135deg, hsl(38, 65%, 55%), hsl(15, 50%, 60%));
   }
 
   /* Glow Effects */
   .glow-nature {
-    box-shadow: 0 0 60px hsl(152, 60%, 35%, 0.2);
+    box-shadow: 0 0 60px hsl(38, 65%, 55%, 0.15);
   }
 
   .glow-clover {
-    box-shadow: 0 0 40px hsl(152, 60%, 35%, 0.25);
+    box-shadow: 0 0 40px hsl(38, 65%, 55%, 0.2);
   }
 
   /* Premium Button Styles */
   .btn-primary {
     @apply bg-primary text-primary-foreground font-semibold px-8 py-4 rounded-full transition-all duration-500;
-    background: linear-gradient(135deg, hsl(152, 60%, 35%) 0%, hsl(145, 50%, 40%) 100%);
-    box-shadow: 0 4px 20px hsl(152, 60%, 35%, 0.25);
+    background: linear-gradient(135deg, hsl(38, 65%, 55%) 0%, hsl(38, 70%, 45%) 100%);
+    box-shadow: 0 4px 20px hsl(38, 65%, 55%, 0.3);
   }
 
   .btn-primary:hover {
     @apply scale-[1.02];
-    box-shadow: 0 8px 32px hsl(152, 60%, 35%, 0.4);
-    background: linear-gradient(135deg, hsl(152, 60%, 38%) 0%, hsl(145, 50%, 45%) 100%);
+    box-shadow: 0 8px 32px hsl(38, 65%, 55%, 0.5);
+    background: linear-gradient(135deg, hsl(38, 65%, 60%) 0%, hsl(38, 70%, 50%) 100%);
   }
 
   .btn-secondary {
     @apply font-medium px-8 py-4 rounded-full transition-all duration-500;
     background: transparent;
-    border: 1.5px solid hsl(42, 20%, 70%);
-    color: hsl(150, 30%, 20%);
+    border: 1.5px solid hsl(40, 15%, 25%);
+    color: hsl(40, 20%, 80%);
   }
 
   .btn-secondary:hover {
-    border-color: hsl(152, 60%, 35%);
-    background: hsl(152, 60%, 35%, 0.08);
-    color: hsl(152, 60%, 30%);
+    border-color: hsl(38, 65%, 55%);
+    background: hsl(38, 65%, 55%, 0.08);
+    color: hsl(38, 65%, 65%);
   }
 
   /* Premium Card Styles */
   .card-glass {
     @apply backdrop-blur-2xl rounded-2xl;
-    background: linear-gradient(135deg, hsl(45, 30%, 98%, 0.9) 0%, hsl(45, 30%, 96%, 0.7) 100%);
-    border: 1px solid hsl(42, 20%, 85%, 0.6);
+    background: linear-gradient(135deg, hsl(240, 5%, 12%, 0.9) 0%, hsl(240, 5%, 8%, 0.7) 100%);
+    border: 1px solid hsl(240, 5%, 20%, 0.6);
   }
 
   .card-elevated {
     @apply rounded-3xl transition-all duration-500;
-    background: linear-gradient(180deg, hsl(45, 30%, 98%) 0%, hsl(45, 30%, 96%) 100%);
-    border: 1px solid hsl(42, 20%, 85%);
+    background: linear-gradient(180deg, hsl(240, 5%, 12%) 0%, hsl(240, 5%, 9%) 100%);
+    border: 1px solid hsl(240, 5%, 18%);
   }
 
   .card-elevated:hover {
-    border-color: hsl(152, 60%, 35%, 0.5);
-    box-shadow: 0 24px 48px -12px hsl(35, 20%, 30%, 0.15);
+    border-color: hsl(38, 65%, 55%, 0.4);
+    box-shadow: 0 24px 48px -12px hsl(0, 0%, 0%, 0.5);
     transform: translateY(-4px);
   }
 
@@ -183,13 +183,13 @@
 
   /* Typography */
   .heading-display {
-    font-family: 'Instrument Serif', Georgia, serif;
+    font-family: 'Playfair Display', Georgia, serif;
     @apply font-normal tracking-tight;
     letter-spacing: -0.02em;
   }
 
   .heading-sans {
-    font-family: 'Manrope', system-ui, sans-serif;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
     @apply font-bold tracking-tight;
     letter-spacing: -0.03em;
   }
@@ -197,29 +197,29 @@
   /* Social Icons */
   .social-icon {
     @apply w-11 h-11 flex items-center justify-center rounded-full transition-all duration-400;
-    background: hsl(42, 25%, 88%);
-    border: 1px solid hsl(42, 20%, 80%);
-    color: hsl(150, 15%, 40%);
+    background: hsl(240, 4%, 16%);
+    border: 1px solid hsl(240, 5%, 22%);
+    color: hsl(40, 8%, 55%);
   }
 
   .social-icon:hover {
-    background: hsl(152, 60%, 35%);
-    border-color: hsl(152, 60%, 35%);
-    color: hsl(45, 30%, 98%);
+    background: hsl(38, 65%, 55%);
+    border-color: hsl(38, 65%, 55%);
+    color: hsl(240, 6%, 6%);
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px hsl(152, 60%, 35%, 0.25);
+    box-shadow: 0 8px 24px hsl(38, 65%, 55%, 0.3);
   }
 
   /* Feature Cards */
   .feature-card {
     @apply relative overflow-hidden rounded-2xl transition-all duration-500;
-    background: linear-gradient(180deg, hsl(45, 30%, 98%) 0%, hsl(45, 30%, 96%) 100%);
-    border: 1px solid hsl(42, 20%, 85%);
+    background: linear-gradient(180deg, hsl(240, 5%, 12%) 0%, hsl(240, 5%, 9%) 100%);
+    border: 1px solid hsl(240, 5%, 18%);
   }
 
   .feature-card:hover {
-    border-color: hsl(152, 60%, 35%, 0.5);
-    box-shadow: 0 20px 40px hsl(35, 20%, 30%, 0.12);
+    border-color: hsl(38, 65%, 55%, 0.4);
+    box-shadow: 0 20px 40px hsl(0, 0%, 0%, 0.4);
   }
 
   /* Workflow Steps */
@@ -230,7 +230,7 @@
   .workflow-step::after {
     content: '';
     @apply absolute top-16 -right-1/2 w-full h-px hidden lg:block;
-    background: linear-gradient(90deg, hsl(152, 60%, 35%, 0.5) 0%, transparent 100%);
+    background: linear-gradient(90deg, hsl(38, 65%, 55%, 0.5) 0%, transparent 100%);
   }
 
   .workflow-step:last-child::after {
@@ -240,15 +240,15 @@
   /* Premium Badge */
   .badge-nature {
     @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium;
-    background: hsl(152, 60%, 35%, 0.1);
-    border: 1px solid hsl(152, 60%, 35%, 0.25);
-    color: hsl(152, 55%, 30%);
+    background: hsl(38, 65%, 55%, 0.1);
+    border: 1px solid hsl(38, 65%, 55%, 0.25);
+    color: hsl(38, 60%, 65%);
   }
 
   /* Organic Divider */
   .divider-organic {
     @apply w-full h-px;
-    background: linear-gradient(90deg, transparent, hsl(42, 20%, 75%), transparent);
+    background: linear-gradient(90deg, transparent, hsl(240, 5%, 22%), transparent);
   }
 }
 
@@ -305,11 +305,11 @@
 
 @keyframes pulse-glow {
   0%, 100% { 
-    box-shadow: 0 0 30px hsl(152, 60%, 35%, 0.15);
+    box-shadow: 0 0 30px hsl(38, 65%, 55%, 0.1);
     opacity: 0.9;
   }
   50% { 
-    box-shadow: 0 0 60px hsl(152, 60%, 35%, 0.3);
+    box-shadow: 0 0 60px hsl(38, 65%, 55%, 0.25);
     opacity: 1;
   }
 }
@@ -358,6 +358,11 @@
   100% { transform: scale(1) rotate(0deg); }
 }
 
+@keyframes shimmer-luxury {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 /* Premium Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -365,20 +370,20 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(42, 30%, 90%);
+  background: hsl(240, 5%, 8%);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(42, 20%, 75%);
+  background: hsl(240, 5%, 20%);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(152, 60%, 35%);
+  background: hsl(38, 65%, 55%);
 }
 
 /* Selection */
 ::selection {
-  background: hsl(152, 60%, 35%, 0.3);
-  color: hsl(150, 30%, 15%);
+  background: hsl(38, 65%, 55%, 0.3);
+  color: hsl(40, 20%, 95%);
 }

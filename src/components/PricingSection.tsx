@@ -1,4 +1,4 @@
-import { Check, Sparkles, Crown, Leaf } from 'lucide-react';
+import { Check, Sparkles, Crown, Diamond } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { landingPlans } from '@/data/subscriptionPlans';
@@ -7,8 +7,8 @@ const PricingSection = () => {
   const navigate = useNavigate();
 
   const getPlanIcon = (index: number) => {
-    const icons = [Leaf, Crown, Sparkles];
-    return icons[index] || Leaf;
+    const icons = [Diamond, Crown, Sparkles];
+    return icons[index] || Diamond;
   };
 
   return (
@@ -18,7 +18,7 @@ const PricingSection = () => {
       
       {/* Decorative elements */}
       <div className="absolute top-20 left-1/4 w-80 h-80 rounded-full bg-primary/5 blur-3xl" />
-      <div className="absolute bottom-20 right-1/4 w-96 h-96 rounded-full bg-seedling/5 blur-3xl" />
+      <div className="absolute bottom-20 right-1/4 w-96 h-96 rounded-full bg-accent/5 blur-3xl" />
       
       <div className="section-container relative z-10">
         {/* Header */}
@@ -51,7 +51,7 @@ const PricingSection = () => {
               >
                 {/* Popular badge */}
                 {plan.popular && (
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-seedling to-primary" />
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-primary" />
                 )}
                 
                 <div className="p-8">
@@ -67,7 +67,7 @@ const PricingSection = () => {
                     <div className="flex items-center gap-3 mb-3">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                         plan.popular 
-                          ? 'bg-gradient-to-br from-primary to-seedling' 
+                          ? 'bg-gradient-to-br from-primary to-accent' 
                           : 'bg-secondary border border-border'
                       }`}>
                         <IconComponent className={`w-5 h-5 ${plan.popular ? 'text-primary-foreground' : 'text-primary'}`} />

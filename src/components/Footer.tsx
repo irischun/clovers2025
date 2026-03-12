@@ -17,12 +17,12 @@ const Footer = () => {
 
   return (
     <footer className="relative bg-background pt-20 pb-8 overflow-hidden">
-      {/* Top border gradient */}
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+      {/* Top border gradient - gold */}
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       
       {/* Decorative elements */}
       <div className="absolute top-10 left-10 w-64 h-64 rounded-full bg-primary/3 blur-3xl" />
-      <div className="absolute bottom-10 right-10 w-48 h-48 rounded-full bg-seedling/3 blur-3xl" />
+      <div className="absolute bottom-10 right-10 w-48 h-48 rounded-full bg-accent/3 blur-3xl" />
       
       <div className="section-container relative z-10">
         {/* Main footer content */}
@@ -63,7 +63,7 @@ const Footer = () => {
           
           {/* Quick links */}
           <div>
-            <h4 className="font-heading font-bold text-foreground mb-6">快速連結</h4>
+            <h4 className="font-heading font-bold text-foreground mb-6 uppercase tracking-widest text-sm">快速連結</h4>
             <ul className="space-y-4">
               {['功能', '定價', 'FAQ', '聯繫我們'].map((link) => (
                 <li key={link}>
@@ -80,7 +80,7 @@ const Footer = () => {
           
           {/* Contact */}
           <div>
-            <h4 className="font-heading font-bold text-foreground mb-6">聯繫方式</h4>
+            <h4 className="font-heading font-bold text-foreground mb-6 uppercase tracking-widest text-sm">聯繫方式</h4>
             <div className="space-y-4">
               <a 
                 href="mailto:hello@clover.com" 
@@ -112,7 +112,7 @@ const Footer = () => {
       {/* Back to top button */}
       <button
         onClick={scrollToTop}
-        className="fixed bottom-6 right-6 w-12 h-12 bg-gradient-to-br from-primary to-seedling text-primary-foreground rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30 hover:scale-110 transition-all duration-300 z-50 group"
+        className="fixed bottom-6 right-6 w-12 h-12 bg-gradient-to-br from-primary to-accent text-primary-foreground rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30 hover:scale-110 transition-all duration-300 z-50 group"
         aria-label="Back to top"
       >
         <ArrowUp className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform duration-300" />
