@@ -24,7 +24,7 @@ const GallerySection = ({ title, subtitle, items, icon }: GalleryProps) => {
         {/* Section header */}
         <div className="mb-10 flex items-start gap-4">
           {icon && (
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/10 to-seedling/5 flex items-center justify-center border border-primary/20 shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/5 flex items-center justify-center border border-primary/20 shrink-0">
               {icon}
             </div>
           )}
@@ -117,7 +117,7 @@ const GalleriesSection = () => {
       
       {/* Decorative elements */}
       <div className="absolute top-40 left-10 w-72 h-72 rounded-full bg-primary/5 blur-3xl" />
-      <div className="absolute bottom-40 right-10 w-80 h-80 rounded-full bg-seedling/5 blur-3xl" />
+      <div className="absolute bottom-40 right-10 w-80 h-80 rounded-full bg-accent/5 blur-3xl" />
       
       <div className="relative z-10">
         {/* Main header */}

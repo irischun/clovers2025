@@ -94,7 +94,7 @@ const Navigation = () => {
             <button
               key={link.sectionId}
               onClick={() => scrollToSection(link.sectionId)}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-300 relative group"
+              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest"
             >
               {link.label}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 rounded-full" />
@@ -111,7 +111,7 @@ const Navigation = () => {
                 <button className="flex items-center gap-2 hover:bg-secondary/50 rounded-xl p-1.5 pr-3 transition-all duration-300">
                   <Avatar className="w-9 h-9 ring-2 ring-primary/20">
                     <AvatarImage src={user.user_metadata?.avatar_url} />
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-seedling text-primary-foreground text-sm font-medium">
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-sm font-medium">
                       {getUserInitials()}
                     </AvatarFallback>
                   </Avatar>
@@ -133,7 +133,7 @@ const Navigation = () => {
           ) : (
             <Button 
               variant="outline" 
-              className="gap-2 border-border/50 hover:bg-primary hover:text-primary-foreground hover:border-primary rounded-xl hidden sm:flex transition-all duration-300"
+              className="gap-2 border-primary/30 hover:bg-primary hover:text-primary-foreground hover:border-primary rounded-xl hidden sm:flex transition-all duration-300 text-primary"
               onClick={() => navigate('/auth')}
             >
               <LogIn className="w-4 h-4" />
@@ -160,13 +160,12 @@ const Navigation = () => {
               <button
                 key={link.sectionId}
                 onClick={() => scrollToSection(link.sectionId)}
-                className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300"
+                className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm"
               >
                 {link.label}
               </button>
             ))}
             
-            {/* Mobile login button for non-authenticated users */}
             {!user && (
               <Button 
                 className="w-full mt-4 gap-2 btn-primary"
@@ -180,7 +179,6 @@ const Navigation = () => {
               </Button>
             )}
 
-            {/* Mobile dashboard link for authenticated users */}
             {user && (
               <button
                 onClick={() => {
