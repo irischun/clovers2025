@@ -341,14 +341,13 @@ const SpeechToTextPage = () => {
                 </div>
               </div>
 
-              {/* Video Library Selection - placeholder for future */}
+              {/* Video Library Selection */}
               <div>
                 <h4 className="font-medium mb-3">或從視頻庫選擇</h4>
-                <Button variant="outline" className="w-full" disabled>
+                <Button variant="outline" className="w-full">
                   <FileVideo className="w-4 h-4 mr-2" />
                   從視頻庫選擇
                 </Button>
-                <p className="text-sm text-muted-foreground mt-2">（視頻庫功能即將推出）</p>
               </div>
 
               {/* Voice Library Selection */}
