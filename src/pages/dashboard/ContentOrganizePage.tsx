@@ -861,31 +861,36 @@ const ContentOrganizePage = () => {
 
                     {/* Target Word Count */}
                     <div className="space-y-2">
-                      <Label>目標字數（選填）</Label>
+                      <Label>目標字數</Label>
                       <Input
                         type="number"
                         value={batchTargetWordCount}
                         onChange={(e) => setBatchTargetWordCount(e.target.value)}
-                        placeholder="例如：500"
+                        placeholder="500"
                       />
+                      <p className="text-xs text-muted-foreground">可自定義輸入目標字數</p>
                     </div>
 
                     {/* GEO Optimization */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>文章格式優化</Label>
-                        <p className="text-xs text-muted-foreground">轉換為GEO優化格式</p>
+                    <div className="border rounded-lg p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Label className="font-semibold">文章格式優化</Label>
                       </div>
-                      <Switch checked={batchGeoOptimized} onCheckedChange={setBatchGeoOptimized} />
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">轉換為GEO優化格式</span>
+                        <Switch checked={batchGeoOptimized} onCheckedChange={setBatchGeoOptimized} />
+                      </div>
                     </div>
 
                     {/* Custom Ending */}
-                    <div className="flex items-center justify-between">
+                    <div className="border rounded-lg p-4 flex items-center justify-between">
                       <div>
-                        <Label>自訂結尾</Label>
-                        <p className="text-xs text-muted-foreground">為重寫內容添加結尾</p>
+                        <Label className="font-semibold">自訂結尾</Label>
                       </div>
-                      <Switch checked={batchCustomEnding} onCheckedChange={setBatchCustomEnding} />
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">為重寫內容添加結尾</span>
+                        <Switch checked={batchCustomEnding} onCheckedChange={setBatchCustomEnding} />
+                      </div>
                     </div>
 
                     {batchCustomEnding && (
