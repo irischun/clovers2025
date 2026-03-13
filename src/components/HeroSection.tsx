@@ -1,7 +1,20 @@
+import { useState, useEffect, useCallback } from 'react';
 import { Facebook, Instagram, Linkedin, Twitter, Youtube, Leaf, Gem } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import cloversLogo from '@/assets/clovers-hero-logo.jpeg';
+import slideSingleSeedling from '@/assets/slide-single-seedling.png';
+import slideFieldClovers1 from '@/assets/slide-field-clovers-1.png';
+import slideFewSeedlings from '@/assets/slide-few-seedlings.png';
+import slideFieldClovers2 from '@/assets/slide-field-clovers-2.png';
+
+const heroSlides = [
+  { src: cloversLogo, alt: 'Clovers AI Smart Marketing' },
+  { src: slideSingleSeedling, alt: 'From a single seedling...' },
+  { src: slideFieldClovers1, alt: 'To a field of Clovers...' },
+  { src: slideFewSeedlings, alt: 'From a few seedlings...' },
+  { src: slideFieldClovers2, alt: 'To a field of Clovers' },
+];
 
 const HeroSection = () => {
   const navigate = useNavigate();
