@@ -268,7 +268,10 @@ const posterCategories = {
 
 // Model options with points
 const models = [
+  { id: 'nano-banana', label: 'Nano Banana', description: '快速生成，適合大部分需求', model: 'google/gemini-2.5-flash-image', points: 1 },
+  { id: 'nano-banana-pro', label: 'Nano Banana Pro', description: '更高質量，適合專業需求', model: 'google/gemini-3-pro-image-preview', points: 2 },
   { id: 'nano-banana-2', label: 'Nano Banana 2', description: 'Google 最新一代圖片生成模型，支援 2K/4K 解析度', model: 'google/gemini-3.1-flash-image-preview', points: 2 },
+  { id: 'seedream', label: 'Seedream', description: '創意夢境風格', model: 'google/gemini-2.5-flash-image', points: 1 },
 ];
 
 // Upload quality options with size limits
