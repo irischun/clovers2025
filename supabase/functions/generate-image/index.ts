@@ -256,7 +256,7 @@ serve(async (req) => {
     });
 
     // Use the provided model or default to pro for better quality
-    const aiModel = model || "google/gemini-2.5-flash-image-preview";
+    const aiModel = model || "google/gemini-3.1-flash-image-preview";
     
     // Build comprehensive enhanced prompt
     const enhancedPrompt = buildEnhancedPrompt(prompt, style, width, height);
