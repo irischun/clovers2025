@@ -109,9 +109,10 @@ const LipSyncPage = () => {
     if (file) {
       setUploadedImage(file);
       setSelectedImageUrl(null);
+      setUploadedMediaType(file.type.startsWith('video/') ? 'video' : 'image');
       const url = URL.createObjectURL(file);
       setUploadedImagePreview(url);
-      toast({ title: '圖片已上傳', description: file.name });
+      toast({ title: '素材已上傳', description: file.name });
     }
   };
 
@@ -128,6 +129,7 @@ const LipSyncPage = () => {
     setSelectedImageUrl(url);
     setUploadedImage(null);
     setUploadedImagePreview(null);
+    setUploadedMediaType(null);
   };
 
   const handleSelectVoice = (audioUrl: string) => {
