@@ -124,6 +124,7 @@ const Navigation = () => {
     setIsMuted(newMuted);
     if (audioRef.current) {
       audioRef.current.muted = newMuted;
+      audioRef.current.volume = LANDING_AUDIO_VOLUME;
       if (!newMuted && audioRef.current.paused && isLandingPage) {
         audioRef.current.play().catch(() => {});
       }
