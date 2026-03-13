@@ -3,7 +3,7 @@ import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { 
   Video, Loader2, Copy, Check, Trash2, RefreshCw, 
   Link2, FileText, Clock, ChevronRight, PlayCircle, X,
-  FileSearch, PenLine, List, Languages, Tag
+  FileSearch, PenLine, List, Languages, Tag, BookOpen, Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
