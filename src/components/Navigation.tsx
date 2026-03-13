@@ -175,11 +175,12 @@ const Navigation = () => {
           {isLandingPage && (
             <button
               onClick={toggleMute}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium text-muted-foreground hover:text-primary hover:bg-secondary/40 rounded-xl transition-all duration-300 uppercase tracking-widest"
+              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-semibold text-foreground bg-card/85 border border-border hover:bg-secondary rounded-xl transition-all duration-300 uppercase tracking-wider shadow-sm"
               aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
+              title={isMuted ? 'Unmute/取消靜音' : 'Mute/靜音'}
             >
               {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-              <span className="hidden sm:inline">{isMuted ? 'Unmute/取消靜音' : 'Mute/靜音'}</span>
+              <span>{isMuted ? 'Unmute/取消靜音' : 'Mute/靜音'}</span>
             </button>
           )}
 
