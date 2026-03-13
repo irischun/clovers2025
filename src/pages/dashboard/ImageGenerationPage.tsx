@@ -352,8 +352,8 @@ const ImageGenerationPage = () => {
   const [selectedModel, setSelectedModel] = useState('nano-banana-2');
   const [selectedAspectRatio, setSelectedAspectRatio] = useState('1:1');
   const [quantity, setQuantity] = useState(1);
-  const [selectedResolution, setSelectedResolution] = useState<'1k' | '2k'>('2k');
-  const [selectedOutputFormat, setSelectedOutputFormat] = useState<'jpg' | 'png'>('jpg');
+  const [selectedResolution, setSelectedResolution] = useState<'1k' | '2k' | '4k'>('2k');
+  const [selectedOutputFormat, setSelectedOutputFormat] = useState<'jpg' | 'png'>('png');
   
   // Results
   const [isGenerating, setIsGenerating] = useState(false);
