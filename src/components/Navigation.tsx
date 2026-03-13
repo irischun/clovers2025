@@ -24,7 +24,7 @@ const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isLandingPage = location.pathname === '/';
+  const isLandingPage = /^\/(main\/?){0,1}$/.test(location.pathname);
 
   useEffect(() => {
     if (isLandingPage) {
