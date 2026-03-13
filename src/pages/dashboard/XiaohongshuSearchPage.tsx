@@ -122,19 +122,10 @@ const XiaohongshuSearchPage = () => {
       {/* Header */}
       <div>
         <h1 className="heading-display text-2xl mb-1">小紅書熱門貼文搜尋</h1>
-        <Card className="mt-4 bg-primary/10 border-primary/20">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-sm">
-              <Coins className="w-4 h-4 text-primary" />
-              <span className="text-primary font-medium">
-                點數消耗：1 點/10 個結果
-              </span>
-              <span className="text-muted-foreground">
-                (結果數量越多消耗越多點數)
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="mt-4 bg-muted/50 border border-border rounded-lg px-4 py-3">
+          <span className="text-primary font-semibold">點數消耗：1 點/10 個結果</span>
+          <span className="text-muted-foreground ml-1">(結果數量越多消耗越多點數)</span>
+        </div>
       </div>
 
       {/* Tabs */}
