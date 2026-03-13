@@ -29,7 +29,7 @@ const Navigation = () => {
   useEffect(() => {
     if (isLandingPage) {
       if (!audioRef.current) {
-        const audio = new Audio('/audio/Midnight_Facets.mp3');
+        const audio = new Audio(`${import.meta.env.BASE_URL}audio/Midnight_Facets.mp3`);
         audio.loop = true;
         audio.volume = 0.2;
         audio.muted = true;
