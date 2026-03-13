@@ -367,12 +367,21 @@ const ImageGenerationPage = () => {
   const [imageAnalysis, setImageAnalysis] = useState<ImageAnalysisResult | null>(null);
   const [showAnalysisDialog, setShowAnalysisDialog] = useState(false);
   const [autoAnalyze, setAutoAnalyze] = useState(true);
+  // Storyboard generation
+  const [showStoryboard, setShowStoryboard] = useState(false);
+  const [storyboardContent, setStoryboardContent] = useState('');
+  const [isGeneratingStoryboard, setIsGeneratingStoryboard] = useState(false);
+  
+  // Random camera angle per image
+  const [randomCameraPerImage, setRandomCameraPerImage] = useState(false);
   
   const { toast } = useToast();
   const aspectRatio = aspectRatios.find(ar => ar.id === selectedAspectRatio);
   const currentModel = models.find(m => m.id === selectedModel);
   const currentUploadQuality = uploadQualityOptions.find(q => q.id === uploadQuality);
-  const totalPoints = quantity * (currentModel?.points || 1);
+  // Points: 1K/2K = 2 points, 4K = 4 points per image
+  const pointsPerImage = selectedResolution === '4k' ? 4 : 2;
+  const totalPoints = quantity * pointsPerImage;
 
   // Handle file upload with size validation
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
