@@ -107,9 +107,13 @@ const LipSyncPage = () => {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      const extension = file.name.split('.').pop()?.toLowerCase() || '';
+      const videoExtensions = ['mp4', 'mov', 'avi', 'mkv', 'webm'];
+      const isVideo = file.type.startsWith('video/') || videoExtensions.includes(extension);
+
       setUploadedImage(file);
       setSelectedImageUrl(null);
-      setUploadedMediaType(file.type.startsWith('video/') ? 'video' : 'image');
+      setUploadedMediaType(isVideo ? 'video' : 'image');
       const url = URL.createObjectURL(file);
       setUploadedImagePreview(url);
       toast({ title: '素材已上傳', description: file.name });
@@ -338,7 +342,7 @@ const LipSyncPage = () => {
                 <input
                   ref={imageInputRef}
                   type="file"
-                  accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/x-msvideo,video/x-matroska,video/webm"
+                  accept=".jpg,.jpeg,.png,.webp,.mkv,.webm,.mp4,.mov,.avi,image/*,video/*"
                   onChange={handleImageUpload}
                   className="hidden"
                 />
