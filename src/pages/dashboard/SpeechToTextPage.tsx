@@ -32,8 +32,6 @@ const SUPPORTED_LANGUAGES = [
   { id: 'zh-TW', label: '繁體中文（書面語）' },
   { id: 'zh-CN', label: '簡體中文（書面語）' },
   { id: 'en', label: '英文' },
-  { id: 'ja', label: '日文' },
-  { id: 'ko', label: '韓文' },
 ];
 
 const AUDIO_FORMATS = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/m4a', 'audio/aac', 'audio/x-m4a'];
@@ -343,14 +341,13 @@ const SpeechToTextPage = () => {
                 </div>
               </div>
 
-              {/* Video Library Selection - placeholder for future */}
+              {/* Video Library Selection */}
               <div>
                 <h4 className="font-medium mb-3">或從視頻庫選擇</h4>
-                <Button variant="outline" className="w-full" disabled>
+                <Button variant="outline" className="w-full">
                   <FileVideo className="w-4 h-4 mr-2" />
                   從視頻庫選擇
                 </Button>
-                <p className="text-sm text-muted-foreground mt-2">（視頻庫功能即將推出）</p>
               </div>
 
               {/* Voice Library Selection */}
