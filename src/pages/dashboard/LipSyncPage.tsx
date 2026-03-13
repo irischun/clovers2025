@@ -335,7 +335,7 @@ const LipSyncPage = () => {
                 <input
                   ref={imageInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,video/mp4,video/quicktime,video/webm,video/x-matroska"
                   onChange={handleImageUpload}
                   className="hidden"
                 />
@@ -366,8 +366,8 @@ const LipSyncPage = () => {
                   ) : (
                     <>
                       <Upload className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
-                      <p className="font-medium">點擊上傳圖片</p>
-                      <p className="text-sm text-muted-foreground mt-1">支援 JPG, PNG, WebP</p>
+                      <p className="font-medium">點擊上傳圖像或視頻</p>
+                      <p className="text-sm text-muted-foreground mt-1">支援 JPG, PNG, WebP, MKV, WebM</p>
                     </>
                   )}
                 </div>
