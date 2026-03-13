@@ -1,10 +1,33 @@
+import { useState, useEffect, useCallback } from 'react';
 import { Facebook, Instagram, Linkedin, Twitter, Youtube, Leaf, Gem } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import cloversLogo from '@/assets/clovers-hero-logo.jpeg';
+import slideSingleSeedling from '@/assets/slide-single-seedling.png';
+import slideFieldClovers1 from '@/assets/slide-field-clovers-1.png';
+import slideFewSeedlings from '@/assets/slide-few-seedlings.png';
+import slideFieldClovers2 from '@/assets/slide-field-clovers-2.png';
+
+const heroSlides = [
+  { src: cloversLogo, alt: 'Clovers AI Smart Marketing' },
+  { src: slideSingleSeedling, alt: 'From a single seedling...' },
+  { src: slideFieldClovers1, alt: 'To a field of Clovers...' },
+  { src: slideFewSeedlings, alt: 'From a few seedlings...' },
+  { src: slideFieldClovers2, alt: 'To a field of Clovers' },
+];
 
 const HeroSection = () => {
   const navigate = useNavigate();
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const nextSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(nextSlide, 4000);
+    return () => clearInterval(interval);
+  }, [nextSlide]);
   const socialLinks = [
     { icon: Facebook, href: '#', label: 'Facebook' },
     { icon: Instagram, href: '#', label: 'Instagram' },
@@ -101,18 +124,37 @@ const HeroSection = () => {
             </div>
           </div>
 
-          {/* Right content - Logo with luxury effects */}
+          {/* Right content - Slideshow with luxury effects */}
           <div className="relative flex justify-center order-1 lg:order-2 animate-slide-in-right">
-            <div className="relative">
+            <div className="relative w-56 sm:w-72 md:w-96 lg:w-[500px] aspect-square">
               {/* Multi-layered glow effect - emerald tones */}
               <div className="absolute inset-0 -z-10 blur-3xl bg-gradient-to-br from-primary/20 via-accent/10 to-meadow/10 rounded-full scale-110 animate-pulse-glow" />
               <div className="absolute inset-0 -z-20 blur-[100px] bg-primary/10 rounded-full scale-150" />
               
-              <img
-                src={cloversLogo}
-                alt="Clovers AI Smart Marketing"
-                className="w-56 sm:w-72 md:w-96 lg:w-[500px] animate-float drop-shadow-2xl rounded-3xl"
-              />
+              {heroSlides.map((slide, index) => (
+                <img
+                  key={index}
+                  src={slide.src}
+                  alt={slide.alt}
+                  className={`absolute inset-0 w-full h-full object-cover rounded-3xl drop-shadow-2xl transition-opacity duration-1000 ${
+                    index === currentSlide ? 'opacity-100' : 'opacity-0'
+                  } ${index === 0 ? 'animate-float' : ''}`}
+                />
+              ))}
+
+              {/* Slide indicators */}
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
+                {heroSlides.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentSlide(index)}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      index === currentSlide ? 'bg-primary w-6' : 'bg-muted-foreground/40'
+                    }`}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
