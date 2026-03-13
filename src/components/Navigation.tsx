@@ -14,6 +14,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import cloversLogo from '@/assets/clovers-logo-icon.jpeg';
 
+const LANDING_AUDIO_VOLUME = 0.1;
+
 const Navigation = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
