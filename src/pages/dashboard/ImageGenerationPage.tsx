@@ -1656,7 +1656,7 @@ const ImageGenerationPage = () => {
               {/* Aspect Ratio */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">長寬比</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                   {aspectRatios.map((ar) => (
                     <button
                       key={ar.id}
