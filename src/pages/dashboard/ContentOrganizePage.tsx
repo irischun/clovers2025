@@ -684,7 +684,7 @@ const ContentOrganizePage = () => {
 
                     {/* Submit Button */}
                     <Button
-                      className="w-full"
+                      className="w-full bg-primary hover:bg-primary/90"
                       onClick={handleSingleRewrite}
                       disabled={isProcessing}
                     >
@@ -695,7 +695,8 @@ const ContentOrganizePage = () => {
                         </>
                       ) : (
                         <>
-                          開始改寫 <Badge variant="secondary" className="ml-2">扣1點數</Badge>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          開始改寫 (扣 1 點數)
                         </>
                       )}
                     </Button>
