@@ -488,24 +488,41 @@ const ContentOrganizePage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Points Balance */}
-      <PointsBalanceCard />
+      {/* Points Banner */}
+      <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-3">
+        <span className="text-primary font-semibold">點數消耗：1 點/次</span>
+        <span className="text-muted-foreground ml-1">(每次重寫消耗 1 點)</span>
+      </div>
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="heading-display text-2xl mb-1">內容整理</h1>
+          <h1 className="heading-display text-2xl mb-1 flex items-center gap-2">
+            <Sparkles className="w-6 h-6" />
+            內容重整
+          </h1>
           <p className="text-muted-foreground">
             輸入網站連結或 YouTube 影片連結，選擇風格，讓 AI 幫您重寫內容
           </p>
         </div>
+      </div>
+
+      {/* Tutorial Buttons */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Button 
           variant="outline" 
           onClick={() => setIsVideoOpen(true)}
-          className="flex items-center gap-2"
+          className="flex items-center justify-center gap-2 h-auto py-3"
         >
           <PlayCircle className="w-4 h-4" />
           📺 觀看教學：影片、文章內容提取
+        </Button>
+        <Button 
+          variant="outline" 
+          className="flex items-center justify-center gap-2 h-auto py-3"
+        >
+          <BookOpen className="w-4 h-4" />
+          📖 進階教學：內容整理技巧
         </Button>
       </div>
 
