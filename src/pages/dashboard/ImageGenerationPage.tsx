@@ -305,6 +305,9 @@ const aspectRatios = [
   { id: '1:1', label: '1:1 正方形', description: 'Instagram、頭像', width: 1024, height: 1024 },
   { id: '9:16', label: '9:16 直向', description: 'Reels、Stories', width: 1080, height: 1920 },
   { id: '4:3', label: '4:3 傳統', description: '傳統相片比例', width: 1024, height: 768 },
+  { id: '3:4', label: '3:4 直向', description: '肖像、Pinterest', width: 768, height: 1024 },
+  { id: '21:9', label: '21:9 超寬', description: '電影橫幅', width: 1920, height: 823 },
+  { id: '2:3', label: '2:3 直向', description: '海報、印刷品', width: 683, height: 1024 },
 ];
 
 const ImageGenerationPage = () => {
