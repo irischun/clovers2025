@@ -23,7 +23,7 @@ const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isLandingPage = location.pathname === '/' || location.pathname.startsWith('/main');
+  const isLandingPage = location.pathname === '/' || location.pathname.includes('/main');
 
   useEffect(() => {
     if (isLandingPage) {
