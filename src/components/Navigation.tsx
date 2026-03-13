@@ -18,13 +18,15 @@ const Navigation = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem('clovers-landing-muted') === 'true';
+  });
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const hasInitializedAudio = useRef(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isLandingPage = /^\/(main\/?){0,1}$/.test(location.pathname);
+  const isLandingPage = location.pathname === '/' || location.pathname.includes('/main');
 
   useEffect(() => {
     if (isLandingPage) {
@@ -32,10 +34,11 @@ const Navigation = () => {
         const audio = new Audio(`${import.meta.env.BASE_URL}audio/Midnight_Facets.mp3`);
         audio.loop = true;
         audio.volume = 0.2;
-        audio.muted = true;
+        audio.preload = 'auto';
+        audio.muted = isMuted;
         audioRef.current = audio;
       }
-      // Try to start playback (muted, so autoplay should work)
+
       audioRef.current.play().catch(() => {});
     } else {
       if (audioRef.current) {
@@ -53,10 +56,26 @@ const Navigation = () => {
     if (audioRef.current) {
       audioRef.current.muted = isMuted;
     }
+    window.localStorage.setItem('clovers-landing-muted', String(isMuted));
   }, [isMuted]);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    if (!isLandingPage || !audioRef.current) return;
+
+    const handleFirstInteraction = () => {
+      if (audioRef.current && !isMuted && audioRef.current.paused) {
+        audioRef.current.play().catch(() => {});
+      }
+    };
+
+    window.addEventListener('pointerdown', handleFirstInteraction, { once: true });
+    return () => window.removeEventListener('pointerdown', handleFirstInteraction);
+  }, [isLandingPage, isMuted]);
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
     });
 
@@ -110,17 +129,19 @@ const Navigation = () => {
   };
 
   return (
-    <nav className={`py-4 px-4 sm:px-6 lg:px-8 sticky top-0 z-50 transition-all duration-500 ${
-      scrolled 
-        ? 'bg-background/90 backdrop-blur-2xl border-b border-border/50 shadow-lg shadow-background/20' 
-        : 'bg-transparent'
-    }`}>
+    <nav
+      className={`py-4 px-4 sm:px-6 lg:px-8 sticky top-0 z-50 transition-all duration-500 ${
+        scrolled
+          ? 'bg-background/90 backdrop-blur-2xl border-b border-border/50 shadow-lg shadow-background/20'
+          : 'bg-transparent'
+      }`}
+    >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <a href="/" className="flex items-center gap-3 group">
-          <img 
-            src={cloversLogo} 
-            alt="Clovers AI Logo" 
+          <img
+            src={cloversLogo}
+            alt="Clovers AI Logo"
             className="w-11 h-11 object-contain rounded-lg group-hover:scale-105 transition-transform duration-300"
           />
           <span className="font-heading text-xl font-bold text-foreground tracking-tight uppercase">
@@ -130,18 +151,6 @@ const Navigation = () => {
 
         {/* Desktop Navigation Links */}
         <div className="hidden md:flex items-center gap-8">
-          {/* Mute/靜音 button */}
-          {isLandingPage && (
-            <button
-              onClick={toggleMute}
-              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest flex items-center gap-1.5"
-            >
-              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-              {isMuted ? 'Unmute/取消靜音' : 'Mute/靜音'}
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 rounded-full" />
-            </button>
-          )}
-          
           <button
             onClick={() => scrollToSection('pricing')}
             className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest"
@@ -161,6 +170,17 @@ const Navigation = () => {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
+          {isLandingPage && (
+            <button
+              onClick={toggleMute}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium text-muted-foreground hover:text-primary hover:bg-secondary/40 rounded-xl transition-all duration-300 uppercase tracking-widest"
+              aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
+            >
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              <span className="hidden sm:inline">{isMuted ? 'Unmute/取消靜音' : 'Mute/靜音'}</span>
+            </button>
+          )}
+
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -174,7 +194,10 @@ const Navigation = () => {
                   <span className="text-sm font-medium hidden sm:block">{getUserName()}</span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52 bg-card/95 backdrop-blur-xl border-border/50 rounded-xl shadow-xl">
+              <DropdownMenuContent
+                align="end"
+                className="w-52 bg-card/95 backdrop-blur-xl border-border/50 rounded-xl shadow-xl"
+              >
                 <DropdownMenuItem onClick={() => navigate('/dashboard')} className="rounded-lg cursor-pointer">
                   <User className="w-4 h-4 mr-2" />
                   儀表板
@@ -187,8 +210,8 @@ const Navigation = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="gap-2 border-primary/30 hover:bg-primary hover:text-primary-foreground hover:border-primary rounded-xl hidden sm:flex transition-all duration-300 text-primary"
               onClick={() => navigate('/auth')}
             >
@@ -211,17 +234,6 @@ const Navigation = () => {
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-background/98 backdrop-blur-2xl border-b border-border/50 animate-slide-up shadow-2xl">
           <div className="px-4 py-6 space-y-2">
-            {/* Mute button for mobile */}
-            {isLandingPage && (
-              <button
-                onClick={toggleMute}
-                className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm flex items-center gap-2"
-              >
-                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                {isMuted ? 'Unmute/取消靜音' : 'Mute/靜音'}
-              </button>
-            )}
-
             <button
               onClick={() => scrollToSection('pricing')}
               className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm"
@@ -235,9 +247,9 @@ const Navigation = () => {
             >
               FAQ
             </button>
-            
+
             {!user && (
-              <Button 
+              <Button
                 className="w-full mt-4 gap-2 btn-primary"
                 onClick={() => {
                   setMobileMenuOpen(false);
