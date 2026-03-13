@@ -184,6 +184,7 @@ const posterCategories = {
           { id: 'tai-kung-pao', label: '太公報惡搞風格', prompt: 'Chinese newspaper parody, sensational headlines' },
           { id: 'lemon-daily', label: '檸檬日報風格', prompt: 'quirky newspaper design, yellow tones, playful' },
           { id: 'hk-manga-fight', label: '港漫四格打鬥', prompt: 'Hong Kong manga 4-panel fight scene, dynamic action' },
+          { id: 'vagabond', label: '井上雄彥浪客行風格', prompt: 'Takehiko Inoue Vagabond manga style, ink wash painting, samurai, dramatic brushstrokes, detailed linework' },
         ]
       }
     }
