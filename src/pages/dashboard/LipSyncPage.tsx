@@ -338,7 +338,7 @@ const LipSyncPage = () => {
                 <input
                   ref={imageInputRef}
                   type="file"
-                  accept="image/*,video/*"
+                  accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/x-msvideo,video/x-matroska,video/webm"
                   onChange={handleImageUpload}
                   className="hidden"
                 />
@@ -350,7 +350,11 @@ const LipSyncPage = () => {
                 >
                   {uploadedImagePreview ? (
                     <div className="space-y-3">
-                      <img src={uploadedImagePreview} alt="Preview" className="max-h-48 mx-auto rounded-lg" />
+                      {uploadedMediaType === 'video' ? (
+                        <video src={uploadedImagePreview} controls className="max-h-48 mx-auto rounded-lg" />
+                      ) : (
+                        <img src={uploadedImagePreview} alt="Preview" className="max-h-48 mx-auto rounded-lg" />
+                      )}
                       <p className="text-sm font-medium">{uploadedImage?.name}</p>
                       <Button
                         variant="ghost"
@@ -359,6 +363,7 @@ const LipSyncPage = () => {
                           e.stopPropagation();
                           setUploadedImage(null);
                           setUploadedImagePreview(null);
+                          setUploadedMediaType(null);
                           if (imageInputRef.current) imageInputRef.current.value = '';
                         }}
                         className="text-destructive hover:text-destructive"
@@ -370,7 +375,7 @@ const LipSyncPage = () => {
                     <>
                       <Upload className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
                       <p className="font-medium">點擊上傳圖像或視頻</p>
-                      <p className="text-sm text-muted-foreground mt-1">支援格式 (JPG, PNG, WebP, MKV, WebM, MP4, MOV, AVI)</p>
+                      <p className="text-sm text-muted-foreground mt-1">支援格式: JPG, PNG, WebP, MKV, WebM, MP4, MOV, AVI</p>
                     </>
                   )}
                 </div>
