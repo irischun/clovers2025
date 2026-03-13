@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
-import { 
+import {
   Video, Loader2, Copy, Check, Trash2, RefreshCw, 
   Link2, FileText, Clock, ChevronRight, PlayCircle, X,
   FileSearch, PenLine, List, Languages, Tag, BookOpen, Sparkles
