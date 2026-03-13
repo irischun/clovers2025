@@ -173,10 +173,10 @@ const Navigation = () => {
 
         {/* Right side */}
         <div className="flex items-center gap-3 shrink-0">
-          {isLandingPage && (
+{isLandingPage && (
             <button
               onClick={toggleMute}
-              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-semibold text-foreground bg-card/85 border border-border hover:bg-secondary rounded-xl transition-all duration-300 uppercase tracking-wider shadow-sm"
+              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-semibold text-foreground bg-card/85 border border-border hover:bg-secondary rounded-xl transition-all duration-300 uppercase tracking-wider shadow-sm animate-pulse-glow"
               aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
               title={isMuted ? 'Unmute/取消靜音' : 'Mute/靜音'}
             >
