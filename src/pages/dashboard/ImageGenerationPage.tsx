@@ -806,8 +806,13 @@ const ImageGenerationPage = () => {
     };
   }, []);
 
-  return (
+   return (
     <div className="space-y-4 sm:space-y-6 animate-fade-in">
+      {/* Points consumption banner */}
+      <div className="bg-primary/10 border border-primary/20 rounded-lg px-4 py-3 text-sm">
+        點數消耗：<span className="font-semibold">1-4 點/張</span> <span className="text-muted-foreground">(1K/2K: 2點，4K: 4點)</span>
+      </div>
+
       {/* Points Balance */}
       <PointsBalanceCard />
 
