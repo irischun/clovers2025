@@ -1256,6 +1256,68 @@ const ImageGenerationPage = () => {
             </Card>
           )}
 
+          {/* Storyboard Script Generation */}
+          {generationMode === 'image-to-image' && (
+            <Card>
+              <Collapsible open={showStoryboard} onOpenChange={setShowStoryboard}>
+                <CollapsibleTrigger className="w-full">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Film className="w-5 h-5 text-primary" />
+                        <CardTitle className="text-lg">分鏡劇本生成</CardTitle>
+                      </div>
+                      {showStoryboard ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </div>
+                    <CardDescription>根據內容自動生成分鏡提示詞</CardDescription>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="space-y-3">
+                    <Textarea
+                      value={storyboardContent}
+                      onChange={(e) => setStoryboardContent(e.target.value)}
+                      placeholder="輸入故事內容或劇本大綱，AI 將自動生成分鏡提示詞..."
+                      rows={4}
+                      className="resize-none"
+                    />
+                    <Button
+                      variant="outline"
+                      className="w-full gap-2"
+                      disabled={!storyboardContent.trim() || isGeneratingStoryboard}
+                      onClick={async () => {
+                        setIsGeneratingStoryboard(true);
+                        try {
+                          const { data, error } = await supabase.functions.invoke('generate-content', {
+                            body: {
+                              prompt: `根據以下故事內容，生成分鏡劇本提示詞（每個場景一行，用於圖片生成）：\n\n${storyboardContent}`,
+                              type: 'social'
+                            }
+                          });
+                          if (error) throw error;
+                          if (data?.content) {
+                            setPrompt(data.content);
+                            toast({ title: '分鏡提示詞已生成' });
+                          }
+                        } catch (err) {
+                          toast({ title: '生成失敗', variant: 'destructive' });
+                        } finally {
+                          setIsGeneratingStoryboard(false);
+                        }
+                      }}
+                    >
+                      {isGeneratingStoryboard ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> 生成中...</>
+                      ) : (
+                        <><Sparkles className="w-4 h-4" /> 生成分鏡提示詞</>
+                      )}
+                    </Button>
+                  </CardContent>
+                </CollapsibleContent>
+              </Collapsible>
+            </Card>
+          )}
+
           {/* Prompt Input */}
           <Card>
             <CardHeader className="pb-3">
