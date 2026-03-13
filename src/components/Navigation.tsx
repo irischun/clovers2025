@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { LogIn, User, LogOut, Menu, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { LogIn, User, LogOut, Menu, X, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,7 +18,46 @@ const Navigation = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isLandingPage = location.pathname === '/';
+
+  useEffect(() => {
+    if (isLandingPage) {
+      if (!audioRef.current) {
+        const audio = new Audio('/audio/Midnight_Facets.mp3');
+        audio.loop = true;
+        audio.volume = 0.2;
+        audioRef.current = audio;
+      }
+      audioRef.current.play().catch(() => {
+        // Autoplay blocked — will start on first user interaction
+        const startAudio = () => {
+          audioRef.current?.play();
+          document.removeEventListener('click', startAudio);
+        };
+        document.addEventListener('click', startAudio);
+      });
+    } else {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    }
+
+    return () => {
+      // cleanup only on unmount
+    };
+  }, [isLandingPage]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -63,11 +102,13 @@ const Navigation = () => {
     }
   };
 
-  const navLinks = [
-    { label: '功能', sectionId: 'features' },
-    { label: '定價', sectionId: 'pricing' },
-    { label: 'FAQ', sectionId: 'faq' },
-  ];
+  const toggleMute = () => {
+    setIsMuted(prev => !prev);
+    // Also try to start audio on first interaction if it hasn't started
+    if (audioRef.current && audioRef.current.paused && isLandingPage) {
+      audioRef.current.play().catch(() => {});
+    }
+  };
 
   return (
     <nav className={`py-4 px-4 sm:px-6 lg:px-8 sticky top-0 z-50 transition-all duration-500 ${
@@ -90,16 +131,33 @@ const Navigation = () => {
 
         {/* Desktop Navigation Links */}
         <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
+          {/* Mute/靜音 button */}
+          {isLandingPage && (
             <button
-              key={link.sectionId}
-              onClick={() => scrollToSection(link.sectionId)}
-              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest"
+              onClick={toggleMute}
+              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest flex items-center gap-1.5"
             >
-              {link.label}
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              {isMuted ? 'Unmute/取消靜音' : 'Mute/靜音'}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 rounded-full" />
             </button>
-          ))}
+          )}
+          
+          <button
+            onClick={() => scrollToSection('pricing')}
+            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest"
+          >
+            Pricing/定價
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 rounded-full" />
+          </button>
+
+          <button
+            onClick={() => scrollToSection('faq')}
+            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest"
+          >
+            FAQ
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 rounded-full" />
+          </button>
         </div>
 
         {/* Right side */}
@@ -154,15 +212,30 @@ const Navigation = () => {
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-background/98 backdrop-blur-2xl border-b border-border/50 animate-slide-up shadow-2xl">
           <div className="px-4 py-6 space-y-2">
-            {navLinks.map((link) => (
+            {/* Mute button for mobile */}
+            {isLandingPage && (
               <button
-                key={link.sectionId}
-                onClick={() => scrollToSection(link.sectionId)}
-                className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm"
+                onClick={toggleMute}
+                className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm flex items-center gap-2"
               >
-                {link.label}
+                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                {isMuted ? 'Unmute/取消靜音' : 'Mute/靜音'}
               </button>
-            ))}
+            )}
+
+            <button
+              onClick={() => scrollToSection('pricing')}
+              className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm"
+            >
+              Pricing/定價
+            </button>
+
+            <button
+              onClick={() => scrollToSection('faq')}
+              className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm"
+            >
+              FAQ
+            </button>
             
             {!user && (
               <Button 
