@@ -1596,77 +1596,34 @@ const ImageGenerationPage = () => {
                 <p className="text-xs text-muted-foreground">Nano Banana 2支援更多長寬比選項</p>
               )}
 
-              {/* Resolution Selection */}
+              {/* Resolution Selection Dropdown */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">解析度</label>
-                <div className="grid grid-cols-3 gap-3">
-                  <button
-                    onClick={() => setSelectedResolution('1k')}
-                    className={`p-3 rounded-lg border text-left transition-all ${
-                      selectedResolution === '1k' 
-                        ? 'border-primary bg-primary/10' 
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <div className="font-medium text-sm">1K (標準)</div>
-                    <div className="text-xs text-muted-foreground mt-1">2 點</div>
-                  </button>
-                  <button
-                    onClick={() => setSelectedResolution('2k')}
-                    className={`p-3 rounded-lg border text-left transition-all ${
-                      selectedResolution === '2k' 
-                        ? 'border-primary bg-primary/10' 
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <div className="font-medium text-sm flex items-center gap-1">
-                      2K (推薦)
-                      <Badge variant="default" className="text-[10px] px-1">推薦</Badge>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">2 點</div>
-                  </button>
-                  <button
-                    onClick={() => setSelectedResolution('4k')}
-                    className={`p-3 rounded-lg border text-left transition-all ${
-                      selectedResolution === '4k' 
-                        ? 'border-primary bg-primary/10' 
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <div className="font-medium text-sm">4K (超高清)</div>
-                    <div className="text-xs text-muted-foreground mt-1">4 點</div>
-                  </button>
-                </div>
+                <Select value={selectedResolution} onValueChange={(val) => setSelectedResolution(val as '1k' | '2k' | '4k')}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1k">1K (標準)</SelectItem>
+                    <SelectItem value="2k">2K (推薦)</SelectItem>
+                    <SelectItem value="4k">4K (超高清)</SelectItem>
+                  </SelectContent>
+                </Select>
                 <p className="text-xs text-muted-foreground">當前選擇: {selectedResolution.toUpperCase()}</p>
               </div>
 
-              {/* Output Format Selection */}
+              {/* Output Format Dropdown */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">輸出格式</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => setSelectedOutputFormat('jpg')}
-                    className={`p-3 rounded-lg border text-left transition-all ${
-                      selectedOutputFormat === 'jpg' 
-                        ? 'border-primary bg-primary/10' 
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <div className="font-medium text-sm">JPG (較小檔案)</div>
-                    <div className="text-xs text-muted-foreground mt-1">檔案較小，適合分享</div>
-                  </button>
-                  <button
-                    onClick={() => setSelectedOutputFormat('png')}
-                    className={`p-3 rounded-lg border text-left transition-all ${
-                      selectedOutputFormat === 'png' 
-                        ? 'border-primary bg-primary/10' 
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <div className="font-medium text-sm">PNG (無損)</div>
-                    <div className="text-xs text-muted-foreground mt-1">無損壓縮，保留細節</div>
-                  </button>
-                </div>
+                <Select value={selectedOutputFormat} onValueChange={(val) => setSelectedOutputFormat(val as 'jpg' | 'png')}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="jpg">JPG (較小檔案)</SelectItem>
+                    <SelectItem value="png">PNG (無損)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Aspect Ratio */}
