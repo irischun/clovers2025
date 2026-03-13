@@ -51,6 +51,7 @@ const stylePromptMap: Record<string, string> = {
   'tai-kung-pao': 'Chinese newspaper parody, sensational headlines, bold Chinese typography, satirical',
   'lemon-daily': 'quirky newspaper design, yellow tones, playful layout, humorous headlines',
   'hk-manga-fight': 'Hong Kong manga 4-panel fight scene, dynamic action, speed lines, dramatic poses, comic book',
+  'vagabond': 'Takehiko Inoue Vagabond manga style, ink wash painting, samurai, dramatic brushstrokes, detailed linework, sumi-e influence',
   
   // Movie poster styles
   'hollywood': 'Hollywood blockbuster movie poster, epic scale, dramatic lighting, cinematic composition',
@@ -255,7 +256,7 @@ serve(async (req) => {
     });
 
     // Use the provided model or default to pro for better quality
-    const aiModel = model || "google/gemini-2.5-flash-image-preview";
+    const aiModel = model || "google/gemini-3.1-flash-image-preview";
     
     // Build comprehensive enhanced prompt
     const enhancedPrompt = buildEnhancedPrompt(prompt, style, width, height);

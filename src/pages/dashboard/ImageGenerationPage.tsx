@@ -184,6 +184,7 @@ const posterCategories = {
           { id: 'tai-kung-pao', label: '太公報惡搞風格', prompt: 'Chinese newspaper parody, sensational headlines' },
           { id: 'lemon-daily', label: '檸檬日報風格', prompt: 'quirky newspaper design, yellow tones, playful' },
           { id: 'hk-manga-fight', label: '港漫四格打鬥', prompt: 'Hong Kong manga 4-panel fight scene, dynamic action' },
+          { id: 'vagabond', label: '井上雄彥浪客行風格', prompt: 'Takehiko Inoue Vagabond manga style, ink wash painting, samurai, dramatic brushstrokes, detailed linework' },
         ]
       }
     }
@@ -267,9 +268,7 @@ const posterCategories = {
 
 // Model options with points
 const models = [
-  { id: 'nano-banana', label: 'Nano Banana', description: '快速生成，適合大部分需求', model: 'google/gemini-2.5-flash-image-preview', points: 1 },
-  { id: 'nano-banana-pro', label: 'Nano Banana Pro', description: '更高質量，適合專業需求', model: 'google/gemini-3-pro-image-preview', points: 2 },
-  { id: 'seedream', label: 'Seedream', description: '創意夢境風格', model: 'google/gemini-2.5-flash-image-preview', points: 1 },
+  { id: 'nano-banana-2', label: 'Nano Banana 2', description: 'Google 最新一代圖片生成模型，支援 2K/4K 解析度', model: 'google/gemini-3.1-flash-image-preview', points: 2 },
 ];
 
 // Upload quality options with size limits
@@ -306,6 +305,9 @@ const aspectRatios = [
   { id: '1:1', label: '1:1 正方形', description: 'Instagram、頭像', width: 1024, height: 1024 },
   { id: '9:16', label: '9:16 直向', description: 'Reels、Stories', width: 1080, height: 1920 },
   { id: '4:3', label: '4:3 傳統', description: '傳統相片比例', width: 1024, height: 768 },
+  { id: '3:4', label: '3:4 直向', description: '肖像、Pinterest', width: 768, height: 1024 },
+  { id: '21:9', label: '21:9 超寬', description: '電影橫幅', width: 1920, height: 823 },
+  { id: '2:3', label: '2:3 直向', description: '海報、印刷品', width: 683, height: 1024 },
 ];
 
 const ImageGenerationPage = () => {
@@ -347,11 +349,11 @@ const ImageGenerationPage = () => {
   const [expandedPosterCategory, setExpandedPosterCategory] = useState<string | null>(null);
   
   // Generation options
-  const [selectedModel, setSelectedModel] = useState('nano-banana');
+  const [selectedModel, setSelectedModel] = useState('nano-banana-2');
   const [selectedAspectRatio, setSelectedAspectRatio] = useState('1:1');
   const [quantity, setQuantity] = useState(1);
-  const [selectedResolution, setSelectedResolution] = useState<'1k' | '2k'>('2k');
-  const [selectedOutputFormat, setSelectedOutputFormat] = useState<'jpg' | 'png'>('jpg');
+  const [selectedResolution, setSelectedResolution] = useState<'1k' | '2k' | '4k'>('2k');
+  const [selectedOutputFormat, setSelectedOutputFormat] = useState<'jpg' | 'png'>('png');
   
   // Results
   const [isGenerating, setIsGenerating] = useState(false);
@@ -365,12 +367,21 @@ const ImageGenerationPage = () => {
   const [imageAnalysis, setImageAnalysis] = useState<ImageAnalysisResult | null>(null);
   const [showAnalysisDialog, setShowAnalysisDialog] = useState(false);
   const [autoAnalyze, setAutoAnalyze] = useState(true);
+  // Storyboard generation
+  const [showStoryboard, setShowStoryboard] = useState(false);
+  const [storyboardContent, setStoryboardContent] = useState('');
+  const [isGeneratingStoryboard, setIsGeneratingStoryboard] = useState(false);
+  
+  // Random camera angle per image
+  const [randomCameraPerImage, setRandomCameraPerImage] = useState(false);
   
   const { toast } = useToast();
   const aspectRatio = aspectRatios.find(ar => ar.id === selectedAspectRatio);
   const currentModel = models.find(m => m.id === selectedModel);
   const currentUploadQuality = uploadQualityOptions.find(q => q.id === uploadQuality);
-  const totalPoints = quantity * (currentModel?.points || 1);
+  // Points: 1K/2K = 2 points, 4K = 4 points per image
+  const pointsPerImage = selectedResolution === '4k' ? 4 : 2;
+  const totalPoints = quantity * pointsPerImage;
 
   // Handle file upload with size validation
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -611,8 +622,11 @@ const ImageGenerationPage = () => {
       parts.unshift('portrait avatar, profile picture style, centered face composition');
     }
     
-    // Add camera angle
-    if (selectedCameraAngle) {
+    // Add camera angle (or random if enabled)
+    if (randomCameraPerImage) {
+      const randomAngle = cameraAngles[Math.floor(Math.random() * cameraAngles.length)];
+      parts.push(randomAngle.prompt);
+    } else if (selectedCameraAngle && selectedCameraAngle !== 'none') {
       const angle = cameraAngles.find(a => a.id === selectedCameraAngle);
       if (angle) parts.push(angle.prompt);
     }
@@ -795,8 +809,13 @@ const ImageGenerationPage = () => {
     };
   }, []);
 
-  return (
+   return (
     <div className="space-y-4 sm:space-y-6 animate-fade-in">
+      {/* Points consumption banner */}
+      <div className="bg-primary/10 border border-primary/20 rounded-lg px-4 py-3 text-sm">
+        點數消耗：<span className="font-semibold">1-4 點/張</span> <span className="text-muted-foreground">(1K/2K: 2點，4K: 4點)</span>
+      </div>
+
       {/* Points Balance */}
       <PointsBalanceCard />
 
@@ -1237,6 +1256,68 @@ const ImageGenerationPage = () => {
             </Card>
           )}
 
+          {/* Storyboard Script Generation */}
+          {generationMode === 'image-to-image' && (
+            <Card>
+              <Collapsible open={showStoryboard} onOpenChange={setShowStoryboard}>
+                <CollapsibleTrigger className="w-full">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Film className="w-5 h-5 text-primary" />
+                        <CardTitle className="text-lg">分鏡劇本生成</CardTitle>
+                      </div>
+                      {showStoryboard ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </div>
+                    <CardDescription>根據內容自動生成分鏡提示詞</CardDescription>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="space-y-3">
+                    <Textarea
+                      value={storyboardContent}
+                      onChange={(e) => setStoryboardContent(e.target.value)}
+                      placeholder="輸入故事內容或劇本大綱，AI 將自動生成分鏡提示詞..."
+                      rows={4}
+                      className="resize-none"
+                    />
+                    <Button
+                      variant="outline"
+                      className="w-full gap-2"
+                      disabled={!storyboardContent.trim() || isGeneratingStoryboard}
+                      onClick={async () => {
+                        setIsGeneratingStoryboard(true);
+                        try {
+                          const { data, error } = await supabase.functions.invoke('generate-content', {
+                            body: {
+                              prompt: `根據以下故事內容，生成分鏡劇本提示詞（每個場景一行，用於圖片生成）：\n\n${storyboardContent}`,
+                              type: 'social'
+                            }
+                          });
+                          if (error) throw error;
+                          if (data?.content) {
+                            setPrompt(data.content);
+                            toast({ title: '分鏡提示詞已生成' });
+                          }
+                        } catch (err) {
+                          toast({ title: '生成失敗', variant: 'destructive' });
+                        } finally {
+                          setIsGeneratingStoryboard(false);
+                        }
+                      }}
+                    >
+                      {isGeneratingStoryboard ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> 生成中...</>
+                      ) : (
+                        <><Sparkles className="w-4 h-4" /> 生成分鏡提示詞</>
+                      )}
+                    </Button>
+                  </CardContent>
+                </CollapsibleContent>
+              </Collapsible>
+            </Card>
+          )}
+
           {/* Prompt Input */}
           <Card>
             <CardHeader className="pb-3">
@@ -1297,6 +1378,16 @@ const ImageGenerationPage = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <Switch 
+                    id="random-camera" 
+                    checked={randomCameraPerImage}
+                    onCheckedChange={setRandomCameraPerImage}
+                  />
+                  <Label htmlFor="random-camera" className="text-sm cursor-pointer">
+                    每張圖片隨機加入鏡頭提示詞
+                  </Label>
                 </div>
               </div>
 
@@ -1477,103 +1568,95 @@ const ImageGenerationPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Model Selection */}
+              {/* Model Display */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">生成模型選擇</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {models.map((model) => (
-                    <button
-                      key={model.id}
-                      onClick={() => setSelectedModel(model.id)}
-                      className={`p-3 rounded-lg border text-left transition-all ${
-                        selectedModel === model.id 
-                          ? 'border-primary bg-primary/10' 
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <div className="font-medium text-sm">{model.label}</div>
-                      <div className="text-xs text-muted-foreground mt-1">{model.description}</div>
-                      <Badge variant="secondary" className="mt-2 text-xs">{model.points} 點</Badge>
-                    </button>
-                  ))}
+                <div className="p-3 rounded-lg border border-primary bg-primary/10">
+                  <div className="font-medium text-sm">Nano Banana 2 (2 點)</div>
+                  <div className="text-xs text-muted-foreground mt-1">🆕 Nano Banana 2 是 Google 最新一代圖片生成模型，支援 2K/4K 解析度</div>
                 </div>
               </div>
 
-              {/* Nano Banana Pro Options - Resolution & Output Format */}
-              {selectedModel === 'nano-banana-pro' && (
-                <div className="space-y-4 p-4 rounded-lg bg-secondary/30 border border-primary/20">
-                  <div className="flex items-center gap-2 text-sm font-medium text-primary">
-                    <Star className="w-4 h-4" />
-                    Nano Banana Pro 專屬選項
-                  </div>
-                  
-                  {/* Resolution Selection */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">解析度:</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => setSelectedResolution('1k')}
-                        className={`p-3 rounded-lg border text-left transition-all ${
-                          selectedResolution === '1k' 
-                            ? 'border-primary bg-primary/10' 
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                      >
-                        <div className="font-medium text-sm">1K (標準)</div>
-                        <div className="text-xs text-muted-foreground mt-1">適合社交媒體</div>
-                      </button>
-                      <button
-                        onClick={() => setSelectedResolution('2k')}
-                        className={`p-3 rounded-lg border text-left transition-all ${
-                          selectedResolution === '2k' 
-                            ? 'border-primary bg-primary/10' 
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                      >
-                        <div className="font-medium text-sm flex items-center gap-1">
-                          2K (推薦)
-                          <Badge variant="default" className="text-[10px] px-1">推薦</Badge>
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-1">高清輸出</div>
-                      </button>
-                    </div>
-                  </div>
+              {/* Aspect Ratio note */}
+              <p className="text-xs text-muted-foreground">Nano Banana 2支援更多長寬比選項</p>
 
-                  {/* Output Format Selection */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">輸出格式:</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => setSelectedOutputFormat('jpg')}
-                        className={`p-3 rounded-lg border text-left transition-all ${
-                          selectedOutputFormat === 'jpg' 
-                            ? 'border-primary bg-primary/10' 
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                      >
-                        <div className="font-medium text-sm">JPG (較小檔案)</div>
-                        <div className="text-xs text-muted-foreground mt-1">檔案較小，適合分享</div>
-                      </button>
-                      <button
-                        onClick={() => setSelectedOutputFormat('png')}
-                        className={`p-3 rounded-lg border text-left transition-all ${
-                          selectedOutputFormat === 'png' 
-                            ? 'border-primary bg-primary/10' 
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                      >
-                        <div className="font-medium text-sm">PNG (無損)</div>
-                        <div className="text-xs text-muted-foreground mt-1">無損壓縮，保留細節</div>
-                      </button>
+              {/* Resolution Selection */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">解析度</label>
+                <div className="grid grid-cols-3 gap-3">
+                  <button
+                    onClick={() => setSelectedResolution('1k')}
+                    className={`p-3 rounded-lg border text-left transition-all ${
+                      selectedResolution === '1k' 
+                        ? 'border-primary bg-primary/10' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="font-medium text-sm">1K (標準)</div>
+                    <div className="text-xs text-muted-foreground mt-1">2 點</div>
+                  </button>
+                  <button
+                    onClick={() => setSelectedResolution('2k')}
+                    className={`p-3 rounded-lg border text-left transition-all ${
+                      selectedResolution === '2k' 
+                        ? 'border-primary bg-primary/10' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="font-medium text-sm flex items-center gap-1">
+                      2K (推薦)
+                      <Badge variant="default" className="text-[10px] px-1">推薦</Badge>
                     </div>
-                  </div>
+                    <div className="text-xs text-muted-foreground mt-1">2 點</div>
+                  </button>
+                  <button
+                    onClick={() => setSelectedResolution('4k')}
+                    className={`p-3 rounded-lg border text-left transition-all ${
+                      selectedResolution === '4k' 
+                        ? 'border-primary bg-primary/10' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="font-medium text-sm">4K (超高清)</div>
+                    <div className="text-xs text-muted-foreground mt-1">4 點</div>
+                  </button>
                 </div>
-              )}
+                <p className="text-xs text-muted-foreground">當前選擇: {selectedResolution.toUpperCase()}</p>
+              </div>
+
+              {/* Output Format Selection */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">輸出格式</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setSelectedOutputFormat('jpg')}
+                    className={`p-3 rounded-lg border text-left transition-all ${
+                      selectedOutputFormat === 'jpg' 
+                        ? 'border-primary bg-primary/10' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="font-medium text-sm">JPG (較小檔案)</div>
+                    <div className="text-xs text-muted-foreground mt-1">檔案較小，適合分享</div>
+                  </button>
+                  <button
+                    onClick={() => setSelectedOutputFormat('png')}
+                    className={`p-3 rounded-lg border text-left transition-all ${
+                      selectedOutputFormat === 'png' 
+                        ? 'border-primary bg-primary/10' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="font-medium text-sm">PNG (無損)</div>
+                    <div className="text-xs text-muted-foreground mt-1">無損壓縮，保留細節</div>
+                  </button>
+                </div>
+              </div>
 
               {/* Aspect Ratio */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">長寬比</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                   {aspectRatios.map((ar) => (
                     <button
                       key={ar.id}
@@ -1610,6 +1693,11 @@ const ImageGenerationPage = () => {
                   <span>最多可生成 10 張圖片</span>
                   <span>10</span>
                 </div>
+              </div>
+
+              {/* Points summary */}
+              <div className="text-sm text-muted-foreground">
+                剩餘點數: <span className="font-semibold text-foreground">{userPoints}</span>
               </div>
 
               {/* Generate Button */}
