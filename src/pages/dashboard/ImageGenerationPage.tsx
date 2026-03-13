@@ -1317,6 +1317,16 @@ const ImageGenerationPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <Switch 
+                    id="random-camera" 
+                    checked={randomCameraPerImage}
+                    onCheckedChange={setRandomCameraPerImage}
+                  />
+                  <Label htmlFor="random-camera" className="text-sm cursor-pointer">
+                    每張圖片隨機加入鏡頭提示詞
+                  </Label>
+                </div>
               </div>
 
               {/* Main Prompt */}
