@@ -1695,6 +1695,11 @@ const ImageGenerationPage = () => {
                 </div>
               </div>
 
+              {/* Points summary */}
+              <div className="text-sm text-muted-foreground">
+                剩餘點數: <span className="font-semibold text-foreground">{userPoints}</span>
+              </div>
+
               {/* Generate Button */}
               <Button 
                 onClick={handleGenerate} 
