@@ -99,10 +99,13 @@ const Navigation = () => {
   };
 
   const toggleMute = () => {
-    setIsMuted(prev => !prev);
-    // Also try to start audio on first interaction if it hasn't started
-    if (audioRef.current && audioRef.current.paused && isLandingPage) {
-      audioRef.current.play().catch(() => {});
+    const newMuted = !isMuted;
+    setIsMuted(newMuted);
+    if (audioRef.current) {
+      audioRef.current.muted = newMuted;
+      if (!newMuted && audioRef.current.paused && isLandingPage) {
+        audioRef.current.play().catch(() => {});
+      }
     }
   };
 
