@@ -1571,17 +1571,30 @@ const ImageGenerationPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Model Display */}
+              {/* Model Selection Dropdown */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">生成模型選擇</label>
-                <div className="p-3 rounded-lg border border-primary bg-primary/10">
-                  <div className="font-medium text-sm">Nano Banana 2 (2 點)</div>
-                  <div className="text-xs text-muted-foreground mt-1">🆕 Nano Banana 2 是 Google 最新一代圖片生成模型，支援 2K/4K 解析度</div>
-                </div>
+                <Select value={selectedModel} onValueChange={setSelectedModel}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {models.map((model) => (
+                      <SelectItem key={model.id} value={model.id}>
+                        {model.label} ({model.points} 點)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedModel === 'nano-banana-2' && (
+                  <p className="text-xs text-muted-foreground">🆕 Nano Banana 2 是 Google 最新一代圖片生成模型，支援 2K/4K 解析度</p>
+                )}
               </div>
 
               {/* Aspect Ratio note */}
-              <p className="text-xs text-muted-foreground">Nano Banana 2支援更多長寬比選項</p>
+              {selectedModel === 'nano-banana-2' && (
+                <p className="text-xs text-muted-foreground">Nano Banana 2支援更多長寬比選項</p>
+              )}
 
               {/* Resolution Selection */}
               <div className="space-y-2">
