@@ -18,8 +18,9 @@ const Navigation = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const hasInitializedAudio = useRef(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -31,16 +32,11 @@ const Navigation = () => {
         const audio = new Audio('/audio/Midnight_Facets.mp3');
         audio.loop = true;
         audio.volume = 0.2;
+        audio.muted = true;
         audioRef.current = audio;
       }
-      audioRef.current.play().catch(() => {
-        // Autoplay blocked — will start on first user interaction
-        const startAudio = () => {
-          audioRef.current?.play();
-          document.removeEventListener('click', startAudio);
-        };
-        document.addEventListener('click', startAudio);
-      });
+      // Try to start playback (muted, so autoplay should work)
+      audioRef.current.play().catch(() => {});
     } else {
       if (audioRef.current) {
         audioRef.current.pause();
