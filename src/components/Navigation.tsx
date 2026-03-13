@@ -56,6 +56,7 @@ const Navigation = () => {
     if (audioRef.current) {
       audioRef.current.muted = isMuted;
     }
+    window.localStorage.setItem('clovers-landing-muted', String(isMuted));
   }, [isMuted]);
 
   useEffect(() => {
