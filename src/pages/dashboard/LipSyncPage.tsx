@@ -342,7 +342,7 @@ const LipSyncPage = () => {
                 <input
                   ref={imageInputRef}
                   type="file"
-                  accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/x-msvideo,video/x-matroska,video/webm"
+                  accept=".jpg,.jpeg,.png,.webp,.mkv,.webm,.mp4,.mov,.avi,image/*,video/*"
                   onChange={handleImageUpload}
                   className="hidden"
                 />
