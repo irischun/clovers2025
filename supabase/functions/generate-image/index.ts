@@ -51,6 +51,7 @@ const stylePromptMap: Record<string, string> = {
   'tai-kung-pao': 'Chinese newspaper parody, sensational headlines, bold Chinese typography, satirical',
   'lemon-daily': 'quirky newspaper design, yellow tones, playful layout, humorous headlines',
   'hk-manga-fight': 'Hong Kong manga 4-panel fight scene, dynamic action, speed lines, dramatic poses, comic book',
+  'vagabond': 'Takehiko Inoue Vagabond manga style, ink wash painting, samurai, dramatic brushstrokes, detailed linework, sumi-e influence',
   
   // Movie poster styles
   'hollywood': 'Hollywood blockbuster movie poster, epic scale, dramatic lighting, cinematic composition',
