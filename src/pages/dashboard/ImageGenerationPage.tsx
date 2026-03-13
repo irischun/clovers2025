@@ -1568,98 +1568,90 @@ const ImageGenerationPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Model Selection */}
+              {/* Model Display */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">生成模型選擇</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {models.map((model) => (
-                    <button
-                      key={model.id}
-                      onClick={() => setSelectedModel(model.id)}
-                      className={`p-3 rounded-lg border text-left transition-all ${
-                        selectedModel === model.id 
-                          ? 'border-primary bg-primary/10' 
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <div className="font-medium text-sm">{model.label}</div>
-                      <div className="text-xs text-muted-foreground mt-1">{model.description}</div>
-                      <Badge variant="secondary" className="mt-2 text-xs">{model.points} 點</Badge>
-                    </button>
-                  ))}
+                <div className="p-3 rounded-lg border border-primary bg-primary/10">
+                  <div className="font-medium text-sm">Nano Banana 2 (2 點)</div>
+                  <div className="text-xs text-muted-foreground mt-1">🆕 Nano Banana 2 是 Google 最新一代圖片生成模型，支援 2K/4K 解析度</div>
                 </div>
               </div>
 
-              {/* Nano Banana Pro Options - Resolution & Output Format */}
-              {selectedModel === 'nano-banana-pro' && (
-                <div className="space-y-4 p-4 rounded-lg bg-secondary/30 border border-primary/20">
-                  <div className="flex items-center gap-2 text-sm font-medium text-primary">
-                    <Star className="w-4 h-4" />
-                    Nano Banana Pro 專屬選項
-                  </div>
-                  
-                  {/* Resolution Selection */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">解析度:</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => setSelectedResolution('1k')}
-                        className={`p-3 rounded-lg border text-left transition-all ${
-                          selectedResolution === '1k' 
-                            ? 'border-primary bg-primary/10' 
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                      >
-                        <div className="font-medium text-sm">1K (標準)</div>
-                        <div className="text-xs text-muted-foreground mt-1">適合社交媒體</div>
-                      </button>
-                      <button
-                        onClick={() => setSelectedResolution('2k')}
-                        className={`p-3 rounded-lg border text-left transition-all ${
-                          selectedResolution === '2k' 
-                            ? 'border-primary bg-primary/10' 
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                      >
-                        <div className="font-medium text-sm flex items-center gap-1">
-                          2K (推薦)
-                          <Badge variant="default" className="text-[10px] px-1">推薦</Badge>
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-1">高清輸出</div>
-                      </button>
-                    </div>
-                  </div>
+              {/* Aspect Ratio note */}
+              <p className="text-xs text-muted-foreground">Nano Banana 2支援更多長寬比選項</p>
 
-                  {/* Output Format Selection */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">輸出格式:</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => setSelectedOutputFormat('jpg')}
-                        className={`p-3 rounded-lg border text-left transition-all ${
-                          selectedOutputFormat === 'jpg' 
-                            ? 'border-primary bg-primary/10' 
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                      >
-                        <div className="font-medium text-sm">JPG (較小檔案)</div>
-                        <div className="text-xs text-muted-foreground mt-1">檔案較小，適合分享</div>
-                      </button>
-                      <button
-                        onClick={() => setSelectedOutputFormat('png')}
-                        className={`p-3 rounded-lg border text-left transition-all ${
-                          selectedOutputFormat === 'png' 
-                            ? 'border-primary bg-primary/10' 
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                      >
-                        <div className="font-medium text-sm">PNG (無損)</div>
-                        <div className="text-xs text-muted-foreground mt-1">無損壓縮，保留細節</div>
-                      </button>
+              {/* Resolution Selection */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">解析度</label>
+                <div className="grid grid-cols-3 gap-3">
+                  <button
+                    onClick={() => setSelectedResolution('1k')}
+                    className={`p-3 rounded-lg border text-left transition-all ${
+                      selectedResolution === '1k' 
+                        ? 'border-primary bg-primary/10' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="font-medium text-sm">1K (標準)</div>
+                    <div className="text-xs text-muted-foreground mt-1">2 點</div>
+                  </button>
+                  <button
+                    onClick={() => setSelectedResolution('2k')}
+                    className={`p-3 rounded-lg border text-left transition-all ${
+                      selectedResolution === '2k' 
+                        ? 'border-primary bg-primary/10' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="font-medium text-sm flex items-center gap-1">
+                      2K (推薦)
+                      <Badge variant="default" className="text-[10px] px-1">推薦</Badge>
                     </div>
-                  </div>
+                    <div className="text-xs text-muted-foreground mt-1">2 點</div>
+                  </button>
+                  <button
+                    onClick={() => setSelectedResolution('4k')}
+                    className={`p-3 rounded-lg border text-left transition-all ${
+                      selectedResolution === '4k' 
+                        ? 'border-primary bg-primary/10' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="font-medium text-sm">4K (超高清)</div>
+                    <div className="text-xs text-muted-foreground mt-1">4 點</div>
+                  </button>
                 </div>
-              )}
+                <p className="text-xs text-muted-foreground">當前選擇: {selectedResolution.toUpperCase()}</p>
+              </div>
+
+              {/* Output Format Selection */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">輸出格式</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => setSelectedOutputFormat('jpg')}
+                    className={`p-3 rounded-lg border text-left transition-all ${
+                      selectedOutputFormat === 'jpg' 
+                        ? 'border-primary bg-primary/10' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="font-medium text-sm">JPG (較小檔案)</div>
+                    <div className="text-xs text-muted-foreground mt-1">檔案較小，適合分享</div>
+                  </button>
+                  <button
+                    onClick={() => setSelectedOutputFormat('png')}
+                    className={`p-3 rounded-lg border text-left transition-all ${
+                      selectedOutputFormat === 'png' 
+                        ? 'border-primary bg-primary/10' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="font-medium text-sm">PNG (無損)</div>
+                    <div className="text-xs text-muted-foreground mt-1">無損壓縮，保留細節</div>
+                  </button>
+                </div>
+              </div>
 
               {/* Aspect Ratio */}
               <div className="space-y-2">
