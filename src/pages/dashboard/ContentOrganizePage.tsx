@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
-import { 
+import {
   Video, Loader2, Copy, Check, Trash2, RefreshCw, 
   Link2, FileText, Clock, ChevronRight, PlayCircle, X,
-  FileSearch, PenLine, List, Languages, Tag
+  FileSearch, PenLine, List, Languages, Tag, BookOpen, Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -30,13 +29,13 @@ const rewriteStyles = [
   { value: 'jinyong', label: '金庸武俠小說', icon: '⚔️' },
   { value: 'disney', label: '迪士尼', icon: '🏰' },
   { value: 'laogao', label: '老高風格', icon: '🎙️' },
-  { value: 'aida', label: 'AIDA模型（注意力-興趣-渴望-行動）', icon: '🎯' },
-  { value: 'pas', label: 'PAS結構（問題-煽動-解決方案）', icon: '💡' },
-  { value: 'fab', label: 'FAB框架（特點-優勢-好處）', icon: '✨' },
-  { value: '4p', label: '4P模型（圖畫-承諾-證明-推動）', icon: '📊' },
+  { value: 'aida', label: 'AIDA模型（注意力→興趣→渴望→行動）', icon: '🎯' },
+  { value: 'pas', label: 'PAS結構（問題→煽動→解決方案）', icon: '💡' },
+  { value: 'fab', label: 'FAB框架（特點→優勢→好處）', icon: '✨' },
+  { value: '4p', label: '4P模型（圖畫→承諾→證明→推動）', icon: '📊' },
   { value: 'before-after-bridge', label: 'Before-After-Bridge（前後對比法）', icon: '🌉' },
   { value: 'heros-journey', label: '英雄之旅（經典故事結構）', icon: '🦸' },
-  { value: 'three-acts', label: '三幕劇（設定-對抗-解決）', icon: '🎬' },
+  { value: 'three-acts', label: '三幕劇（設定→對抗→解決）', icon: '🎬' },
   { value: 'sensory-immersion', label: '感官沉浸法（細節描繪情感連結）', icon: '🎨' },
   { value: 'custom', label: '自訂風格', icon: '✏️' },
 ];
@@ -488,24 +487,41 @@ const ContentOrganizePage = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Points Balance */}
-      <PointsBalanceCard />
+      {/* Points Banner */}
+      <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-3">
+        <span className="text-primary font-semibold">點數消耗：1 點/次</span>
+        <span className="text-muted-foreground ml-1">(每次重寫消耗 1 點)</span>
+      </div>
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="heading-display text-2xl mb-1">內容整理</h1>
+          <h1 className="heading-display text-2xl mb-1 flex items-center gap-2">
+            <Sparkles className="w-6 h-6" />
+            內容重整
+          </h1>
           <p className="text-muted-foreground">
             輸入網站連結或 YouTube 影片連結，選擇風格，讓 AI 幫您重寫內容
           </p>
         </div>
+      </div>
+
+      {/* Tutorial Buttons */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Button 
           variant="outline" 
           onClick={() => setIsVideoOpen(true)}
-          className="flex items-center gap-2"
+          className="flex items-center justify-center gap-2 h-auto py-3"
         >
           <PlayCircle className="w-4 h-4" />
           📺 觀看教學：影片、文章內容提取
+        </Button>
+        <Button 
+          variant="outline" 
+          className="flex items-center justify-center gap-2 h-auto py-3"
+        >
+          <BookOpen className="w-4 h-4" />
+          📖 進階教學：內容整理技巧
         </Button>
       </div>
 
@@ -621,31 +637,36 @@ const ContentOrganizePage = () => {
 
                     {/* Target Word Count */}
                     <div className="space-y-2">
-                      <Label>目標字數（選填）</Label>
+                      <Label>目標字數</Label>
                       <Input
                         type="number"
                         value={targetWordCount}
                         onChange={(e) => setTargetWordCount(e.target.value)}
-                        placeholder="例如：500"
+                        placeholder="500"
                       />
+                      <p className="text-xs text-muted-foreground">可自定義輸入目標字數</p>
                     </div>
 
                     {/* GEO Optimization */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>文章格式優化</Label>
-                        <p className="text-xs text-muted-foreground">轉換為GEO優化格式</p>
+                    <div className="border rounded-lg p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Label className="font-semibold">文章格式優化</Label>
                       </div>
-                      <Switch checked={geoOptimized} onCheckedChange={setGeoOptimized} />
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">轉換為GEO優化格式</span>
+                        <Switch checked={geoOptimized} onCheckedChange={setGeoOptimized} />
+                      </div>
                     </div>
 
                     {/* Custom Ending */}
-                    <div className="flex items-center justify-between">
+                    <div className="border rounded-lg p-4 flex items-center justify-between">
                       <div>
-                        <Label>自訂結尾</Label>
-                        <p className="text-xs text-muted-foreground">為重寫內容添加結尾</p>
+                        <Label className="font-semibold">自訂結尾</Label>
                       </div>
-                      <Switch checked={customEnding} onCheckedChange={setCustomEnding} />
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">為重寫內容添加結尾</span>
+                        <Switch checked={customEnding} onCheckedChange={setCustomEnding} />
+                      </div>
                     </div>
 
                     {customEnding && (
@@ -662,7 +683,7 @@ const ContentOrganizePage = () => {
 
                     {/* Submit Button */}
                     <Button
-                      className="w-full"
+                      className="w-full bg-primary hover:bg-primary/90"
                       onClick={handleSingleRewrite}
                       disabled={isProcessing}
                     >
@@ -673,7 +694,8 @@ const ContentOrganizePage = () => {
                         </>
                       ) : (
                         <>
-                          開始改寫 <Badge variant="secondary" className="ml-2">扣1點數</Badge>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          開始改寫 (扣 1 點數)
                         </>
                       )}
                     </Button>
@@ -838,31 +860,36 @@ const ContentOrganizePage = () => {
 
                     {/* Target Word Count */}
                     <div className="space-y-2">
-                      <Label>目標字數（選填）</Label>
+                      <Label>目標字數</Label>
                       <Input
                         type="number"
                         value={batchTargetWordCount}
                         onChange={(e) => setBatchTargetWordCount(e.target.value)}
-                        placeholder="例如：500"
+                        placeholder="500"
                       />
+                      <p className="text-xs text-muted-foreground">可自定義輸入目標字數</p>
                     </div>
 
                     {/* GEO Optimization */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>文章格式優化</Label>
-                        <p className="text-xs text-muted-foreground">轉換為GEO優化格式</p>
+                    <div className="border rounded-lg p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Label className="font-semibold">文章格式優化</Label>
                       </div>
-                      <Switch checked={batchGeoOptimized} onCheckedChange={setBatchGeoOptimized} />
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">轉換為GEO優化格式</span>
+                        <Switch checked={batchGeoOptimized} onCheckedChange={setBatchGeoOptimized} />
+                      </div>
                     </div>
 
                     {/* Custom Ending */}
-                    <div className="flex items-center justify-between">
+                    <div className="border rounded-lg p-4 flex items-center justify-between">
                       <div>
-                        <Label>自訂結尾</Label>
-                        <p className="text-xs text-muted-foreground">為重寫內容添加結尾</p>
+                        <Label className="font-semibold">自訂結尾</Label>
                       </div>
-                      <Switch checked={batchCustomEnding} onCheckedChange={setBatchCustomEnding} />
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">為重寫內容添加結尾</span>
+                        <Switch checked={batchCustomEnding} onCheckedChange={setBatchCustomEnding} />
+                      </div>
                     </div>
 
                     {batchCustomEnding && (
