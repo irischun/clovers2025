@@ -32,6 +32,8 @@ const SUPPORTED_LANGUAGES = [
   { id: 'zh-TW', label: '繁體中文（書面語）' },
   { id: 'zh-CN', label: '簡體中文（書面語）' },
   { id: 'en', label: '英文' },
+  { id: 'ja', label: '日文' },
+  { id: 'ko', label: '韓文' },
 ];
 
 const AUDIO_FORMATS = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/m4a', 'audio/aac', 'audio/x-m4a'];
