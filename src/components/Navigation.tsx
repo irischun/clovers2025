@@ -173,10 +173,10 @@ const Navigation = () => {
 
         {/* Right side */}
         <div className="flex items-center gap-3 shrink-0">
-          {isLandingPage && (
+{isLandingPage && (
             <button
               onClick={toggleMute}
-              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-semibold text-foreground bg-card/85 border border-border hover:bg-secondary rounded-xl transition-all duration-300 uppercase tracking-wider shadow-sm"
+              className="inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-semibold text-foreground bg-card/85 border border-border hover:bg-secondary rounded-xl transition-all duration-300 uppercase tracking-wider shadow-sm animate-pulse-glow"
               aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
               title={isMuted ? 'Unmute/取消靜音' : 'Mute/靜音'}
             >
@@ -280,10 +280,10 @@ const Navigation = () => {
         </div>
       )}
 
-      {isLandingPage && (
+{isLandingPage && (
         <button
           onClick={toggleMute}
-          className="sm:hidden fixed bottom-24 left-4 z-[60] inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-foreground bg-card/90 border border-border rounded-xl shadow-lg"
+          className="sm:hidden fixed bottom-24 left-4 z-[60] inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-foreground bg-card/90 border border-primary/40 rounded-xl shadow-lg animate-pulse-glow"
           aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
         >
           {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
