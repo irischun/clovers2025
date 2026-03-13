@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
-import { Search, Loader2, Youtube, X, Info, Clock, Trash2 } from 'lucide-react';
+import { Search, Loader2, Youtube, X, Info, Clock, Trash2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,7 +9,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -43,12 +42,7 @@ const YouTubeSearchPage = () => {
   const [sortBy, setSortBy] = useState('relevance');
   const [publishedDate, setPublishedDate] = useState('all');
   const [videoCount, setVideoCount] = useState('10');
-  const [videoFeatures, setVideoFeatures] = useState({
-    hd: false,
-    fourK: false,
-    live: false,
-    subtitles: false
-  });
+  const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
   
   const { toast } = useToast();
 
@@ -75,6 +69,10 @@ const YouTubeSearchPage = () => {
     }
   };
 
+  const handleFeatureToggle = (feature: string) => {
+    setSelectedFeature(prev => prev === feature ? null : feature);
+  };
+
   const handleSearch = async () => {
     if (keywords.length === 0) {
       toast({ title: '請至少添加一個關鍵字', variant: 'destructive' });
@@ -94,7 +92,7 @@ const YouTubeSearchPage = () => {
           maxResults: parseInt(videoCount),
           sortBy,
           publishedDate,
-          features: videoFeatures
+          feature: selectedFeature
         }
       });
       if (error) throw error;
@@ -127,38 +125,28 @@ const YouTubeSearchPage = () => {
     toast({ title: '歷史記錄已清除' });
   };
 
-  const toggleFeature = (feature: keyof typeof videoFeatures) => {
-    setVideoFeatures(prev => ({ ...prev, [feature]: !prev[feature] }));
-  };
-
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Points Balance */}
       <PointsBalanceCard />
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="heading-display text-2xl mb-1">熱門 YouTube 影片搜尋</h1>
-          <p className="text-muted-foreground">搜尋 YouTube 熱門內容和趨勢</p>
-        </div>
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">點數消耗：</span>
-          <Badge variant="secondary">{pointsRequired} 點/{videoCount} 部影片</Badge>
-        </div>
+      <div className="flex items-center gap-3">
+        <Search className="w-7 h-7 text-primary" />
+        <h1 className="heading-display text-2xl">熱門 YouTube 影片搜尋</h1>
+      </div>
+
+      {/* Points Info Banner */}
+      <div className="bg-muted/50 border border-border rounded-lg px-4 py-3">
+        <span className="text-primary font-semibold">點數消耗：1 點/10 部影片</span>
+        <span className="text-muted-foreground ml-1">(影片數量越多消耗越多點數)</span>
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="search" className="gap-2">
-            <Search className="w-4 h-4" />
-            搜尋影片
-          </TabsTrigger>
-          <TabsTrigger value="history" className="gap-2">
-            <Clock className="w-4 h-4" />
-            歷史記錄
-          </TabsTrigger>
+        <TabsList className="w-auto">
+          <TabsTrigger value="search">搜尋影片</TabsTrigger>
+          <TabsTrigger value="history">歷史記錄</TabsTrigger>
         </TabsList>
 
         <TabsContent value="search" className="space-y-6 mt-6">
@@ -166,144 +154,122 @@ const YouTubeSearchPage = () => {
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              💡 使用提示：請逐個輸入關鍵字，每個關鍵字單獨添加。例如先輸入「AI Agent」點擊添加，再輸入「工作流」點擊添加。其他篩選功能保持不變。
+              💡 <strong>使用提示：</strong>請逐個輸入關鍵字，每個關鍵字單獨添加。例如先輸入「AI Agent」點擊添加，再輸入「工作流」點擊添加。其他篩選功能保持不變。
             </AlertDescription>
           </Alert>
 
           {/* Keyword Input */}
-          <Card>
-            <CardContent className="p-6 space-y-4">
-              <div className="space-y-2">
-                <Label>搜尋關鍵字</Label>
-                <div className="flex gap-2">
-                  <Input 
-                    value={keywordInput} 
-                    onChange={(e) => setKeywordInput(e.target.value)} 
-                    placeholder="請輸入一個關鍵字，例如: AI Agent" 
-                    onKeyDown={handleKeyDown}
-                    className="flex-1"
-                  />
-                  <Button onClick={handleAddKeyword} variant="secondary">
-                    添加
-                  </Button>
-                </div>
+          <div className="space-y-3">
+            <Label className="text-base">搜尋關鍵字</Label>
+            <div className="flex gap-2">
+              <Input 
+                value={keywordInput} 
+                onChange={(e) => setKeywordInput(e.target.value)} 
+                placeholder="請輸入一個關鍵字，例如: AI Agent" 
+                onKeyDown={handleKeyDown}
+                className="flex-1"
+              />
+              <Button onClick={handleAddKeyword} variant="secondary" size="icon" className="shrink-0">
+                <Plus className="w-5 h-5" />
+              </Button>
+            </div>
+
+            {/* Keyword Chips */}
+            {keywords.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {keywords.map((keyword, index) => (
+                  <Badge key={index} variant="default" className="gap-1 px-3 py-1.5">
+                    {keyword}
+                    <button 
+                      onClick={() => handleRemoveKeyword(keyword)}
+                      className="ml-1 hover:bg-primary-foreground/20 rounded-full p-0.5"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </Badge>
+                ))}
               </div>
+            )}
+          </div>
 
-              {/* Keyword Chips */}
-              {keywords.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {keywords.map((keyword, index) => (
-                    <Badge key={index} variant="default" className="gap-1 px-3 py-1.5">
-                      {keyword}
-                      <button 
-                        onClick={() => handleRemoveKeyword(keyword)}
-                        className="ml-1 hover:bg-primary-foreground/20 rounded-full p-0.5"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {/* Filter Options - 2 columns for Sort & Date */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>排序方式</Label>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="relevance">相關性最高</SelectItem>
+                  <SelectItem value="viewCount">觀看次數最多</SelectItem>
+                  <SelectItem value="date">上傳日期最新</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* Filter Options */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Sort By */}
-            <Card>
-              <CardContent className="p-4 space-y-2">
-                <Label>排序方式</Label>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="relevance">相關性最高</SelectItem>
-                    <SelectItem value="viewCount">觀看次數最多</SelectItem>
-                    <SelectItem value="date">上傳日期最新</SelectItem>
-                  </SelectContent>
-                </Select>
-              </CardContent>
-            </Card>
+            <div className="space-y-2">
+              <Label>發佈日期</Label>
+              <Select value={publishedDate} onValueChange={setPublishedDate}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">全部時間</SelectItem>
+                  <SelectItem value="week">過去一週</SelectItem>
+                  <SelectItem value="month">過去一個月</SelectItem>
+                  <SelectItem value="year">過去一年</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-            {/* Published Date */}
-            <Card>
-              <CardContent className="p-4 space-y-2">
-                <Label>發佈日期</Label>
-                <Select value={publishedDate} onValueChange={setPublishedDate}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">全部時間</SelectItem>
-                    <SelectItem value="week">過去一週</SelectItem>
-                    <SelectItem value="month">過去一個月</SelectItem>
-                    <SelectItem value="year">過去一年</SelectItem>
-                  </SelectContent>
-                </Select>
-              </CardContent>
-            </Card>
+          {/* Video Count */}
+          <div className="space-y-2">
+            <Label>影片數量</Label>
+            <Select value={videoCount} onValueChange={setVideoCount}>
+              <SelectTrigger className="md:w-1/2">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10 部影片 (1 點數)</SelectItem>
+                <SelectItem value="20">20 部影片 (2 點數)</SelectItem>
+                <SelectItem value="30">30 部影片 (3 點數)</SelectItem>
+                <SelectItem value="40">40 部影片 (4 點數)</SelectItem>
+                <SelectItem value="50">50 部影片 (5 點數)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-            {/* Video Count */}
-            <Card>
-              <CardContent className="p-4 space-y-2">
-                <Label>影片數量</Label>
-                <Select value={videoCount} onValueChange={setVideoCount}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="10">10 部影片 (1 點)</SelectItem>
-                    <SelectItem value="20">20 部影片 (2 點)</SelectItem>
-                    <SelectItem value="30">30 部影片 (3 點)</SelectItem>
-                    <SelectItem value="40">40 部影片 (4 點)</SelectItem>
-                    <SelectItem value="50">50 部影片 (5 點)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </CardContent>
-            </Card>
-
-            {/* Video Features */}
-            <Card>
-              <CardContent className="p-4 space-y-3">
-                <Label>影片特性</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="hd" 
-                      checked={videoFeatures.hd}
-                      onCheckedChange={() => toggleFeature('hd')}
-                    />
-                    <Label htmlFor="hd" className="text-sm cursor-pointer">HD 高畫質</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="fourK" 
-                      checked={videoFeatures.fourK}
-                      onCheckedChange={() => toggleFeature('fourK')}
-                    />
-                    <Label htmlFor="fourK" className="text-sm cursor-pointer">4K 超高畫質</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="live" 
-                      checked={videoFeatures.live}
-                      onCheckedChange={() => toggleFeature('live')}
-                    />
-                    <Label htmlFor="live" className="text-sm cursor-pointer">正在直播</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="subtitles" 
-                      checked={videoFeatures.subtitles}
-                      onCheckedChange={() => toggleFeature('subtitles')}
-                    />
-                    <Label htmlFor="subtitles" className="text-sm cursor-pointer">包含字幕</Label>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Video Features - Radio style (single select) */}
+          <div className="space-y-3">
+            <Label>影片特性</Label>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { key: 'hd', label: 'HD 高畫質' },
+                { key: 'fourK', label: '4K 超高畫質' },
+                { key: 'live', label: '正在直播' },
+                { key: 'subtitles', label: '包含字幕' },
+              ].map(({ key, label }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => handleFeatureToggle(key)}
+                  className="flex items-center gap-3 text-left"
+                >
+                  <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                    selectedFeature === key 
+                      ? 'border-primary' 
+                      : 'border-muted-foreground/40'
+                  }`}>
+                    {selectedFeature === key && (
+                      <span className="w-2 h-2 rounded-full bg-primary" />
+                    )}
+                  </span>
+                  <span className="text-sm">{label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Search Button */}
