@@ -54,7 +54,20 @@ const Navigation = () => {
     };
   }, [isLandingPage]);
 
+
   useEffect(() => {
+    if (!isLandingPage || !audioRef.current) return;
+
+    const handleFirstInteraction = () => {
+      if (audioRef.current && !isMuted && audioRef.current.paused) {
+        audioRef.current.play().catch(() => {});
+      }
+    };
+
+    window.addEventListener('pointerdown', handleFirstInteraction, { once: true });
+    return () => window.removeEventListener('pointerdown', handleFirstInteraction);
+  }, [isLandingPage, isMuted]);
+
     if (audioRef.current) {
       audioRef.current.muted = isMuted;
     }
