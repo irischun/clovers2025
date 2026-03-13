@@ -172,7 +172,7 @@ const Navigation = () => {
         </div>
 
         {/* Right side */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           {isLandingPage && (
             <button
               onClick={toggleMute}
@@ -181,7 +181,7 @@ const Navigation = () => {
               title={isMuted ? 'Unmute/取消靜音' : 'Mute/靜音'}
             >
               {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-              <span>{isMuted ? 'Unmute/取消靜音' : 'Mute/靜音'}</span>
+              <span className="hidden sm:inline">{isMuted ? 'Unmute/取消靜音' : 'Mute/靜音'}</span>
             </button>
           )}
 
