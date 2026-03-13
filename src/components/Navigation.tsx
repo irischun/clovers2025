@@ -283,7 +283,7 @@ const Navigation = () => {
 {isLandingPage && (
         <button
           onClick={toggleMute}
-          className="sm:hidden fixed bottom-24 left-4 z-[60] inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-foreground bg-card/90 border border-primary/40 rounded-xl shadow-lg animate-pulse-glow"
+          className="sm:hidden fixed bottom-24 left-4 z-[60] inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-foreground bg-card/90 border-2 border-primary/30 rounded-xl shadow-lg animate-pulse-glow"
           aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
         >
           {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
