@@ -35,7 +35,7 @@ const Navigation = () => {
       if (!audioRef.current) {
         const audio = new Audio(`${import.meta.env.BASE_URL}audio/Midnight_Facets.mp3`);
         audio.loop = true;
-        audio.volume = 0.2;
+        audio.volume = LANDING_AUDIO_VOLUME;
         audio.preload = 'auto';
         audio.muted = isMuted;
         audioRef.current = audio;
