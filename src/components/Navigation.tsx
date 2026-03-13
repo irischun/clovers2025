@@ -18,13 +18,13 @@ const Navigation = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const hasInitializedAudio = useRef(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isLandingPage = /^\/(main\/?){0,1}$/.test(location.pathname);
+  const isLandingPage = location.pathname === '/' || location.pathname.startsWith('/main');
 
   useEffect(() => {
     if (isLandingPage) {
@@ -32,11 +32,16 @@ const Navigation = () => {
         const audio = new Audio(`${import.meta.env.BASE_URL}audio/Midnight_Facets.mp3`);
         audio.loop = true;
         audio.volume = 0.2;
-        audio.muted = true;
+        audio.muted = isMuted;
         audioRef.current = audio;
       }
-      // Try to start playback (muted, so autoplay should work)
-      audioRef.current.play().catch(() => {});
+
+      audioRef.current.play().catch(() => {
+        if (!audioRef.current) return;
+        audioRef.current.muted = true;
+        setIsMuted(true);
+        audioRef.current.play().catch(() => {});
+      });
     } else {
       if (audioRef.current) {
         audioRef.current.pause();
