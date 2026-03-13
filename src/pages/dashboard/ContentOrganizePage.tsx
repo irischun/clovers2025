@@ -660,12 +660,14 @@ const ContentOrganizePage = () => {
                     </div>
 
                     {/* Custom Ending */}
-                    <div className="flex items-center justify-between">
+                    <div className="border rounded-lg p-4 flex items-center justify-between">
                       <div>
-                        <Label>自訂結尾</Label>
-                        <p className="text-xs text-muted-foreground">為重寫內容添加結尾</p>
+                        <Label className="font-semibold">自訂結尾</Label>
                       </div>
-                      <Switch checked={customEnding} onCheckedChange={setCustomEnding} />
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">為重寫內容添加結尾</span>
+                        <Switch checked={customEnding} onCheckedChange={setCustomEnding} />
+                      </div>
                     </div>
 
                     {customEnding && (
