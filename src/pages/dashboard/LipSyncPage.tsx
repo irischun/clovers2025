@@ -35,6 +35,7 @@ const LipSyncPage = () => {
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
+  const [uploadedMediaType, setUploadedMediaType] = useState<'image' | 'video' | null>(null);
   const [isLoadingImages, setIsLoadingImages] = useState(false);
   const [hideYoutubeImages, setHideYoutubeImages] = useState(false);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
