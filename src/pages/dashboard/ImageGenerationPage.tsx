@@ -622,8 +622,11 @@ const ImageGenerationPage = () => {
       parts.unshift('portrait avatar, profile picture style, centered face composition');
     }
     
-    // Add camera angle
-    if (selectedCameraAngle) {
+    // Add camera angle (or random if enabled)
+    if (randomCameraPerImage) {
+      const randomAngle = cameraAngles[Math.floor(Math.random() * cameraAngles.length)];
+      parts.push(randomAngle.prompt);
+    } else if (selectedCameraAngle && selectedCameraAngle !== 'none') {
       const angle = cameraAngles.find(a => a.id === selectedCameraAngle);
       if (angle) parts.push(angle.prompt);
     }
