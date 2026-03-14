@@ -366,14 +366,26 @@ const GalleryPage = () => {
             <span>{format(new Date(v.created_at), 'yyyy-MM-dd HH:mm')}</span>
             <Badge variant="outline" className="text-[10px] px-1.5 py-0">{v.model}</Badge>
           </div>
-          <div className="text-xs text-muted-foreground">聲音: <span className="text-foreground">{v.voice_name}</span></div>
-          <div className="text-xs text-muted-foreground">語言: <span className="text-foreground">{v.language}</span></div>
-          {v.emotion && v.emotion !== 'neutral' && <div className="text-xs text-muted-foreground">情感: <span className="text-foreground">{v.emotion}</span></div>}
+
           <div className="flex flex-wrap gap-1">
+            <Badge variant="outline" className="text-[10px] px-1 py-0 font-mono">AR: N/A</Badge>
+            <Badge variant="outline" className="text-[10px] px-1 py-0 font-mono">{audioFormat}</Badge>
+            <Badge variant="outline" className="text-[10px] px-1 py-0 font-mono">
+              {audioFileSizes[v.id] === undefined
+                ? '計算中...'
+                : audioFileSizes[v.id] > 0
+                  ? formatFileSize(audioFileSizes[v.id])
+                  : '無法取得'}
+            </Badge>
             {v.sample_rate && <Badge variant="outline" className="text-[10px] px-1 py-0">{v.sample_rate}Hz</Badge>}
             {v.bitrate && <Badge variant="outline" className="text-[10px] px-1 py-0">{Math.round(v.bitrate / 1000)}kbps</Badge>}
             {v.speed && v.speed !== 1 && <Badge variant="outline" className="text-[10px] px-1 py-0">速度:{v.speed}x</Badge>}
           </div>
+
+          <div className="text-xs text-muted-foreground">聲音: <span className="text-foreground">{v.voice_name}</span></div>
+          <div className="text-xs text-muted-foreground">語言: <span className="text-foreground">{v.language}</span></div>
+          {v.emotion && v.emotion !== 'neutral' && <div className="text-xs text-muted-foreground">情感: <span className="text-foreground">{v.emotion}</span></div>}
+
           {textContent && (
             <div className="space-y-1">
               <p className={cn("text-xs text-muted-foreground leading-relaxed", !isExpanded && shouldTruncate && "line-clamp-2")}>{textContent}</p>
