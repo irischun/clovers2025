@@ -1,4 +1,5 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { Play, Square } from 'lucide-react';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Upload, Images, Loader2, Sparkles, Download, X, GripVertical, Image as ImageIcon, AlertCircle, Sticker } from 'lucide-react';
 import { Button } from '@/components/ui/button';
