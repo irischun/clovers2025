@@ -525,11 +525,11 @@ const GalleryPage = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)}>
-        <TabsList className="w-full max-w-2xl grid grid-cols-4">
-          <TabsTrigger value="images" className="gap-2"><ImageIcon className="w-4 h-4" />圖片畫廊</TabsTrigger>
-          <TabsTrigger value="videos" className="gap-2"><Video className="w-4 h-4" />視頻畫廊</TabsTrigger>
-          <TabsTrigger value="audio" className="gap-2"><Music className="w-4 h-4" />音頻收藏</TabsTrigger>
-          <TabsTrigger value="subtitles" className="gap-2"><FileText className="w-4 h-4" />字幕收藏</TabsTrigger>
+        <TabsList className="w-full max-w-full overflow-x-auto whitespace-nowrap">
+          <TabsTrigger value="images" className="gap-2 shrink-0"><ImageIcon className="w-4 h-4" />圖片畫廊</TabsTrigger>
+          <TabsTrigger value="videos" className="gap-2 shrink-0"><Video className="w-4 h-4" />視頻畫廊</TabsTrigger>
+          <TabsTrigger value="audio" className="gap-2 shrink-0"><Music className="w-4 h-4" />音頻收藏</TabsTrigger>
+          <TabsTrigger value="subtitles" className="gap-2 shrink-0"><FileText className="w-4 h-4" />字幕收藏</TabsTrigger>
         </TabsList>
 
         {/* Filters */}
