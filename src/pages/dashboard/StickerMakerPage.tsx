@@ -197,24 +197,53 @@ const StickerMakerPage = () => {
     }
   };
 
+  const convertImageToBase64 = async (url: string): Promise<string> => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
   const handleTextStickerGenerate = async () => {
-    if (!stickerText.trim()) {
-      toast({ title: '請輸入文字', variant: 'destructive' });
+    if (!stickerText.trim() && textStickerImages.length === 0) {
+      toast({ title: '請輸入文字或上傳圖片', variant: 'destructive' });
       return;
     }
     setIsTextGenerating(true);
     try {
+      // Convert uploaded images to base64 for reference
+      const referenceImages: string[] = [];
+      for (const imgUrl of textStickerImages) {
+        try {
+          const base64 = await convertImageToBase64(imgUrl);
+          referenceImages.push(base64);
+        } catch (e) {
+          console.warn('Failed to convert image:', e);
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('sticker-generate', { 
-        body: { text: stickerText, style: textStyle } 
+        body: { text: stickerText, style: textStyle, referenceImages } 
       });
       if (error) throw error;
       if (data.imageUrl) {
         setTextStickers(prev => [data.imageUrl, ...prev.slice(0, 11)]);
       }
       toast({ title: '貼圖生成成功！' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Text sticker generation error:', error);
-      toast({ title: '生成失敗', variant: 'destructive' });
+      const msg = error?.message || '';
+      if (msg.includes('429') || msg.includes('Rate limit')) {
+        toast({ title: '請求過於頻繁，請稍後再試', variant: 'destructive' });
+      } else if (msg.includes('402')) {
+        toast({ title: 'AI 額度已用完，請充值', variant: 'destructive' });
+      } else {
+        toast({ title: '生成失敗', variant: 'destructive' });
+      }
     } finally {
       setIsTextGenerating(false);
     }
@@ -674,7 +703,7 @@ const StickerMakerPage = () => {
             
             <Button 
               onClick={handleTextStickerGenerate} 
-              disabled={isTextGenerating || !stickerText.trim()} 
+              disabled={isTextGenerating || (!stickerText.trim() && textStickerImages.length === 0)} 
               className="w-full h-12"
             >
               {isTextGenerating ? (
