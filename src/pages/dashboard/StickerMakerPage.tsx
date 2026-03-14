@@ -692,9 +692,9 @@ const StickerMakerPage = () => {
                 <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-muted/50 border group">
                   <img src={url} alt={`Sticker ${i + 1}`} className="w-full h-full object-contain p-2" />
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                    <a href={url} download={`sticker-${i + 1}.png`} className="p-2 bg-background rounded-full shadow-md">
+                    <button onClick={() => downloadTextSticker(url, `sticker-${i + 1}.png`)} className="p-2 bg-background rounded-full shadow-md">
                       <Download className="w-4 h-4 text-foreground" />
-                    </a>
+                    </button>
                   </div>
                 </div>
               ))}
