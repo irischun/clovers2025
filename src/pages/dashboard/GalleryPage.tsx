@@ -230,11 +230,16 @@ const GalleryPage = () => {
           </div>
 
           {/* File Size */}
-          {fileSizes[img.id] ? (
-            <div className="text-xs text-muted-foreground">
-              檔案大小: <span className="text-foreground">{formatFileSize(fileSizes[img.id])}</span>
-            </div>
-          ) : null}
+          {/* File Size */}
+          <div className="text-xs text-muted-foreground">
+            檔案大小: <span className="text-foreground">
+              {fileSizes[img.id] && fileSizes[img.id] > 0
+                ? formatFileSize(fileSizes[img.id])
+                : fileSizes[img.id] === -1
+                  ? '無法取得'
+                  : '計算中...'}
+            </span>
+          </div>
           {img.style && (
             <div className="text-xs text-muted-foreground">
               風格: <span className="text-foreground">{img.style}</span>
