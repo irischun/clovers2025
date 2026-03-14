@@ -41,6 +41,8 @@ const GalleryPage = () => {
   const [expandedPrompts, setExpandedPrompts] = useState<Set<string>>(new Set());
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [fileSizes, setFileSizes] = useState<Record<string, number>>({});
+  const [audioFileSizes, setAudioFileSizes] = useState<Record<string, number>>({});
+  const [subtitleFileSizes, setSubtitleFileSizes] = useState<Record<string, number>>({});
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const [audioElements, setAudioElements] = useState<Record<string, HTMLAudioElement>>({});
 
