@@ -483,6 +483,8 @@ const StickerMakerPage = () => {
     }
   }, [frames.length, isAnimating, stopAnimationPreview]);
 
+  const latestTextSticker = textStickers[0] ?? null;
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Points Balance */}
@@ -909,31 +911,30 @@ const StickerMakerPage = () => {
             </div>
 
             {/* Download Latest */}
-             {textStickers.length > 0 && (
-              <div className="space-y-3">
-                <Button
-                  variant="outline"
-                  className="w-full h-12"
-                  onClick={() => downloadTextSticker(textStickers[0], `sticker-${Date.now()}.png`)}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  下載最新貼圖
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full h-12"
-                  disabled={isCuttingOut}
-                  onClick={() => handleCutOutDownload(textStickers[0])}
-                >
-                  {isCuttingOut ? (
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                  ) : (
-                    <Scissors className="w-4 h-4 mr-2" />
-                  )}
-                  去背剪裁下載
-                </Button>
-              </div>
-            )}
+            <div className="space-y-3">
+              <Button
+                variant="outline"
+                className="w-full h-12"
+                disabled={!latestTextSticker}
+                onClick={() => latestTextSticker && downloadTextSticker(latestTextSticker, `sticker-${Date.now()}.png`)}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                下載最新貼圖
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full h-12"
+                disabled={!latestTextSticker || isCuttingOut}
+                onClick={() => latestTextSticker && handleCutOutDownload(latestTextSticker)}
+              >
+                {isCuttingOut ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <Scissors className="w-4 h-4 mr-2" />
+                )}
+                去背剪裁下載（Cut Out & Download）
+              </Button>
+            </div>
 
             {/* Tips */}
             <div className="bg-muted/30 rounded-lg p-4 space-y-2">
