@@ -461,152 +461,223 @@ const StickerMakerPage = () => {
       </div>
 
       {/* Text Sticker Section */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Sticker className="w-5 h-5 text-primary" />
-            <CardTitle className="text-lg">創建個性化的表情貼圖神器</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <h3 className="font-medium mb-2">創建貼圖</h3>
-            <Input 
-              value={stickerText} 
-              onChange={(e) => setStickerText(e.target.value)} 
-              placeholder="輸入貼圖文字或表情..." 
-            />
-          </div>
-
-          {/* Image Upload Section */}
-          <div>
-            <h3 className="font-medium mb-2">上傳圖片</h3>
-            <div className="grid grid-cols-2 gap-3 mb-3">
-              <Button
-                variant="outline"
-                className="h-10"
-                onClick={() => textFileInputRef.current?.click()}
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                上傳圖片
-              </Button>
-              <input
-                ref={textFileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={handleTextImageUpload}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Column - Input & Settings */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Sticker className="w-5 h-5 text-primary" />
+              <CardTitle className="text-lg">創建個性化的表情貼圖神器</CardTitle>
+            </div>
+            <p className="text-sm text-muted-foreground">輸入文字或表情，選擇風格，生成專屬貼圖</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <h3 className="font-medium mb-2">創建貼圖</h3>
+              <Input 
+                value={stickerText} 
+                onChange={(e) => setStickerText(e.target.value)} 
+                placeholder="輸入貼圖文字或表情..." 
               />
-              
-              <Dialog open={isTextGalleryOpen} onOpenChange={setIsTextGalleryOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="h-10">
-                    <Images className="w-4 h-4 mr-2" />
-                    從畫廊選擇
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>從畫廊選擇圖片</DialogTitle>
-                  </DialogHeader>
-                  {mediaLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                      <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-                    </div>
-                  ) : imageMediaFiles.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <ImageIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p>畫廊中沒有圖片</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-4 gap-3">
-                      {imageMediaFiles.map((file) => {
-                        const url = signedUrls[file.file_path];
-                        return (
-                          <button
-                            key={file.id}
-                            onClick={() => url && handleTextGallerySelect(url)}
-                            className="aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-primary transition-colors"
-                          >
-                            {url ? (
-                              <img
-                                src={url}
-                                alt={file.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-muted flex items-center justify-center">
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              </div>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </DialogContent>
-              </Dialog>
             </div>
 
-            {/* Uploaded Images Preview */}
-            {textStickerImages.length > 0 && (
+            {/* Image Upload Section */}
+            <div>
+              <h3 className="font-medium mb-2">上傳圖片</h3>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <Button
+                  variant="outline"
+                  className="h-10"
+                  onClick={() => textFileInputRef.current?.click()}
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  上傳圖片
+                </Button>
+                <input
+                  ref={textFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleTextImageUpload}
+                />
+                
+                <Dialog open={isTextGalleryOpen} onOpenChange={setIsTextGalleryOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="h-10">
+                      <Images className="w-4 h-4 mr-2" />
+                      從畫廊選擇
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>從畫廊選擇圖片</DialogTitle>
+                    </DialogHeader>
+                    {mediaLoading ? (
+                      <div className="flex items-center justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : imageMediaFiles.length === 0 ? (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <ImageIcon className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                        <p>畫廊中沒有圖片</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-4 gap-3">
+                        {imageMediaFiles.map((file) => {
+                          const url = signedUrls[file.file_path];
+                          return (
+                            <button
+                              key={file.id}
+                              onClick={() => url && handleTextGallerySelect(url)}
+                              className="aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-primary transition-colors"
+                            >
+                              {url ? (
+                                <img
+                                  src={url}
+                                  alt={file.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-muted flex items-center justify-center">
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              {/* Uploaded Images Preview */}
+              {textStickerImages.length > 0 && (
+                <div className="flex gap-2 flex-wrap">
+                  {textStickerImages.map((url, index) => (
+                    <div key={index} className="relative w-16 h-16 rounded-lg overflow-hidden border group">
+                      <img src={url} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => removeTextStickerImage(index)}
+                        className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-2.5 h-2.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Style Selection */}
+            <div>
+              <h3 className="font-medium mb-2">選擇風格</h3>
               <div className="flex gap-2 flex-wrap">
-                {textStickerImages.map((url, index) => (
-                  <div key={index} className="relative w-16 h-16 rounded-lg overflow-hidden border group">
-                    <img src={url} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
-                    <button
-                      onClick={() => removeTextStickerImage(index)}
-                      className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="w-2.5 h-2.5" />
-                    </button>
-                  </div>
+                {textStyles.map(s => (
+                  <Button 
+                    key={s.id} 
+                    variant={textStyle === s.id ? 'default' : 'outline'} 
+                    size="sm" 
+                    onClick={() => setTextStyle(s.id)}
+                  >
+                    {s.emoji} {s.label}
+                  </Button>
                 ))}
               </div>
-            )}
-          </div>
-          
-          <div className="flex gap-2 flex-wrap">
-            {textStyles.map(s => (
-              <Button 
-                key={s.id} 
-                variant={textStyle === s.id ? 'default' : 'outline'} 
-                size="sm" 
-                onClick={() => setTextStyle(s.id)}
-              >
-                {s.emoji} {s.label}
-              </Button>
-            ))}
-          </div>
-          
-          <Button 
-            onClick={handleTextStickerGenerate} 
-            disabled={isTextGenerating} 
-            className="w-full"
-          >
-            {isTextGenerating ? (
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-            ) : (
-              <Sticker className="w-4 h-4 mr-2" />
-            )}
-            生成貼圖
-          </Button>
-        </CardContent>
-      </Card>
+            </div>
+            
+            <Button 
+              onClick={handleTextStickerGenerate} 
+              disabled={isTextGenerating || !stickerText.trim()} 
+              className="w-full h-12"
+            >
+              {isTextGenerating ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <Sticker className="w-4 h-4 mr-2" />
+              )}
+              生成貼圖 (1點)
+            </Button>
+          </CardContent>
+        </Card>
 
-      {/* Text Stickers Gallery */}
+        {/* Right Column - Preview & Result */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-primary" />
+              <CardTitle className="text-lg">預覽與結果</CardTitle>
+            </div>
+            <p className="text-sm text-muted-foreground">查看生成的貼圖並下載</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Preview Area */}
+            <div className="aspect-square bg-muted/50 rounded-lg border-2 border-dashed border-border flex items-center justify-center overflow-hidden">
+              {textStickers.length > 0 ? (
+                <img
+                  src={textStickers[0]}
+                  alt="Generated Sticker"
+                  className="w-full h-full object-contain p-4"
+                />
+              ) : (
+                <div className="text-center text-muted-foreground">
+                  <Sticker className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>貼圖預覽區域</p>
+                  <p className="text-xs mt-1">生成後將在此顯示</p>
+                </div>
+              )}
+            </div>
+
+            {/* Download Latest */}
+            {textStickers.length > 0 && (
+              <div className="space-y-3">
+                <Button
+                  variant="outline"
+                  className="w-full h-12"
+                  asChild
+                >
+                  <a href={textStickers[0]} download={`sticker-${Date.now()}.png`}>
+                    <Download className="w-4 h-4 mr-2" />
+                    下載最新貼圖
+                  </a>
+                </Button>
+              </div>
+            )}
+
+            {/* Tips */}
+            <div className="bg-muted/30 rounded-lg p-4 space-y-2">
+              <p className="text-sm font-medium flex items-center gap-2">
+                <span className="text-lg">💡</span> 使用提示：
+              </p>
+              <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                <li>輸入文字或表情符號即可生成貼圖</li>
+                <li>可上傳圖片作為貼圖背景素材</li>
+                <li>選擇不同風格獲得多樣化效果</li>
+                <li>每次生成消耗 1 點</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Text Stickers History Gallery */}
       {textStickers.length > 0 && (
         <Card>
-          <CardHeader><CardTitle>我的貼圖</CardTitle></CardHeader>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Images className="w-5 h-5 text-primary" />
+              <CardTitle className="text-lg">生成歷史 ({textStickers.length})</CardTitle>
+            </div>
+          </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
               {textStickers.map((url, i) => (
-                <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-muted group">
-                  <img src={url} alt="Sticker" className="w-full h-full object-cover" />
+                <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-muted/50 border group">
+                  <img src={url} alt={`Sticker ${i + 1}`} className="w-full h-full object-contain p-2" />
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                    <a href={url} download className="p-2 bg-white rounded-full">
-                      <Download className="w-4 h-4 text-black" />
+                    <a href={url} download={`sticker-${i + 1}.png`} className="p-2 bg-background rounded-full shadow-md">
+                      <Download className="w-4 h-4 text-foreground" />
                     </a>
                   </div>
                 </div>
