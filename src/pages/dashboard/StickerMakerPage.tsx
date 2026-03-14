@@ -307,6 +307,43 @@ const StickerMakerPage = () => {
     }
   };
 
+  const [isCuttingOut, setIsCuttingOut] = useState(false);
+
+  const handleCutOutDownload = async (imageUrl: string) => {
+    setIsCuttingOut(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        toast({ title: '請先登入', variant: 'destructive' });
+        return;
+      }
+
+      // Convert the sticker image to base64
+      const base64 = await convertImageToBase64(imageUrl);
+
+      const response = await supabase.functions.invoke('sticker-generate', {
+        body: {
+          text: 'Remove the background completely. Output ONLY the subject/character with a fully transparent background. Preserve all details of the subject perfectly. No background elements at all.',
+          style: 'original',
+          referenceImages: [base64],
+          removeBackground: true,
+        },
+      });
+
+      if (response.error) throw response.error;
+      const resultUrl = response.data?.imageUrl;
+      if (!resultUrl) throw new Error('No image returned');
+
+      await downloadTextSticker(resultUrl, `sticker-cutout-${Date.now()}.png`);
+      toast({ title: '去背圖片已下載！' });
+    } catch (error) {
+      console.error('Cut out error:', error);
+      toast({ title: '去背失敗，請重試', variant: 'destructive' });
+    } finally {
+      setIsCuttingOut(false);
+    }
+  };
+
   const convertImageToBase64 = async (url: string): Promise<string> => {
     const response = await fetch(url);
     const blob = await response.blob();
