@@ -4,6 +4,7 @@ import { Upload, Images, Loader2, Sparkles, Download, X, GripVertical, Image as 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useMediaFiles } from '@/hooks/useMediaFiles';
