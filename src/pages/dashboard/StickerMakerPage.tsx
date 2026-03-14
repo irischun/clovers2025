@@ -1,4 +1,5 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { Play, Square } from 'lucide-react';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { Upload, Images, Loader2, Sparkles, Download, X, GripVertical, Image as ImageIcon, AlertCircle, Sticker } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,9 @@ const StickerMakerPage = () => {
   const [frames, setFrames] = useState<ImageFrame[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationFrameIndex, setAnimationFrameIndex] = useState(0);
+  const animationIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
   // Text sticker states
   const [stickerText, setStickerText] = useState('');
@@ -260,6 +264,50 @@ const StickerMakerPage = () => {
       generateUrls();
     }
   }, [isGalleryOpen, isTextGalleryOpen, imageMediaFiles.length, getSignedUrl]);
+
+  const startAnimationPreview = useCallback(() => {
+    if (frames.length < 2) {
+      toast({ title: '圖片不足', description: '至少需要 2 張圖片才能預覽動畫', variant: 'destructive' });
+      return;
+    }
+    setIsAnimating(true);
+    setAnimationFrameIndex(0);
+    setPreviewUrl(frames[0].url);
+  }, [frames, toast]);
+
+  const stopAnimationPreview = useCallback(() => {
+    setIsAnimating(false);
+    if (animationIntervalRef.current) {
+      clearInterval(animationIntervalRef.current);
+      animationIntervalRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAnimating && frames.length >= 2) {
+      animationIntervalRef.current = setInterval(() => {
+        setAnimationFrameIndex(prev => {
+          const next = (prev + 1) % frames.length;
+          setPreviewUrl(frames[next].url);
+          return next;
+        });
+      }, 500);
+    }
+    return () => {
+      if (animationIntervalRef.current) {
+        clearInterval(animationIntervalRef.current);
+        animationIntervalRef.current = null;
+      }
+    };
+  }, [isAnimating, frames]);
+
+  // Stop animation if frames change
+  useEffect(() => {
+    if (frames.length < 2 && isAnimating) {
+      stopAnimationPreview();
+    }
+  }, [frames.length, isAnimating, stopAnimationPreview]);
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Points Balance */}
@@ -435,6 +483,26 @@ const StickerMakerPage = () => {
                 </div>
               )}
             </div>
+
+            {/* Preview Animation Button */}
+            <Button
+              variant="outline"
+              onClick={isAnimating ? stopAnimationPreview : startAnimationPreview}
+              disabled={frames.length < 2}
+              className="w-full h-12"
+            >
+              {isAnimating ? (
+                <>
+                  <Square className="w-4 h-4 mr-2" />
+                  停止預覽
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 mr-2" />
+                  預覽動畫
+                </>
+              )}
+            </Button>
 
             {/* Generate Button */}
             <Button
