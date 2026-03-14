@@ -110,6 +110,23 @@ const stylePromptMap: Record<string, string> = {
   // Japanese styles
   japanese_anime: "Japanese anime illustration, detailed manga art, beautiful character design, dynamic composition, professional anime studio quality, light novel cover art",
   realistic_illustration: "realistic illustration, detailed digital painting, concept art quality, semi-realistic style, fantasy realism, book cover illustration quality",
+
+  // Character & IP Styles
+  pixar: "Pixar animation studio style, 3D CGI character, smooth rounded forms, expressive eyes and face, vibrant Pixar color palette, subsurface scattering skin, cinematic lighting, Toy Story and Inside Out quality, heartwarming and polished",
+  disney: "Disney animation style, classic Disney character design, beautiful flowing lines, magical sparkle effects, rich saturated Disney colors, fairytale aesthetic, princess-quality animation, enchanting and whimsical, Walt Disney Studios quality",
+  snoopy: "Snoopy and Peanuts comic style by Charles Schulz, simple clean black outlines, minimal color fills, round head proportions, expressive with minimal detail, newspaper comic strip aesthetic, white beagle dog style, cheerful innocent charm",
+  irasutoya: "Irasutoya Japanese illustration style (いらすとや), simple flat vector characters, soft pastel colors, round friendly faces, informational clip-art style, clean white background, educational illustration, cute Japanese explanatory diagram style",
+  crayon_shin: "Crayon Shin-chan (蠟筆小新) anime style, thick crude outlines, simple flat coloring, exaggerated facial expressions, childlike drawing quality, comedic proportions, bold primary colors, Yoshito Usui manga aesthetic",
+  doraemon: "Doraemon (多啦A夢) anime style by Fujiko F. Fujio, round simple character design, bright blue and white color scheme, clean bold outlines, cute robotic cat aesthetic, futuristic gadget feel, cheerful Japanese manga, nostalgic Showa-era anime quality",
+  toriyama: "Akira Toriyama (鳥山明) art style, Dragon Ball manga aesthetic, dynamic action poses, muscular character proportions, spiky dramatic hair, bold clean ink lines, vibrant energy aura effects, manga screentone shading, powerful and expressive",
+  jojo: "JoJo's Bizarre Adventure (ジョジョ) style by Hirohiko Araki, dramatic exaggerated poses, heavy muscular anatomy, bold fashion-forward character design, intense hatching and shading, vivid contrasting colors, menacing aura effects, flamboyant and powerful aesthetic",
+  nana: "Nana manga style by Ai Yazawa, elegant punk-rock fashion illustration, slender stylized proportions, detailed clothing and accessories, moody atmospheric tones, gothic-romantic aesthetic, high-fashion manga quality, emotional and stylish",
+  crayon_doodle: "crayon doodle style (蠟筆塗鴉), childlike crayon drawing, rough waxy texture, uneven coloring, hand-drawn by a child aesthetic, bright primary crayon colors, sketchy imperfect lines, playful naive art, textured paper background",
+  three_d_q: "3D Q-version chibi style (3D Q版), super-deformed 3D character with oversized head, tiny cute body, big sparkling eyes, smooth glossy plastic-like 3D rendering, soft studio lighting, Funko Pop meets anime figurine quality",
+  three_d_rendering_animation: "3D rendering animation style, high-quality 3D animated character, Pixar-Dreamworks hybrid, smooth polygon mesh, professional studio lighting, ray-traced reflections, cinematic depth of field, movie-quality 3D animation frame",
+  cyberpunk_cool: "stylish cyberpunk aesthetic (型格Cyberpunk), dark neon-lit cityscape, sleek futuristic fashion, glowing circuit patterns, rain-soaked streets, holographic HUD overlays, cool confident character design, Blade Runner meets Ghost in the Shell",
+  cyberpunk_q: "Q-version cute cyberpunk style (Q版Cyberpunk), chibi character with cyberpunk elements, neon glow accents on cute round body, tiny robot arms, LED eye effects, miniature futuristic city background, adorable meets high-tech",
+  y2k: "Y2K millennium aesthetic (千禧風格), early 2000s design, glossy chrome text, butterfly motifs, baby pink and electric blue, frosted translucent plastic, flip phone era, bedazzled sparkle effects, Bratz doll energy, nostalgic cyber-cute",
 };
 
 function buildSystemMessage(hasReferenceImage: boolean): string {
