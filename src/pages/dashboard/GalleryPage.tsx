@@ -474,11 +474,11 @@ const GalleryPage = () => {
                   <Badge variant="outline" className="text-xs font-mono">
                     {getFileFormatLabel(selectedItem.image_url)}
                   </Badge>
-                  {fileSizes[selectedItem.id] ? (
-                    <Badge variant="outline" className="text-xs font-mono">
-                      {formatFileSize(fileSizes[selectedItem.id])}
-                    </Badge>
-                  ) : null}
+                  <Badge variant="outline" className="text-xs font-mono">
+                    {fileSizes[selectedItem.id] && fileSizes[selectedItem.id] > 0
+                      ? formatFileSize(fileSizes[selectedItem.id])
+                      : '計算中...'}
+                  </Badge>
                   {selectedItem.model && (
                     <Badge variant="outline" className="text-xs">
                       {selectedItem.model}
