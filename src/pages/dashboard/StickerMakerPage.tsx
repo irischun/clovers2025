@@ -778,12 +778,30 @@ const StickerMakerPage = () => {
             {/* Style Selection */}
             <div>
               <h3 className="font-medium mb-2">選擇風格</h3>
-              <div className="flex gap-2 flex-wrap">
-                {textStyles.map(s => (
+              {/* Category Tabs */}
+              <div className="flex gap-1.5 flex-wrap mb-3 pb-2 border-b border-border">
+                {styleCategories.map(cat => (
+                  <Button
+                    key={cat.id}
+                    variant={styleCategory === cat.id ? 'default' : 'ghost'}
+                    size="sm"
+                    className="h-7 px-2.5 text-xs"
+                    onClick={() => setStyleCategory(cat.id)}
+                  >
+                    {cat.label}
+                  </Button>
+                ))}
+              </div>
+              {/* Style Buttons */}
+              <div className="flex gap-2 flex-wrap max-h-48 overflow-y-auto pr-1">
+                {textStyles
+                  .filter(s => styleCategory === 'all' || s.category === styleCategory)
+                  .map(s => (
                   <Button 
                     key={s.id} 
                     variant={textStyle === s.id ? 'default' : 'outline'} 
-                    size="sm" 
+                    size="sm"
+                    className="h-8 text-xs"
                     onClick={() => setTextStyle(s.id)}
                   >
                     {s.emoji} {s.label}
