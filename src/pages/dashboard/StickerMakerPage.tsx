@@ -264,6 +264,50 @@ const StickerMakerPage = () => {
       generateUrls();
     }
   }, [isGalleryOpen, isTextGalleryOpen, imageMediaFiles.length, getSignedUrl]);
+
+  const startAnimationPreview = useCallback(() => {
+    if (frames.length < 2) {
+      toast({ title: '圖片不足', description: '至少需要 2 張圖片才能預覽動畫', variant: 'destructive' });
+      return;
+    }
+    setIsAnimating(true);
+    setAnimationFrameIndex(0);
+    setPreviewUrl(frames[0].url);
+  }, [frames, toast]);
+
+  const stopAnimationPreview = useCallback(() => {
+    setIsAnimating(false);
+    if (animationIntervalRef.current) {
+      clearInterval(animationIntervalRef.current);
+      animationIntervalRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAnimating && frames.length >= 2) {
+      animationIntervalRef.current = setInterval(() => {
+        setAnimationFrameIndex(prev => {
+          const next = (prev + 1) % frames.length;
+          setPreviewUrl(frames[next].url);
+          return next;
+        });
+      }, 500);
+    }
+    return () => {
+      if (animationIntervalRef.current) {
+        clearInterval(animationIntervalRef.current);
+        animationIntervalRef.current = null;
+      }
+    };
+  }, [isAnimating, frames]);
+
+  // Stop animation if frames change
+  useEffect(() => {
+    if (frames.length < 2 && isAnimating) {
+      stopAnimationPreview();
+    }
+  }, [frames.length, isAnimating, stopAnimationPreview]);
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Points Balance */}
