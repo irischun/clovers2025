@@ -8,69 +8,141 @@ const corsHeaders = {
 
 async function verifyAuth(req: Request): Promise<{ userId: string } | null> {
   const authHeader = req.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    return null;
-  }
+  if (!authHeader?.startsWith('Bearer ')) return null;
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-  
   const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     global: { headers: { Authorization: authHeader } }
   });
 
   const token = authHeader.replace('Bearer ', '');
   const { data, error } = await supabase.auth.getClaims(token);
-  
-  if (error || !data?.claims) {
-    return null;
-  }
-
+  if (error || !data?.claims) return null;
   return { userId: data.claims.sub as string };
 }
 
-// Enhanced style descriptions matching generate-image quality
+// Comprehensive style prompt map covering all styles
 const stylePromptMap: Record<string, string> = {
+  // Original existing styles
   cute: "kawaii style, adorable character design, soft pastel colors, rounded shapes, cute facial expressions, chibi proportions, glossy highlights, sticker-ready with bold clean outlines",
   minimal: "minimalist design, clean geometric lines, flat illustration, simple elegant shapes, limited color palette, modern graphic design, negative space, Scandinavian design influence",
-  bold: "bold vibrant colors, strong graphic design, thick outlines, pop art influence, high contrast, dynamic composition, eye-catching typography, street art energy",
-  vintage: "vintage retro style, muted warm color palette, distressed texture, 1970s illustration, nostalgic atmosphere, film grain effect, hand-drawn aesthetic, classic typography",
+  bold: "bold vibrant colors, strong graphic design, thick outlines, pop art influence, high contrast, dynamic composition, eye-catching, street art energy",
+  vintage: "vintage retro style, muted warm color palette, distressed texture, 1970s illustration, nostalgic atmosphere, film grain effect, hand-drawn aesthetic",
   neon: "neon glow effect, cyberpunk aesthetic, dark background with vivid glowing colors, electric blue and hot pink, futuristic design, holographic shimmer, synthwave style",
   watercolor: "watercolor painting style, soft flowing colors, artistic brush strokes, delicate washes, paper texture, impressionistic, organic shapes, hand-painted feel",
+
+  // New: Original & Realistic
+  original: "faithful reproduction of the original image style, maintain original colors and composition, clean and accurate rendering, high fidelity, preserve all details exactly as they are",
+  realistic: "photorealistic rendering, ultra-realistic detail, lifelike textures, natural lighting, accurate shadows, sharp focus, professional photography quality, hyperrealism",
+
+  // Kling AI Style Library — Fun/Cartoon
+  cartoon_c4d: "Cinema 4D cartoon style, 3D rendered, smooth plastic-like surfaces, vibrant saturated colors, playful proportions, soft lighting, toy-like quality, Pixar-inspired",
+  cg_rendering: "high quality CG rendering, 3D computer graphics, professional lighting setup, subsurface scattering, photorealistic materials, studio render quality",
+  ghibli: "Studio Ghibli anime style, Hayao Miyazaki inspired, soft watercolor backgrounds, whimsical atmosphere, detailed hand-drawn animation, warm nostalgic colors, magical realism",
+  anime_cartoon: "Japanese anime style, vibrant colors, large expressive eyes, dynamic poses, clean cel-shading, manga-inspired character design, detailed hair rendering",
+  retro_comic: "retro comic book style, halftone dots, bold ink outlines, vintage color printing, speech bubbles aesthetic, 1960s pop art comics, Ben-Day dots pattern",
+  q_version: "Q-version chibi style, super-deformed proportions, oversized head, tiny body, extremely cute, big round eyes, simplified features, adorable expression",
+  chibi_3d: "3D chibi character, cute super-deformed 3D model, big head small body, glossy plastic-like surface, kawaii 3D rendering, soft shadows",
+  cotton_doll: "cotton doll style, soft plush toy aesthetic, fabric texture, stitched details, button eyes, stuffed animal quality, handmade craft feel, cozy warm tones",
+  jellycat: "Jellycat plush toy style, ultra-soft knitted texture, rounded cuddly shape, pastel baby colors, premium stuffed animal quality, huggable design",
+  squishy_toy: "squishy toy style, marshmallow-soft 3D render, squeezable texture, pastel kawaii colors, jiggly bouncy feel, foam-like material, stress ball aesthetic",
+  childrens_illustration: "children's book illustration, gentle watercolor, simple charming characters, warm friendly colors, storybook quality, innocent whimsical atmosphere",
+  sticker_style: "classic sticker design, bold outlines, vibrant flat colors, die-cut shape, fun expressive design, glossy vinyl sticker quality, clear readable at small sizes",
+
+  // Realistic/Photography
+  photography: "professional photography style, natural lighting, shallow depth of field, bokeh background, high resolution, DSLR camera quality, lifestyle photography",
+  teal_orange: "teal and orange color grading, cinematic color correction, complementary colors, Hollywood film look, warm highlights cool shadows, dramatic mood",
+  retro_film: "vintage film photography, analog film grain, faded warm tones, light leaks, Kodak Portra color profile, nostalgic old photo aesthetic",
+  ricoh: "Ricoh GR street photography style, high contrast black and white or muted tones, candid documentary feel, sharp wide-angle, urban atmosphere",
+  surreal_photo: "surreal photography, dreamlike compositions, impossible perspectives, magical realism photo manipulation, fantasy elements blended with reality",
+
+  // Art & Painting styles
+  impasto_oil: "impasto oil painting, thick textured brushstrokes, rich oil colors, visible paint layers, classical fine art technique, gallery-quality painting",
+  traditional_chinese: "traditional Chinese ink painting, sumi-e style, black ink on rice paper, fluid brushwork, mountain and water landscape, zen minimalism, calligraphic strokes",
+  ink_wash: "ink wash painting, gradient ink tones, wet brush technique, atmospheric fog, East Asian ink art, monochrome beauty, contemplative mood",
+  monet: "Claude Monet impressionist style, soft dappled light, broken color technique, water lily garden atmosphere, plein air painting, dreamy pastel palette",
+  colored_pencil: "colored pencil illustration, visible pencil strokes, textured paper surface, hand-drawn quality, detailed shading, art school quality, warm toned",
+  sketch: "pencil sketch style, graphite drawing, loose expressive linework, artistic hatching and cross-hatching, sketchbook quality, raw artistic energy",
+
+  // Design & Craft styles
+  glass: "glass morphism style, frosted glass effect, transparent and translucent materials, light refraction, crystal clear, elegant glassware aesthetic",
+  paper_carving: "paper carving art, layered paper cut-out, kirigami style, dimensional paper sculpture, intricate cut details, shadow play between layers",
+  knit_fabric: "knitted fabric texture, cozy knit pattern, yarn-based illustration, sweater texture, warm winter craft feel, handmade knitting quality",
+  wool_felt: "wool felt craft style, needle felted characters, soft fuzzy texture, handmade felt art, warm organic colors, tactile crafty quality",
+  plush_texture: "plush velvet texture, soft fuzzy surface, toy-like quality, premium plush material, touchable softness, rich fabric feel",
+  ice_cream: "ice cream style, pastel dessert colors, creamy smooth texture, sweet delicious aesthetic, sprinkles and toppings, candy-colored palette",
+  macaron_color: "macaron color palette, soft French pastel tones, elegant delicate colors, sweet confection inspired, pink lavender mint, sophisticated pastel harmony",
+  liquid_metal: "liquid metal effect, chrome mercury-like surface, reflective metallic sheen, molten metal flow, futuristic material, T-1000 aesthetic",
+  iridescent_pvc: "iridescent PVC material, holographic rainbow sheen, transparent plastic, prismatic light effects, fashion accessory quality, trendy Y2K aesthetic",
+  plaster: "plaster sculpture style, white gypsum texture, classical bust aesthetic, smooth matte surface, sculptural form, museum artifact quality",
+
+  // Digital & Modern styles
+  pixel_art: "pixel art style, retro 8-bit/16-bit game graphics, blocky pixels, limited color palette, nostalgic video game aesthetic, crisp pixel edges",
+  dreamcore: "dreamcore aesthetic, surreal liminal spaces, hazy ethereal atmosphere, nostalgic yet unsettling, soft bloom lighting, pastel surrealism",
+  single_line: "single continuous line drawing, one-line art, minimalist line illustration, elegant flowing stroke, artistic simplicity, wire sculpture feel",
+  graffiti: "street graffiti art style, spray paint texture, urban wall art, bold wild style lettering, vibrant aerosol colors, hip-hop culture influence",
+  logo_design: "professional logo design style, clean vector graphics, brand identity quality, scalable design, iconic simplified shapes, corporate design standards",
+  computer_graphics: "computer generated graphics, digital art, vector illustration, clean digital rendering, modern graphic design, Adobe Illustrator quality",
+  ultra_flat: "ultra-flat design style, completely flat illustration, no gradients, bold solid colors, geometric simplification, modern UI design aesthetic",
+
+  // Fantasy & Themed styles
+  steampunk: "steampunk aesthetic, Victorian era machinery, brass gears and cogs, steam-powered gadgets, industrial revolution fantasy, clockwork mechanism details",
+  wasteland: "post-apocalyptic wasteland style, dystopian atmosphere, rusted metal textures, Mad Max inspired, desolate landscape, survival aesthetic",
+  future_scifi: "futuristic sci-fi style, advanced technology, holographic interfaces, sleek metallic surfaces, space age design, cyberpunk-meets-utopia",
+  eastern_fantasy: "Eastern fantasy style, xianxia wuxia inspired, flowing robes, mystical Chinese mythology, ethereal clouds, celestial palace, immortal cultivation aesthetic",
+  dunhuang: "Dunhuang mural art style, ancient Buddhist cave painting, mineral pigment colors, flying apsaras, Tang Dynasty art, Silk Road cultural fusion",
+
+  // City & Lifestyle styles
+  city_capsule: "city capsule miniature, tiny world in a bottle, miniature diorama, tilt-shift effect, detailed small-scale urban scene, whimsical micro world",
+  miniature_landscape: "miniature landscape, tilt-shift photography effect, tiny world illusion, dollhouse scale scenery, shallow depth of field, model train set quality",
+  healing_japanese: "healing Japanese illustration, warm soothing atmosphere, slice-of-life daily scenes, soft muted watercolors, cozy peaceful mood, iyashikei aesthetic",
+  colorful_dream: "colorful dream style, vivid rainbow palette, fantastical surreal scenes, whimsical imagination, candy-colored world, childlike wonder",
+  wu_guanzhong: "Wu Guanzhong painting style, blend of Chinese ink and Western color, abstract landscape, rhythmic brushwork, modernist Chinese art, architectural sketches",
+
+  // 3D & Material styles
+  three_d_polaroid: "3D Polaroid photo style, instant film frame, vintage snapshot, white border frame, slightly overexposed, casual candid photo, nostalgic memory",
+  design_draft: "design wireframe draft style, blueprint sketch, technical drawing, construction lines, architectural plan aesthetic, prototype visualization",
+  chinese_3d: "Chinese 3D clay style, traditional Chinese cultural elements in 3D, red and gold colors, festive lucky motifs, clay figurine texture, folk art 3D",
+  pvc_model: "PVC figure model, anime figurine quality, glossy painted surface, articulated model, collectible figure aesthetic, display-ready quality",
+  festive: "festive celebration style, holiday decorations, sparkles and confetti, warm golden lighting, party atmosphere, joyful celebratory mood",
+
+  // Japanese styles
+  japanese_anime: "Japanese anime illustration, detailed manga art, beautiful character design, dynamic composition, professional anime studio quality, light novel cover art",
+  realistic_illustration: "realistic illustration, detailed digital painting, concept art quality, semi-realistic style, fantasy realism, book cover illustration quality",
 };
 
 function buildSystemMessage(hasReferenceImage: boolean): string {
-  let msg = `You are an expert sticker designer specializing in messaging app stickers. Create high-quality, expressive sticker designs with these standards:
+  let msg = `You are an expert image stylist and sticker designer. Your task is to create high-quality stylized images with these standards:
 
-1. STICKER FORMAT: Design as a self-contained sticker — bold outlines, transparent/clean background feel, centered composition, 512×512 optimal size.
+1. STYLE ACCURACY: Match the requested visual style with absolute precision. Each style must feel authentic and distinct — as if created by a specialist in that genre.
 
-2. EXPRESSIVENESS: Stickers must be instantly readable at small sizes. Use exaggerated expressions, clear silhouettes, and bold visual elements.
+2. QUALITY: Render with professional-grade execution. Clean lines, smooth gradients, crisp details, no artifacts, no blurriness. Output must match commercial quality.
 
-3. STYLE ACCURACY: Match the requested style precisely with professional-grade execution. Each style should feel distinct and polished.
+3. COLOR & CONTRAST: Use well-contrasted colors that are vibrant and harmonious. The image should look polished on any background.
 
-4. COLOR & CONTRAST: Use vibrant, well-contrasted colors that pop on any chat background. Ensure the sticker stands out.
+4. COMPOSITION: Subject should fill the frame well, be well-composed, and have clear visual hierarchy. For sticker use: centered with appropriate padding.
 
-5. DETAIL QUALITY: Render clean lines, smooth gradients, and crisp details. No artifacts, no blurriness.
+5. EXPRESSIVENESS: Results should be visually striking, instantly recognizable, and emotionally engaging. Exaggerated features are welcome for sticker styles.
 
-6. COMPOSITION: Subject should fill the frame well, be centered, and have clear visual hierarchy. Leave appropriate padding for sticker border.
-
-7. PROFESSIONAL QUALITY: Output should match commercial sticker packs on LINE, WhatsApp, or Telegram stores.`;
+6. DETAIL: Render textures, materials, and surfaces accurately for the chosen style. A watercolor should look painted, a 3D render should look rendered, etc.`;
 
   if (hasReferenceImage) {
     msg += `
 
-REFERENCE IMAGE INSTRUCTIONS:
-You have been provided with reference image(s). Use them as the PRIMARY basis for the sticker:
-- PRESERVE the subject's identity, key features, and distinctive characteristics from the reference
-- Apply the requested sticker style TO the reference subject — stylize but keep recognizable
-- Maintain facial features, body proportions, and unique details from the reference
-- The sticker should clearly depict the same subject as the reference, just in sticker art style`;
+REFERENCE IMAGE INSTRUCTIONS (CRITICAL):
+You have been provided with reference image(s). Follow these rules strictly:
+- The reference image is your PRIMARY subject. PRESERVE the subject's identity, key features, face, body, and distinctive characteristics
+- Apply ONLY the requested visual style/aesthetic TO the reference subject
+- The output must be clearly recognizable as the SAME subject from the reference, just rendered in the new style
+- Maintain facial features, proportions, clothing details, and unique characteristics
+- Think of this as "style transfer" — same subject, different artistic rendering
+- Do NOT replace or substitute the subject with a generic character`;
   }
 
   msg += `
 
-Generate the sticker now with these principles. Make it expressive, stylish, and ready to use in messaging apps.`;
-
+Generate the image now with these principles. Make it expressive, stylish, and professional quality.`;
   return msg;
 }
 
@@ -98,9 +170,7 @@ serve(async (req) => {
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const hasReferenceImage = referenceImages.length > 0;
     console.log("Sticker generation for user:", auth.userId, { text, style, hasRef: hasReferenceImage, refCount: referenceImages.length });
@@ -109,35 +179,32 @@ serve(async (req) => {
     
     // Build enhanced prompt
     const promptParts: string[] = [];
-    promptParts.push(`Create a premium messaging app sticker design`);
-    if (text || emoji) {
-      promptParts.push(`depicting: "${text || emoji}"`);
+    if (hasReferenceImage) {
+      promptParts.push(`Transform the reference image subject using this style: ${styleDesc}`);
+    } else {
+      promptParts.push(`Create a premium stylized sticker image`);
     }
-    promptParts.push(`Style: ${styleDesc}`);
-    promptParts.push("transparent background feel, centered composition, bold clean outlines");
-    promptParts.push("sticker-ready, expressive, high quality, professional sticker pack quality");
-    promptParts.push("512x512 optimal sticker size, clear at small sizes");
+    if (text || emoji) {
+      promptParts.push(`Subject/theme: "${text || emoji}"`);
+    }
+    if (!hasReferenceImage) {
+      promptParts.push(`Style: ${styleDesc}`);
+    }
+    promptParts.push("high quality, professional, expressive, visually striking");
+    promptParts.push("512x512 optimal size, centered composition, clear at small sizes");
     
     const enhancedPrompt = promptParts.join('. ');
 
     // Build messages
     const messages: Array<{role: string; content: string | Array<{type: string; text?: string; image_url?: {url: string}}>}> = [];
-    
     messages.push({ role: "system", content: buildSystemMessage(hasReferenceImage) });
 
     if (hasReferenceImage) {
-      // Include reference images with the prompt
       const contentParts: Array<{type: string; text?: string; image_url?: {url: string}}> = [];
-      
       for (const refImg of referenceImages.slice(0, 3)) {
         contentParts.push({ type: "image_url", image_url: { url: refImg } });
       }
-      
-      contentParts.push({
-        type: "text",
-        text: `Use the reference image(s) above as the subject for the sticker. Transform the subject into a stylish sticker with: ${enhancedPrompt}`
-      });
-      
+      contentParts.push({ type: "text", text: enhancedPrompt });
       messages.push({ role: "user", content: contentParts });
     } else {
       messages.push({ role: "user", content: enhancedPrompt });
