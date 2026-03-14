@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon, Star, Grid3X3, ImageIcon, Video, Filter, Trash2, Download, Copy, Check, ChevronDown, ChevronUp, Maximize2 } from 'lucide-react';
@@ -12,6 +12,13 @@ import { Badge } from '@/components/ui/badge';
 import { useGeneratedImages, GeneratedImage } from '@/hooks/useGeneratedImages';
 import { useToast } from '@/hooks/use-toast';
 
+const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '—';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+};
+
 const GalleryPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -24,6 +31,46 @@ const GalleryPage = () => {
   const [selectedItem, setSelectedItem] = useState<GeneratedImage | null>(null);
   const [expandedPrompts, setExpandedPrompts] = useState<Set<string>>(new Set());
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [fileSizes, setFileSizes] = useState<Record<string, number>>({});
+
+  // Fetch file sizes for all images
+  const fetchFileSizes = useCallback(async () => {
+    const newSizes: Record<string, number> = {};
+    const promises = generatedImages.map(async (img) => {
+      if (fileSizes[img.id]) return; // already fetched
+      try {
+        const response = await fetch(img.image_url, { method: 'HEAD' });
+        const contentLength = response.headers.get('content-length');
+        if (contentLength) {
+          newSizes[img.id] = parseInt(contentLength, 10);
+        } else {
+          // Fallback: fetch blob size
+          const blobResponse = await fetch(img.image_url);
+          const blob = await blobResponse.blob();
+          newSizes[img.id] = blob.size;
+        }
+      } catch {
+        // If HEAD fails, try getting blob size
+        try {
+          const blobResponse = await fetch(img.image_url);
+          const blob = await blobResponse.blob();
+          newSizes[img.id] = blob.size;
+        } catch {
+          newSizes[img.id] = 0;
+        }
+      }
+    });
+    await Promise.allSettled(promises);
+    if (Object.keys(newSizes).length > 0) {
+      setFileSizes(prev => ({ ...prev, ...newSizes }));
+    }
+  }, [generatedImages, fileSizes]);
+
+  useEffect(() => {
+    if (generatedImages.length > 0) {
+      fetchFileSizes();
+    }
+  }, [generatedImages]);
 
   // Filter images
   const filteredImages = generatedImages.filter(img => {
