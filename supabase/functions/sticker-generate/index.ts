@@ -217,10 +217,16 @@ serve(async (req) => {
       // Normal sticker generation mode
       const styleDesc = stylePromptMap[style] || stylePromptMap.cute;
       
+      // Styles that should NOT use sticker/bold language
+      const softStyles = ['irasutoya', 'watercolor', 'childrens_illustration'];
+      const isSoftStyle = softStyles.includes(style);
+      
       // Build enhanced prompt
       const promptParts: string[] = [];
       if (hasReferenceImage) {
         promptParts.push(`Transform the reference image subject using this style: ${styleDesc}`);
+      } else if (isSoftStyle) {
+        promptParts.push(`Create a gentle, soft illustration`);
       } else {
         promptParts.push(`Create a premium stylized sticker image`);
       }
@@ -230,7 +236,11 @@ serve(async (req) => {
       if (!hasReferenceImage) {
         promptParts.push(`Style: ${styleDesc}`);
       }
-      promptParts.push("high quality, professional, expressive, visually striking");
+      if (isSoftStyle) {
+        promptParts.push("soft, gentle, warm, natural illustration quality");
+      } else {
+        promptParts.push("high quality, professional, expressive, visually striking");
+      }
       promptParts.push("512x512 optimal size, centered composition, clear at small sizes");
       
       const enhancedPrompt = promptParts.join('. ');
