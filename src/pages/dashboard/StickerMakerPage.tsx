@@ -397,6 +397,23 @@ const StickerMakerPage = () => {
       if (error) throw error;
       if (data.imageUrl) {
         setTextStickers(prev => [data.imageUrl, ...prev.slice(0, 11)]);
+
+        // Auto-save to gallery (generated_images)
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase.from('generated_images').insert({
+              user_id: user.id,
+              prompt: stickerText || '(reference image sticker)',
+              image_url: data.imageUrl,
+              title: `Sticker ${new Date().toLocaleString('zh-TW')}`,
+              style: textStyle,
+              model: 'gemini-3.1-flash-image',
+            });
+          }
+        } catch (saveErr) {
+          console.warn('Failed to save sticker to gallery:', saveErr);
+        }
       }
       toast({ title: '貼圖生成成功！' });
     } catch (error: any) {
