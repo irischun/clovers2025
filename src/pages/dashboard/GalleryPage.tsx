@@ -41,16 +41,38 @@ const GalleryPage = () => {
   const [expandedPrompts, setExpandedPrompts] = useState<Set<string>>(new Set());
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [fileSizes, setFileSizes] = useState<Record<string, number>>({});
+  const [audioFileSizes, setAudioFileSizes] = useState<Record<string, number>>({});
+  const [subtitleFileSizes, setSubtitleFileSizes] = useState<Record<string, number>>({});
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const [audioElements, setAudioElements] = useState<Record<string, HTMLAudioElement>>({});
 
   const loading = imgLoading || voiceLoading || subLoading;
 
+  const fetchRemoteFileSize = async (url: string): Promise<number> => {
+    try {
+      const head = await fetch(url, { method: 'HEAD' });
+      const contentLength = head.headers.get('content-length');
+      if (contentLength) return Number(contentLength);
+    } catch {
+      // fallback below
+    }
+
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      return blob.size;
+    } catch {
+      return -1;
+    }
+  };
+
   // Fetch image file sizes
   useEffect(() => {
     if (generatedImages.length === 0) return;
+
     generatedImages.forEach((img) => {
-      if (fileSizes[img.id]) return;
+      if (fileSizes[img.id] !== undefined) return;
+
       const image = new Image();
       image.crossOrigin = 'anonymous';
       image.onload = () => {
@@ -62,7 +84,7 @@ const GalleryPage = () => {
           if (!ctx) return;
           ctx.drawImage(image, 0, 0);
           canvas.toBlob((blob) => {
-            if (blob) setFileSizes(prev => ({ ...prev, [img.id]: blob.size }));
+            setFileSizes(prev => ({ ...prev, [img.id]: blob?.size ?? -1 }));
           }, 'image/png');
         } catch {
           const est = Math.round(image.naturalWidth * image.naturalHeight * 4 * 0.15);
@@ -72,7 +94,60 @@ const GalleryPage = () => {
       image.onerror = () => setFileSizes(prev => ({ ...prev, [img.id]: -1 }));
       image.src = img.image_url;
     });
-  }, [generatedImages]);
+  }, [generatedImages, fileSizes]);
+
+  // Fetch audio file sizes
+  useEffect(() => {
+    const loadAudioSizes = async () => {
+      const pending = voices.filter(v => v.audio_url && audioFileSizes[v.id] === undefined);
+      if (pending.length === 0) return;
+
+      const results = await Promise.all(
+        pending.map(async (v) => ({ id: v.id, size: await fetchRemoteFileSize(v.audio_url!) }))
+      );
+
+      setAudioFileSizes(prev => {
+        const next = { ...prev };
+        results.forEach(({ id, size }) => { next[id] = size; });
+        return next;
+      });
+    };
+
+    loadAudioSizes();
+  }, [voices, audioFileSizes]);
+
+  // Fetch subtitle file sizes (sum all generated subtitle files per item)
+  useEffect(() => {
+    const loadSubtitleSizes = async () => {
+      const pending = subtitles.filter(s => subtitleFileSizes[s.id] === undefined);
+      if (pending.length === 0) return;
+
+      const results = await Promise.all(
+        pending.map(async (s) => {
+          const urls = s.subtitle_urls ? Object.values(s.subtitle_urls) : [];
+          if (urls.length === 0) return { id: s.id, size: -1 };
+          const sizes = await Promise.all(urls.map((url) => fetchRemoteFileSize(String(url))));
+          if (sizes.every((size) => size < 0)) return { id: s.id, size: -1 };
+          const total = sizes.filter((size) => size > 0).reduce((sum, size) => sum + size, 0);
+          return { id: s.id, size: total || -1 };
+        })
+      );
+
+      setSubtitleFileSizes(prev => {
+        const next = { ...prev };
+        results.forEach(({ id, size }) => { next[id] = size; });
+        return next;
+      });
+    };
+
+    loadSubtitleSizes();
+  }, [subtitles, subtitleFileSizes]);
+
+  useEffect(() => {
+    return () => {
+      Object.values(audioElements).forEach((audio) => audio.pause());
+    };
+  }, [audioElements]);
 
   // Date filter helper
   const passesDateFilter = (dateStr: string) => {
@@ -148,18 +223,25 @@ const GalleryPage = () => {
   };
 
   const getFileFormat = (url: string): string => {
-    const lower = url.toLowerCase();
-    if (lower.includes('.webp')) return 'webp';
-    if (lower.includes('.jpg') || lower.includes('.jpeg')) return 'jpg';
-    if (lower.includes('.gif')) return 'gif';
-    if (lower.includes('.svg')) return 'svg';
-    if (lower.includes('.mp3')) return 'mp3';
-    if (lower.includes('.flac')) return 'flac';
-    if (lower.includes('.wav')) return 'wav';
-    if (lower.includes('.pcm')) return 'pcm';
-    if (lower.includes('.srt')) return 'srt';
-    if (lower.includes('.vtt')) return 'vtt';
+    const cleanUrl = url.split('?')[0].toLowerCase();
+    if (cleanUrl.endsWith('.webp')) return 'webp';
+    if (cleanUrl.endsWith('.jpg') || cleanUrl.endsWith('.jpeg')) return 'jpg';
+    if (cleanUrl.endsWith('.gif')) return 'gif';
+    if (cleanUrl.endsWith('.svg')) return 'svg';
+    if (cleanUrl.endsWith('.mp3')) return 'mp3';
+    if (cleanUrl.endsWith('.flac')) return 'flac';
+    if (cleanUrl.endsWith('.wav')) return 'wav';
+    if (cleanUrl.endsWith('.pcm')) return 'pcm';
+    if (cleanUrl.endsWith('.srt')) return 'srt';
+    if (cleanUrl.endsWith('.vtt')) return 'vtt';
     return 'png';
+  };
+
+  const getSubtitleFormatLabel = (subtitleUrls: SubtitleConversion['subtitle_urls']): string => {
+    const urls = subtitleUrls ? Object.values(subtitleUrls) : [];
+    if (urls.length === 0) return 'SRT';
+    const formats = Array.from(new Set(urls.map((u) => getFileFormat(String(u)).toUpperCase())));
+    return formats.join('/');
   };
 
   const toggleAudioPlay = (id: string, url: string) => {
@@ -284,14 +366,26 @@ const GalleryPage = () => {
             <span>{format(new Date(v.created_at), 'yyyy-MM-dd HH:mm')}</span>
             <Badge variant="outline" className="text-[10px] px-1.5 py-0">{v.model}</Badge>
           </div>
-          <div className="text-xs text-muted-foreground">聲音: <span className="text-foreground">{v.voice_name}</span></div>
-          <div className="text-xs text-muted-foreground">語言: <span className="text-foreground">{v.language}</span></div>
-          {v.emotion && v.emotion !== 'neutral' && <div className="text-xs text-muted-foreground">情感: <span className="text-foreground">{v.emotion}</span></div>}
+
           <div className="flex flex-wrap gap-1">
+            <Badge variant="outline" className="text-[10px] px-1 py-0 font-mono">AR: N/A</Badge>
+            <Badge variant="outline" className="text-[10px] px-1 py-0 font-mono">{audioFormat}</Badge>
+            <Badge variant="outline" className="text-[10px] px-1 py-0 font-mono">
+              {audioFileSizes[v.id] === undefined
+                ? '計算中...'
+                : audioFileSizes[v.id] > 0
+                  ? formatFileSize(audioFileSizes[v.id])
+                  : '無法取得'}
+            </Badge>
             {v.sample_rate && <Badge variant="outline" className="text-[10px] px-1 py-0">{v.sample_rate}Hz</Badge>}
             {v.bitrate && <Badge variant="outline" className="text-[10px] px-1 py-0">{Math.round(v.bitrate / 1000)}kbps</Badge>}
             {v.speed && v.speed !== 1 && <Badge variant="outline" className="text-[10px] px-1 py-0">速度:{v.speed}x</Badge>}
           </div>
+
+          <div className="text-xs text-muted-foreground">聲音: <span className="text-foreground">{v.voice_name}</span></div>
+          <div className="text-xs text-muted-foreground">語言: <span className="text-foreground">{v.language}</span></div>
+          {v.emotion && v.emotion !== 'neutral' && <div className="text-xs text-muted-foreground">情感: <span className="text-foreground">{v.emotion}</span></div>}
+
           {textContent && (
             <div className="space-y-1">
               <p className={cn("text-xs text-muted-foreground leading-relaxed", !isExpanded && shouldTruncate && "line-clamp-2")}>{textContent}</p>
@@ -336,7 +430,7 @@ const GalleryPage = () => {
             <button onClick={() => deleteSubtitle(s.id)} className="p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-destructive/80 transition-colors" title="刪除"><Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive-foreground" /></button>
           </div>
           {/* Format badge */}
-          <div className="absolute bottom-2 right-2"><Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-xs font-mono">SRT</Badge></div>
+          <div className="absolute bottom-2 right-2"><Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-xs font-mono">{getSubtitleFormatLabel(s.subtitle_urls)}</Badge></div>
           {/* Status badge */}
           <div className="absolute bottom-2 left-2">
             <Badge variant={s.status === 'completed' ? 'secondary' : 'outline'} className="bg-background/80 backdrop-blur-sm text-xs">
@@ -350,7 +444,21 @@ const GalleryPage = () => {
             <span>{format(new Date(s.created_at), 'yyyy-MM-dd HH:mm')}</span>
             <Badge variant="outline" className="text-[10px] px-1.5 py-0">{s.source_type}</Badge>
           </div>
+
+          <div className="flex flex-wrap gap-1">
+            <Badge variant="outline" className="text-[10px] px-1 py-0 font-mono">AR: N/A</Badge>
+            <Badge variant="outline" className="text-[10px] px-1 py-0 font-mono">{getSubtitleFormatLabel(s.subtitle_urls)}</Badge>
+            <Badge variant="outline" className="text-[10px] px-1 py-0 font-mono">
+              {subtitleFileSizes[s.id] === undefined
+                ? '計算中...'
+                : subtitleFileSizes[s.id] > 0
+                  ? formatFileSize(subtitleFileSizes[s.id])
+                  : '無法取得'}
+            </Badge>
+          </div>
+
           <div className="text-xs text-muted-foreground">語言: <span className="text-foreground">{s.languages?.join(', ') || '—'}</span></div>
+
           {/* Download links for each language */}
           {Object.keys(subtitleUrls).length > 0 && (
             <div className="flex flex-wrap gap-1">
@@ -361,6 +469,7 @@ const GalleryPage = () => {
               ))}
             </div>
           )}
+
           {/* Source name as "prompt" equivalent */}
           {sourceName && (
             <div className="space-y-1">
@@ -416,11 +525,11 @@ const GalleryPage = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)}>
-        <TabsList className="w-full max-w-2xl grid grid-cols-4">
-          <TabsTrigger value="images" className="gap-2"><ImageIcon className="w-4 h-4" />圖片畫廊</TabsTrigger>
-          <TabsTrigger value="videos" className="gap-2"><Video className="w-4 h-4" />視頻畫廊</TabsTrigger>
-          <TabsTrigger value="audio" className="gap-2"><Music className="w-4 h-4" />音頻收藏</TabsTrigger>
-          <TabsTrigger value="subtitles" className="gap-2"><FileText className="w-4 h-4" />字幕收藏</TabsTrigger>
+        <TabsList className="w-full max-w-full overflow-x-auto whitespace-nowrap">
+          <TabsTrigger value="images" className="gap-2 shrink-0"><ImageIcon className="w-4 h-4" />圖片畫廊</TabsTrigger>
+          <TabsTrigger value="videos" className="gap-2 shrink-0"><Video className="w-4 h-4" />視頻畫廊</TabsTrigger>
+          <TabsTrigger value="audio" className="gap-2 shrink-0"><Music className="w-4 h-4" />音頻收藏</TabsTrigger>
+          <TabsTrigger value="subtitles" className="gap-2 shrink-0"><FileText className="w-4 h-4" />字幕收藏</TabsTrigger>
         </TabsList>
 
         {/* Filters */}
