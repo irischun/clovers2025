@@ -641,7 +641,7 @@ const StickerMakerPage = () => {
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
-              <CardTitle className="text-lg">預覽與生成</CardTitle>
+              <CardTitle className="text-lg">特效預覽與生成</CardTitle>
             </div>
             <p className="text-sm text-muted-foreground">預覽動畫效果並生成貼圖</p>
           </CardHeader>
