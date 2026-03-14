@@ -177,7 +177,7 @@ serve(async (req) => {
   }
 
   try {
-    const { text, style = "cute", emoji = "", referenceImages = [] } = await req.json();
+    const { text, style = "cute", emoji = "", referenceImages = [], removeBackground = false } = await req.json();
     
     if (!text && !emoji && referenceImages.length === 0) {
       return new Response(
@@ -190,41 +190,63 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const hasReferenceImage = referenceImages.length > 0;
-    console.log("Sticker generation for user:", auth.userId, { text, style, hasRef: hasReferenceImage, refCount: referenceImages.length });
+    console.log("Sticker generation for user:", auth.userId, { text, style, hasRef: hasReferenceImage, refCount: referenceImages.length, removeBackground });
 
-    const styleDesc = stylePromptMap[style] || stylePromptMap.cute;
-    
-    // Build enhanced prompt
-    const promptParts: string[] = [];
-    if (hasReferenceImage) {
-      promptParts.push(`Transform the reference image subject using this style: ${styleDesc}`);
-    } else {
-      promptParts.push(`Create a premium stylized sticker image`);
-    }
-    if (text || emoji) {
-      promptParts.push(`Subject/theme: "${text || emoji}"`);
-    }
-    if (!hasReferenceImage) {
-      promptParts.push(`Style: ${styleDesc}`);
-    }
-    promptParts.push("high quality, professional, expressive, visually striking");
-    promptParts.push("512x512 optimal size, centered composition, clear at small sizes");
-    
-    const enhancedPrompt = promptParts.join('. ');
-
-    // Build messages
+    // Build messages based on mode
     const messages: Array<{role: string; content: string | Array<{type: string; text?: string; image_url?: {url: string}}>}> = [];
-    messages.push({ role: "system", content: buildSystemMessage(hasReferenceImage) });
 
-    if (hasReferenceImage) {
+    if (removeBackground && hasReferenceImage) {
+      // Background removal mode
+      messages.push({
+        role: "system",
+        content: `You are an expert image editor specializing in background removal. Your task:
+1. REMOVE the entire background from the provided image completely
+2. Keep ONLY the main subject/character — preserve every detail, edge, color, and texture of the subject
+3. The output MUST have a fully transparent/clean white background with NO background elements
+4. Maintain crisp, clean edges around the subject — no jagged borders or artifacts
+5. Do NOT alter, crop, resize, or modify the subject in any way
+6. Output a clean cut-out suitable for use as a sticker overlay`
+      });
       const contentParts: Array<{type: string; text?: string; image_url?: {url: string}}> = [];
       for (const refImg of referenceImages.slice(0, 3)) {
         contentParts.push({ type: "image_url", image_url: { url: refImg } });
       }
-      contentParts.push({ type: "text", text: enhancedPrompt });
+      contentParts.push({ type: "text", text: "Remove the background from this image completely. Output only the subject with a transparent/white background. Preserve all subject details perfectly." });
       messages.push({ role: "user", content: contentParts });
     } else {
-      messages.push({ role: "user", content: enhancedPrompt });
+      // Normal sticker generation mode
+      const styleDesc = stylePromptMap[style] || stylePromptMap.cute;
+      
+      // Build enhanced prompt
+      const promptParts: string[] = [];
+      if (hasReferenceImage) {
+        promptParts.push(`Transform the reference image subject using this style: ${styleDesc}`);
+      } else {
+        promptParts.push(`Create a premium stylized sticker image`);
+      }
+      if (text || emoji) {
+        promptParts.push(`Subject/theme: "${text || emoji}"`);
+      }
+      if (!hasReferenceImage) {
+        promptParts.push(`Style: ${styleDesc}`);
+      }
+      promptParts.push("high quality, professional, expressive, visually striking");
+      promptParts.push("512x512 optimal size, centered composition, clear at small sizes");
+      
+      const enhancedPrompt = promptParts.join('. ');
+
+      messages.push({ role: "system", content: buildSystemMessage(hasReferenceImage) });
+
+      if (hasReferenceImage) {
+        const contentParts: Array<{type: string; text?: string; image_url?: {url: string}}> = [];
+        for (const refImg of referenceImages.slice(0, 3)) {
+          contentParts.push({ type: "image_url", image_url: { url: refImg } });
+        }
+        contentParts.push({ type: "text", text: enhancedPrompt });
+        messages.push({ role: "user", content: contentParts });
+      } else {
+        messages.push({ role: "user", content: enhancedPrompt });
+      }
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
