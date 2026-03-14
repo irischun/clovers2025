@@ -126,6 +126,7 @@ const StickerMakerPage = () => {
   // Text sticker states
   const [stickerText, setStickerText] = useState('');
   const [textStyle, setTextStyle] = useState('cute');
+  const [styleCategory, setStyleCategory] = useState('all');
   const [isTextGenerating, setIsTextGenerating] = useState(false);
   const [textStickers, setTextStickers] = useState<string[]>([]);
   const [textStickerImages, setTextStickerImages] = useState<string[]>([]);
