@@ -738,12 +738,28 @@ const StickerMakerPage = () => {
           <CardContent className="space-y-4">
             <div>
               <h3 className="font-medium mb-2">創建貼圖</h3>
-              <Input 
+              <Textarea 
                 value={stickerText} 
                 onChange={(e) => setStickerText(e.target.value)} 
                 placeholder="輸入貼圖文字或表情..." 
+                rows={3}
+                className="resize-y min-h-[80px]"
               />
             </div>
+
+            {/* Auto Prompt Generation */}
+            <Button
+              variant="secondary"
+              className="w-full h-10"
+              onClick={() => {
+                const autoPrompt = `上傳圖是我的主角，要保留所有面部特徵。 生成漫畫貼紙，WhatsApp Sticker 風格，藝術風格跟原圖相若，白色貼紙邊，戲劇化動作。主角必須完全生成跟文字貼切的不同動作，以可愛、美觀、好看、吸引眼球型式為主。不用背景，去除背景，remove background。不用背景，去除背景，remove background。不用背景，去除背景，remove background。Important: 人物和語句必須相連, 令在手機按選add to sticker時可以儲存both人物和語句(兩者同體)。並使圖像可以馬上無瑕地使用。 附上人物對話框，所有文字需大字體，清晰可讀，保證 WhatsApp 貼紙效果。不用背景，去除背景，remove background。不用背景，去除背景，remove background。不用背景，去除背景，remove background。  內容: Hello!`;
+                setStickerText(autoPrompt);
+                toast({ title: '自動提示詞已生成', description: '您可以自由編輯提示詞後再生成貼圖' });
+              }}
+            >
+              <Wand2 className="w-4 h-4 mr-2" />
+              自動提示詞生成
+            </Button>
 
             {/* Image Upload Section */}
             <div>
