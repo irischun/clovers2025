@@ -232,7 +232,12 @@ const GalleryPage = () => {
             )}
           </div>
 
-          {/* Style */}
+          {/* File Size */}
+          {fileSizes[img.id] ? (
+            <div className="text-xs text-muted-foreground">
+              檔案大小: <span className="text-foreground">{formatFileSize(fileSizes[img.id])}</span>
+            </div>
+          ) : null}
           {img.style && (
             <div className="text-xs text-muted-foreground">
               風格: <span className="text-foreground">{img.style}</span>
