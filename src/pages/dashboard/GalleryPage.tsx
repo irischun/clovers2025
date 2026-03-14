@@ -48,11 +48,31 @@ const GalleryPage = () => {
 
   const loading = imgLoading || voiceLoading || subLoading;
 
+  const fetchRemoteFileSize = async (url: string): Promise<number> => {
+    try {
+      const head = await fetch(url, { method: 'HEAD' });
+      const contentLength = head.headers.get('content-length');
+      if (contentLength) return Number(contentLength);
+    } catch {
+      // fallback below
+    }
+
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      return blob.size;
+    } catch {
+      return -1;
+    }
+  };
+
   // Fetch image file sizes
   useEffect(() => {
     if (generatedImages.length === 0) return;
+
     generatedImages.forEach((img) => {
-      if (fileSizes[img.id]) return;
+      if (fileSizes[img.id] !== undefined) return;
+
       const image = new Image();
       image.crossOrigin = 'anonymous';
       image.onload = () => {
@@ -64,7 +84,7 @@ const GalleryPage = () => {
           if (!ctx) return;
           ctx.drawImage(image, 0, 0);
           canvas.toBlob((blob) => {
-            if (blob) setFileSizes(prev => ({ ...prev, [img.id]: blob.size }));
+            setFileSizes(prev => ({ ...prev, [img.id]: blob?.size ?? -1 }));
           }, 'image/png');
         } catch {
           const est = Math.round(image.naturalWidth * image.naturalHeight * 4 * 0.15);
@@ -74,7 +94,60 @@ const GalleryPage = () => {
       image.onerror = () => setFileSizes(prev => ({ ...prev, [img.id]: -1 }));
       image.src = img.image_url;
     });
-  }, [generatedImages]);
+  }, [generatedImages, fileSizes]);
+
+  // Fetch audio file sizes
+  useEffect(() => {
+    const loadAudioSizes = async () => {
+      const pending = voices.filter(v => v.audio_url && audioFileSizes[v.id] === undefined);
+      if (pending.length === 0) return;
+
+      const results = await Promise.all(
+        pending.map(async (v) => ({ id: v.id, size: await fetchRemoteFileSize(v.audio_url!) }))
+      );
+
+      setAudioFileSizes(prev => {
+        const next = { ...prev };
+        results.forEach(({ id, size }) => { next[id] = size; });
+        return next;
+      });
+    };
+
+    loadAudioSizes();
+  }, [voices, audioFileSizes]);
+
+  // Fetch subtitle file sizes (sum all generated subtitle files per item)
+  useEffect(() => {
+    const loadSubtitleSizes = async () => {
+      const pending = subtitles.filter(s => subtitleFileSizes[s.id] === undefined);
+      if (pending.length === 0) return;
+
+      const results = await Promise.all(
+        pending.map(async (s) => {
+          const urls = s.subtitle_urls ? Object.values(s.subtitle_urls) : [];
+          if (urls.length === 0) return { id: s.id, size: -1 };
+          const sizes = await Promise.all(urls.map((url) => fetchRemoteFileSize(String(url))));
+          if (sizes.every((size) => size < 0)) return { id: s.id, size: -1 };
+          const total = sizes.filter((size) => size > 0).reduce((sum, size) => sum + size, 0);
+          return { id: s.id, size: total || -1 };
+        })
+      );
+
+      setSubtitleFileSizes(prev => {
+        const next = { ...prev };
+        results.forEach(({ id, size }) => { next[id] = size; });
+        return next;
+      });
+    };
+
+    loadSubtitleSizes();
+  }, [subtitles, subtitleFileSizes]);
+
+  useEffect(() => {
+    return () => {
+      Object.values(audioElements).forEach((audio) => audio.pause());
+    };
+  }, [audioElements]);
 
   // Date filter helper
   const passesDateFilter = (dateStr: string) => {
