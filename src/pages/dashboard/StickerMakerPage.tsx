@@ -276,7 +276,7 @@ const StickerMakerPage = () => {
         if (user) {
           await supabase.from('generated_images').insert({
             user_id: user.id,
-            prompt: `WhatsApp 動態貼圖 (${frames.length} frames, ${animationSpeed}ms)`,
+            prompt: `WhatsApp 動態貼圖 (${frames.length} frames)`,
             image_url: webpDataUrl,
             title: `WhatsApp Sticker ${new Date().toLocaleString('zh-TW')}`,
             style: 'whatsapp_sticker',
