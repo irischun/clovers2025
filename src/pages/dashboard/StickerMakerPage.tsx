@@ -269,6 +269,23 @@ const StickerMakerPage = () => {
       const webpDataUrl = canvas.toDataURL('image/webp', 0.9);
       setGeneratedStickerUrl(webpDataUrl);
       setPreviewUrl(webpDataUrl);
+
+      // Auto-save to gallery (generated_images)
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from('generated_images').insert({
+            user_id: user.id,
+            prompt: `WhatsApp 動態貼圖 (${frames.length} frames, ${animationSpeed}ms)`,
+            image_url: webpDataUrl,
+            title: `WhatsApp Sticker ${new Date().toLocaleString('zh-TW')}`,
+            style: 'whatsapp_sticker',
+            model: 'canvas_animation',
+          });
+        }
+      } catch (saveErr) {
+        console.warn('Failed to save sticker to gallery:', saveErr);
+      }
       
       toast({ title: '貼圖生成成功！', description: '您可以下載並使用這個貼圖' });
     } catch (error) {
