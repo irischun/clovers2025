@@ -703,7 +703,9 @@ const StickerMakerPage = () => {
             
             <Button 
               onClick={handleTextStickerGenerate} 
-              disabled={isTextGenerating || !stickerText.trim()} 
+              disabled={isTextGenerating || (!stickerText.trim() && textStickerImages.length === 0)} 
+              className="w-full h-12"
+            >
               className="w-full h-12"
             >
               {isTextGenerating ? (
