@@ -113,6 +113,25 @@ const textStyles: StyleOption[] = [
   { id: 'festive', label: 'Festive', emoji: '🎉', category: '3d' },
   { id: 'japanese_anime', label: 'Japanese Anime', emoji: '⛩️', category: '3d' },
   { id: 'realistic_illustration', label: 'Realistic Illustration', emoji: '🖼️', category: '3d' },
+  { id: 'three_d_q', label: '3D Q版', emoji: '🧊', category: '3d' },
+  { id: 'three_d_rendering_animation', label: '3D Rendering Animation', emoji: '🎞️', category: '3d' },
+
+  // Character & IP Styles
+  { id: 'pixar', label: 'Pixar Style', emoji: '🎬', category: 'fun' },
+  { id: 'disney', label: 'Disney Style', emoji: '🏰', category: 'fun' },
+  { id: 'snoopy', label: 'Snoopy Style', emoji: '🐶', category: 'fun' },
+  { id: 'irasutoya', label: 'Irasutoya 日系說明', emoji: '🇯🇵', category: 'fun' },
+  { id: 'crayon_shin', label: '蠟筆小新', emoji: '🖍️', category: 'fun' },
+  { id: 'doraemon', label: '多啦A夢風格', emoji: '🐱', category: 'fun' },
+  { id: 'toriyama', label: '鳥山明風格', emoji: '🐲', category: 'fun' },
+  { id: 'jojo', label: 'JOJO風格', emoji: '💪', category: 'fun' },
+  { id: 'nana', label: 'Nana Style', emoji: '🖤', category: 'fun' },
+  { id: 'crayon_doodle', label: '蠟筆塗鴉', emoji: '🖊️', category: 'painting' },
+
+  // Modern & Cyber
+  { id: 'cyberpunk_cool', label: '型格Cyberpunk', emoji: '🌃', category: 'fantasy' },
+  { id: 'cyberpunk_q', label: 'Q版Cyberpunk', emoji: '🤖', category: 'fantasy' },
+  { id: 'y2k', label: 'Y2K 千禧風格', emoji: '💾', category: 'design' },
 ];
 
 const StickerMakerPage = () => {
