@@ -484,6 +484,26 @@ const StickerMakerPage = () => {
               )}
             </div>
 
+            {/* Preview Animation Button */}
+            <Button
+              variant="outline"
+              onClick={isAnimating ? stopAnimationPreview : startAnimationPreview}
+              disabled={frames.length < 2}
+              className="w-full h-12"
+            >
+              {isAnimating ? (
+                <>
+                  <Square className="w-4 h-4 mr-2" />
+                  停止預覽
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 mr-2" />
+                  預覽動畫
+                </>
+              )}
+            </Button>
+
             {/* Generate Button */}
             <Button
               onClick={generateSticker}
