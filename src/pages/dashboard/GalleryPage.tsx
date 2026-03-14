@@ -223,18 +223,25 @@ const GalleryPage = () => {
   };
 
   const getFileFormat = (url: string): string => {
-    const lower = url.toLowerCase();
-    if (lower.includes('.webp')) return 'webp';
-    if (lower.includes('.jpg') || lower.includes('.jpeg')) return 'jpg';
-    if (lower.includes('.gif')) return 'gif';
-    if (lower.includes('.svg')) return 'svg';
-    if (lower.includes('.mp3')) return 'mp3';
-    if (lower.includes('.flac')) return 'flac';
-    if (lower.includes('.wav')) return 'wav';
-    if (lower.includes('.pcm')) return 'pcm';
-    if (lower.includes('.srt')) return 'srt';
-    if (lower.includes('.vtt')) return 'vtt';
+    const cleanUrl = url.split('?')[0].toLowerCase();
+    if (cleanUrl.endsWith('.webp')) return 'webp';
+    if (cleanUrl.endsWith('.jpg') || cleanUrl.endsWith('.jpeg')) return 'jpg';
+    if (cleanUrl.endsWith('.gif')) return 'gif';
+    if (cleanUrl.endsWith('.svg')) return 'svg';
+    if (cleanUrl.endsWith('.mp3')) return 'mp3';
+    if (cleanUrl.endsWith('.flac')) return 'flac';
+    if (cleanUrl.endsWith('.wav')) return 'wav';
+    if (cleanUrl.endsWith('.pcm')) return 'pcm';
+    if (cleanUrl.endsWith('.srt')) return 'srt';
+    if (cleanUrl.endsWith('.vtt')) return 'vtt';
     return 'png';
+  };
+
+  const getSubtitleFormatLabel = (subtitleUrls: SubtitleConversion['subtitle_urls']): string => {
+    const urls = subtitleUrls ? Object.values(subtitleUrls) : [];
+    if (urls.length === 0) return 'SRT';
+    const formats = Array.from(new Set(urls.map((u) => getFileFormat(String(u)).toUpperCase())));
+    return formats.join('/');
   };
 
   const toggleAudioPlay = (id: string, url: string) => {
