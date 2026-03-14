@@ -919,6 +919,19 @@ const StickerMakerPage = () => {
                   <Download className="w-4 h-4 mr-2" />
                   下載最新貼圖
                 </Button>
+                <Button
+                  variant="outline"
+                  className="w-full h-12"
+                  disabled={isCuttingOut}
+                  onClick={() => handleCutOutDownload(textStickers[0])}
+                >
+                  {isCuttingOut ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <Scissors className="w-4 h-4 mr-2" />
+                  )}
+                  去背剪裁下載
+                </Button>
               </div>
             )}
 
