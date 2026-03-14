@@ -706,8 +706,6 @@ const StickerMakerPage = () => {
               disabled={isTextGenerating || (!stickerText.trim() && textStickerImages.length === 0)} 
               className="w-full h-12"
             >
-              className="w-full h-12"
-            >
               {isTextGenerating ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
               ) : (
