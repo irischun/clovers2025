@@ -444,7 +444,21 @@ const GalleryPage = () => {
             <span>{format(new Date(s.created_at), 'yyyy-MM-dd HH:mm')}</span>
             <Badge variant="outline" className="text-[10px] px-1.5 py-0">{s.source_type}</Badge>
           </div>
+
+          <div className="flex flex-wrap gap-1">
+            <Badge variant="outline" className="text-[10px] px-1 py-0 font-mono">AR: N/A</Badge>
+            <Badge variant="outline" className="text-[10px] px-1 py-0 font-mono">{getSubtitleFormatLabel(s.subtitle_urls)}</Badge>
+            <Badge variant="outline" className="text-[10px] px-1 py-0 font-mono">
+              {subtitleFileSizes[s.id] === undefined
+                ? '計算中...'
+                : subtitleFileSizes[s.id] > 0
+                  ? formatFileSize(subtitleFileSizes[s.id])
+                  : '無法取得'}
+            </Badge>
+          </div>
+
           <div className="text-xs text-muted-foreground">語言: <span className="text-foreground">{s.languages?.join(', ') || '—'}</span></div>
+
           {/* Download links for each language */}
           {Object.keys(subtitleUrls).length > 0 && (
             <div className="flex flex-wrap gap-1">
@@ -455,6 +469,7 @@ const GalleryPage = () => {
               ))}
             </div>
           )}
+
           {/* Source name as "prompt" equivalent */}
           {sourceName && (
             <div className="space-y-1">
