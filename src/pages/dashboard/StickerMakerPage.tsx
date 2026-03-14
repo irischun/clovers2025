@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
-import { Upload, Images, Loader2, Sparkles, Download, X, GripVertical, Image as ImageIcon, AlertCircle, Sticker, Play, Square } from 'lucide-react';
+import { Upload, Images, Loader2, Sparkles, Download, X, GripVertical, Image as ImageIcon, AlertCircle, Sticker, Play, Square, Scissors } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -304,6 +304,43 @@ const StickerMakerPage = () => {
     } catch {
       // Fallback: open in new tab
       window.open(url, '_blank');
+    }
+  };
+
+  const [isCuttingOut, setIsCuttingOut] = useState(false);
+
+  const handleCutOutDownload = async (imageUrl: string) => {
+    setIsCuttingOut(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        toast({ title: '請先登入', variant: 'destructive' });
+        return;
+      }
+
+      // Convert the sticker image to base64
+      const base64 = await convertImageToBase64(imageUrl);
+
+      const response = await supabase.functions.invoke('sticker-generate', {
+        body: {
+          text: 'Remove the background completely. Output ONLY the subject/character with a fully transparent background. Preserve all details of the subject perfectly. No background elements at all.',
+          style: 'original',
+          referenceImages: [base64],
+          removeBackground: true,
+        },
+      });
+
+      if (response.error) throw response.error;
+      const resultUrl = response.data?.imageUrl;
+      if (!resultUrl) throw new Error('No image returned');
+
+      await downloadTextSticker(resultUrl, `sticker-cutout-${Date.now()}.png`);
+      toast({ title: '去背圖片已下載！' });
+    } catch (error) {
+      console.error('Cut out error:', error);
+      toast({ title: '去背失敗，請重試', variant: 'destructive' });
+    } finally {
+      setIsCuttingOut(false);
     }
   };
 
@@ -881,6 +918,19 @@ const StickerMakerPage = () => {
                 >
                   <Download className="w-4 h-4 mr-2" />
                   下載最新貼圖
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full h-12"
+                  disabled={isCuttingOut}
+                  onClick={() => handleCutOutDownload(textStickers[0])}
+                >
+                  {isCuttingOut ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <Scissors className="w-4 h-4 mr-2" />
+                  )}
+                  去背剪裁下載
                 </Button>
               </div>
             )}
