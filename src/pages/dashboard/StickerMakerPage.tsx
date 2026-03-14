@@ -176,6 +176,24 @@ const StickerMakerPage = () => {
     document.body.removeChild(link);
   };
 
+  const downloadTextSticker = async (url: string, filename?: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename || `sticker-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      // Fallback: open in new tab
+      window.open(url, '_blank');
+    }
+  };
+
   const handleTextStickerGenerate = async () => {
     if (!stickerText.trim()) {
       toast({ title: '請輸入文字', variant: 'destructive' });
@@ -630,17 +648,15 @@ const StickerMakerPage = () => {
             </div>
 
             {/* Download Latest */}
-            {textStickers.length > 0 && (
+             {textStickers.length > 0 && (
               <div className="space-y-3">
                 <Button
                   variant="outline"
                   className="w-full h-12"
-                  asChild
+                  onClick={() => downloadTextSticker(textStickers[0], `sticker-${Date.now()}.png`)}
                 >
-                  <a href={textStickers[0]} download={`sticker-${Date.now()}.png`}>
-                    <Download className="w-4 h-4 mr-2" />
-                    下載最新貼圖
-                  </a>
+                  <Download className="w-4 h-4 mr-2" />
+                  下載最新貼圖
                 </Button>
               </div>
             )}
@@ -676,9 +692,9 @@ const StickerMakerPage = () => {
                 <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-muted/50 border group">
                   <img src={url} alt={`Sticker ${i + 1}`} className="w-full h-full object-contain p-2" />
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                    <a href={url} download={`sticker-${i + 1}.png`} className="p-2 bg-background rounded-full shadow-md">
+                    <button onClick={() => downloadTextSticker(url, `sticker-${i + 1}.png`)} className="p-2 bg-background rounded-full shadow-md">
                       <Download className="w-4 h-4 text-foreground" />
-                    </a>
+                    </button>
                   </div>
                 </div>
               ))}
