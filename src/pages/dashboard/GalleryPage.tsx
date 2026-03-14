@@ -430,7 +430,7 @@ const GalleryPage = () => {
             <button onClick={() => deleteSubtitle(s.id)} className="p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-destructive/80 transition-colors" title="刪除"><Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive-foreground" /></button>
           </div>
           {/* Format badge */}
-          <div className="absolute bottom-2 right-2"><Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-xs font-mono">SRT</Badge></div>
+          <div className="absolute bottom-2 right-2"><Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-xs font-mono">{getSubtitleFormatLabel(s.subtitle_urls)}</Badge></div>
           {/* Status badge */}
           <div className="absolute bottom-2 left-2">
             <Badge variant={s.status === 'completed' ? 'secondary' : 'outline'} className="bg-background/80 backdrop-blur-sm text-xs">
