@@ -472,6 +472,11 @@ const GalleryPage = () => {
                   <Badge variant="outline" className="text-xs font-mono">
                     {getFileFormatLabel(selectedItem.image_url)}
                   </Badge>
+                  {fileSizes[selectedItem.id] ? (
+                    <Badge variant="outline" className="text-xs font-mono">
+                      {formatFileSize(fileSizes[selectedItem.id])}
+                    </Badge>
+                  ) : null}
                   {selectedItem.model && (
                     <Badge variant="outline" className="text-xs">
                       {selectedItem.model}
