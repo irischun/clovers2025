@@ -648,17 +648,15 @@ const StickerMakerPage = () => {
             </div>
 
             {/* Download Latest */}
-            {textStickers.length > 0 && (
+             {textStickers.length > 0 && (
               <div className="space-y-3">
                 <Button
                   variant="outline"
                   className="w-full h-12"
-                  asChild
+                  onClick={() => downloadTextSticker(textStickers[0], `sticker-${Date.now()}.png`)}
                 >
-                  <a href={textStickers[0]} download={`sticker-${Date.now()}.png`}>
-                    <Download className="w-4 h-4 mr-2" />
-                    下載最新貼圖
-                  </a>
+                  <Download className="w-4 h-4 mr-2" />
+                  下載最新貼圖
                 </Button>
               </div>
             )}
