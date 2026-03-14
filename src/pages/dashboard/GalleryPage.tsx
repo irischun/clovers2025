@@ -33,45 +33,42 @@ const GalleryPage = () => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [fileSizes, setFileSizes] = useState<Record<string, number>>({});
 
-  // Fetch file sizes for all images
-  const fetchFileSizes = useCallback(async () => {
-    const newSizes: Record<string, number> = {};
-    const promises = generatedImages.map(async (img) => {
-      if (fileSizes[img.id]) return; // already fetched
-      try {
-        const response = await fetch(img.image_url, { method: 'HEAD' });
-        const contentLength = response.headers.get('content-length');
-        if (contentLength) {
-          newSizes[img.id] = parseInt(contentLength, 10);
-        } else {
-          // Fallback: fetch blob size
-          const blobResponse = await fetch(img.image_url);
-          const blob = await blobResponse.blob();
-          newSizes[img.id] = blob.size;
-        }
-      } catch {
-        // If HEAD fails, try getting blob size
-        try {
-          const blobResponse = await fetch(img.image_url);
-          const blob = await blobResponse.blob();
-          newSizes[img.id] = blob.size;
-        } catch {
-          newSizes[img.id] = 0;
-        }
-      }
-    });
-    await Promise.allSettled(promises);
-    if (Object.keys(newSizes).length > 0) {
-      setFileSizes(prev => ({ ...prev, ...newSizes }));
-    }
-  }, [generatedImages, fileSizes]);
-
+  // Fetch file sizes using Image + Canvas to avoid CORS issues
   useEffect(() => {
-    if (generatedImages.length > 0) {
-      fetchFileSizes();
-    }
-  }, [generatedImages]);
+    if (generatedImages.length === 0) return;
 
+    generatedImages.forEach((img) => {
+      if (fileSizes[img.id]) return; // already measured
+
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      image.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = image.naturalWidth;
+          canvas.height = image.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+          ctx.drawImage(image, 0, 0);
+          canvas.toBlob((blob) => {
+            if (blob) {
+              setFileSizes(prev => ({ ...prev, [img.id]: blob.size }));
+            }
+          }, 'image/png');
+        } catch {
+          // Canvas tainted by CORS - estimate from dimensions
+          const estimatedSize = image.naturalWidth * image.naturalHeight * 4; // raw RGBA
+          const compressedEstimate = Math.round(estimatedSize * 0.15); // ~15% for PNG compression
+          setFileSizes(prev => ({ ...prev, [img.id]: compressedEstimate }));
+        }
+      };
+      image.onerror = () => {
+        // Can't load cross-origin - estimate from URL patterns
+        setFileSizes(prev => ({ ...prev, [img.id]: -1 })); // -1 = unknown
+      };
+      image.src = img.image_url;
+    });
+  }, [generatedImages]);
   // Filter images
   const filteredImages = generatedImages.filter(img => {
     const createdAt = new Date(img.created_at);
