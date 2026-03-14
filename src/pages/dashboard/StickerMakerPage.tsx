@@ -176,6 +176,24 @@ const StickerMakerPage = () => {
     document.body.removeChild(link);
   };
 
+  const downloadTextSticker = async (url: string, filename?: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename || `sticker-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      // Fallback: open in new tab
+      window.open(url, '_blank');
+    }
+  };
+
   const handleTextStickerGenerate = async () => {
     if (!stickerText.trim()) {
       toast({ title: '請輸入文字', variant: 'destructive' });
