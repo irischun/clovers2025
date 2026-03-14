@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon, Star, Grid3X3, ImageIcon, Video, Filter, Trash2, Download, Copy, Check, ChevronDown, ChevronUp, Maximize2 } from 'lucide-react';
