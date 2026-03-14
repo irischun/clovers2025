@@ -30,6 +30,9 @@ const StickerMakerPage = () => {
   const [frames, setFrames] = useState<ImageFrame[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationFrameIndex, setAnimationFrameIndex] = useState(0);
+  const animationIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
   // Text sticker states
   const [stickerText, setStickerText] = useState('');
