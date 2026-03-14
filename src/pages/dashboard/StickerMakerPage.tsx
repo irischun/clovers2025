@@ -483,6 +483,8 @@ const StickerMakerPage = () => {
     }
   }, [frames.length, isAnimating, stopAnimationPreview]);
 
+  const latestTextSticker = textStickers[0] ?? null;
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Points Balance */}
