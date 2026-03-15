@@ -142,7 +142,7 @@ FORBIDDEN COLORS: Do NOT use any bright saturated, vivid, neon, or cool-toned co
 
 FACES: EXTREMELY simple. A simple small curved line for mouth.
 
-EYELASHES — STRICT RULE FOR ALL FEMALE CHARACTERS: Every female character MUST have EXACTLY ONE (1) single tiny eyelash on each eye — one lash per eye, two lashes total. BOTH eyelashes MUST lean in the SAME absolute direction (both '/' or both '\\'). They must look like a matched pair — same angle, same length. Each lash is a very short, subtle, thin curved stroke from the outer top corner of each eye dot. Count is NON-NEGOTIABLE: ONLY ONE per eye. Male characters must have ZERO eyelashes.
+EYELASHES — ABSOLUTE RULE FOR ALL CHARACTERS: ZERO (0) eyelashes on both eyes. Female characters must have zero eyelashes. Male characters must have zero eyelashes. No lash strokes, no lash hints, no lash flicks, and no tiny eyelash marks at eye corners.
 
 PROPORTIONS: semi-realistic, slightly large head, about 1:3.5 to 1:4 head-to-body ratio. NOT chibi, NOT super-deformed. Natural body proportions with just slightly oversized head.
 
@@ -162,7 +162,7 @@ COMPOSITION: character on clean white/transparent background. NO decorative bord
   y2k: "Y2K millennium aesthetic (千禧風格), early 2000s design, glossy chrome text, butterfly motifs, baby pink and electric blue, frosted translucent plastic, flip phone era, bedazzled sparkle effects, Bratz doll energy, nostalgic cyber-cute",
 };
 
-const irasutoyaEyelashLockPrompt = "IRASUTOYA FEMALE EYELASH LOCK (ABSOLUTE OVERRIDE): If the character is female or feminine-presenting, draw EXACTLY one eyelash per eye (2 total). SAME DIRECTION ONLY means BOTH lashes lean toward the character's right-hand side '/' OR BOTH lashes lean toward the character's left-hand side '\\'. Pick one global direction and apply it identically to both eyes (same slant, same length). Never mix directions, never mirror into opposite slants, never use '/\\' or '\\/' combinations. Count is non-negotiable: left eye = 1 lash, right eye = 1 lash, total = 2. No extra lashes, no missing lashes.";
+const irasutoyaEyelashLockPrompt = "IRASUTOYA EYELASH LOCK (ABSOLUTE OVERRIDE): For every character (female, male, child, any gender), draw ZERO eyelashes on both eyes. Left eye lash count must be 0 and right eye lash count must be 0. Do not draw any lash stroke, flick, tick, or corner line near either eye. If any eyelash is visible, the image is invalid.";
 
 function buildSystemMessage(hasReferenceImage: boolean): string {
   let msg = `You are an expert image stylist and sticker designer. Your task is to create high-quality stylized images with these standards:
@@ -203,10 +203,6 @@ type ChatMessage = {
   content: string | Array<{ type: string; text?: string; image_url?: { url: string } }>;
 };
 
-function isLikelyFemalePrompt(input: string): boolean {
-  if (!input) return false;
-  return /(female|woman|girl|lady|女生|女人|女孩|女性|小姐|女士|姊姊|妹妹|媽媽|太太|wife|mom|mother|her|she|女の子|女性|彼女)/i.test(input);
-}
 
 async function generateStickerCandidate(messages: ChatMessage[], apiKey: string, style: string): Promise<string> {
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -282,28 +278,21 @@ function normalizeEyelashDirection(input: unknown): "slash" | "backslash" | "non
 async function validateIrasutoyaEyelashes({
   apiKey,
   imageUrl,
-  expectFemale,
 }: {
   apiKey: string;
   imageUrl: string;
-  expectFemale: boolean;
 }): Promise<{ pass: boolean; reason: string }> {
   const validationPrompt = `You are a strict visual QA checker for Irasutoya characters.
 
-Inspect ONLY eyelash count and eyelash direction.
-Direction rule (non-negotiable):
-- If eyelashes are present, they must be a matched pair in the SAME absolute direction.
-- SAME direction means BOTH leaning toward RIGHT-HAND side ("slash" /) OR BOTH leaning toward LEFT-HAND side ("backslash" \\).
-- Mixed/mirrored directions ("/\\" or "\\/") must always fail.
-
-Female rule:
-- Left eye eyelash count must be exactly 1.
-- Right eye eyelash count must be exactly 1.
-- Both directions must be identical and allowed (slash or backslash).
+Inspect ONLY eyelashes.
+Absolute rule (non-negotiable):
+- ALL characters must have ZERO eyelashes on both eyes.
+- Left eye eyelash count must be 0.
+- Right eye eyelash count must be 0.
+- Any lash-like stroke/flick/tick at eye corners counts as an eyelash and must fail.
 
 Return ONLY valid JSON with this schema:
 {
-  "is_female": boolean,
   "left_eye_lash_count": number,
   "right_eye_lash_count": number,
   "left_eye_direction": "slash" | "backslash" | "none" | "unknown",
@@ -311,7 +300,7 @@ Return ONLY valid JSON with this schema:
   "pass": boolean
 }
 
-Set pass=true only when the above rules are fully satisfied.`;
+Set pass=true only when both eyes have zero visible eyelashes.`;
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -353,44 +342,29 @@ Set pass=true only when the above rules are fully satisfied.`;
 
   try {
     const parsed = JSON.parse(jsonMatch[0]);
-    const isFemale = Boolean(parsed?.is_female);
     const leftCount = Number(parsed?.left_eye_lash_count ?? -1);
     const rightCount = Number(parsed?.right_eye_lash_count ?? -1);
     const leftDirection = normalizeEyelashDirection(parsed?.left_eye_direction ?? parsed?.left_direction);
     const rightDirection = normalizeEyelashDirection(parsed?.right_eye_direction ?? parsed?.right_direction);
 
-    const sameAllowedDirection =
-      leftDirection === rightDirection && (leftDirection === "slash" || leftDirection === "backslash");
-    const strictPairPass = leftCount === 1 && rightCount === 1 && sameAllowedDirection;
+    const leftNoLash = leftCount === 0 && (leftDirection === "none" || leftDirection === "unknown");
+    const rightNoLash = rightCount === 0 && (rightDirection === "none" || rightDirection === "unknown");
+    const strictNoLashPass = leftNoLash && rightNoLash;
+
     const hasVisibleLashes =
       leftCount > 0 ||
       rightCount > 0 ||
       (leftDirection !== "none" && leftDirection !== "unknown") ||
       (rightDirection !== "none" && rightDirection !== "unknown");
 
-    if (expectFemale) {
-      return {
-        pass: strictPairPass,
-        reason: strictPairPass
-          ? "ok"
-          : `expect_female_failed_l${leftCount}_r${rightCount}_${leftDirection}_${rightDirection}`,
-      };
+    if (strictNoLashPass && !hasVisibleLashes) {
+      return { pass: true, reason: "ok" };
     }
 
-    if (hasVisibleLashes) {
-      return {
-        pass: strictPairPass,
-        reason: strictPairPass
-          ? "ok"
-          : `lash_pair_failed_l${leftCount}_r${rightCount}_${leftDirection}_${rightDirection}`,
-      };
-    }
-
-    if (isFemale) {
-      return { pass: false, reason: "female_missing_required_lashes" };
-    }
-
-    return { pass: true, reason: "non_female_no_lashes" };
+    return {
+      pass: false,
+      reason: `lashes_detected_l${leftCount}_r${rightCount}_${leftDirection}_${rightDirection}`,
+    };
   } catch {
     return { pass: false, reason: "validator_parse_error" };
   }
@@ -477,7 +451,7 @@ serve(async (req) => {
 
       if (style === 'irasutoya') {
         promptParts.push(irasutoyaEyelashLockPrompt);
-        promptParts.push("Final self-check before output: female eyes must each have exactly one eyelash; both lashes must lean in the exact same direction, either both '/' or both '\\', with matching angle and length");
+        promptParts.push("Final self-check before output: both eyes must have zero eyelashes for all characters, with no lash-like corner marks");
       }
 
       promptParts.push("512x512 optimal size, centered composition, clear at small sizes");
@@ -499,7 +473,6 @@ serve(async (req) => {
     }
 
     const shouldEnforceIrasutoyaValidation = style === 'irasutoya' && !removeBackground;
-    const expectFemale = shouldEnforceIrasutoyaValidation && isLikelyFemalePrompt(`${text ?? ""} ${emoji ?? ""}`);
 
     let imageUrl = "";
 
@@ -512,7 +485,6 @@ serve(async (req) => {
         const validation = await validateIrasutoyaEyelashes({
           apiKey: LOVABLE_API_KEY,
           imageUrl: candidateImageUrl,
-          expectFemale,
         });
 
         if (validation.pass) {
@@ -528,7 +500,7 @@ serve(async (req) => {
       if (!imageUrl) {
         return new Response(
           JSON.stringify({
-            error: "Failed to satisfy strict Irasutoya eyelash rule after retries. Please try again.",
+            error: "Failed to satisfy strict Irasutoya no-eyelash rule after retries. Please try again.",
             details: lastReason,
           }),
           { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
