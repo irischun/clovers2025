@@ -162,7 +162,7 @@ COMPOSITION: character on clean white/transparent background. NO decorative bord
   y2k: "Y2K millennium aesthetic (千禧風格), early 2000s design, glossy chrome text, butterfly motifs, baby pink and electric blue, frosted translucent plastic, flip phone era, bedazzled sparkle effects, Bratz doll energy, nostalgic cyber-cute",
 };
 
-const irasutoyaEyelashLockPrompt = "IRASUTOYA FEMALE EYELASH LOCK (ABSOLUTE OVERRIDE): If the character is female or feminine-presenting, draw EXACTLY one eyelash per eye (2 total). SAME DIRECTION ONLY means BOTH lashes lean toward the character's right-hand side '/' OR BOTH lashes lean toward the character's left-hand side '\\'. Pick one global direction and apply it identically to both eyes (same slant, same length). Never mix directions, never mirror into opposite slants, never use '/\\' or '\\/' combinations. Count is non-negotiable: left eye = 1 lash, right eye = 1 lash, total = 2. No extra lashes, no missing lashes.";
+const irasutoyaEyelashLockPrompt = "IRASUTOYA EYELASH LOCK (ABSOLUTE OVERRIDE): For every character (female, male, child, any gender), draw ZERO eyelashes on both eyes. Left eye lash count must be 0 and right eye lash count must be 0. Do not draw any lash stroke, flick, tick, or corner line near either eye. If any eyelash is visible, the image is invalid.";
 
 function buildSystemMessage(hasReferenceImage: boolean): string {
   let msg = `You are an expert image stylist and sticker designer. Your task is to create high-quality stylized images with these standards:
