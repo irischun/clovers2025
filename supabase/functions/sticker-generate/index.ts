@@ -215,6 +215,21 @@ async function generateStickerCandidate(messages: ChatMessage[], apiKey: string,
   return imageUrl;
 }
 
+function normalizeEyelashDirection(input: unknown): "slash" | "backslash" | "none" | "unknown" {
+  const value = String(input ?? "").toLowerCase().trim();
+
+  if (!value || value === "unknown" || value === "unclear") return "unknown";
+  if (value.includes("none") || value.includes("no lash") || value === "0") return "none";
+  if (value.includes("backslash") || value.includes("\\") || value.includes("left-lean") || value.includes("left leaning") || value.includes("leftward")) {
+    return "backslash";
+  }
+  if (value.includes("slash") || value.includes("/") || value.includes("right-lean") || value.includes("right leaning") || value.includes("rightward")) {
+    return "slash";
+  }
+
+  return "unknown";
+}
+
 async function validateIrasutoyaEyelashes({
   apiKey,
   imageUrl,
@@ -230,21 +245,22 @@ Inspect ONLY eyelash count and direction.
 Rules for female faces:
 - Left eye eyelash count must be exactly 1.
 - Right eye eyelash count must be exactly 1.
-- Both eyelash strokes must have the SAME direction in image coordinates.
-- Required direction label is "slash" meaning '/' (lower-left to upper-right).
+- Both eyelashes must lean in the SAME absolute direction.
+- Allowed pass directions: both "slash" (/) OR both "backslash" (\\).
+- Mixed or mirrored directions must fail.
 
 Return ONLY valid JSON with this schema:
 {
   "is_female": boolean,
   "left_eye_lash_count": number,
   "right_eye_lash_count": number,
-  "same_direction": boolean,
-  "direction": "slash" | "backslash" | "mixed" | "none",
+  "left_eye_direction": "slash" | "backslash" | "none" | "unknown",
+  "right_eye_direction": "slash" | "backslash" | "none" | "unknown",
   "pass": boolean
 }
 
 Set pass=true only if:
-- if is_female=true: left_eye_lash_count=1 AND right_eye_lash_count=1 AND same_direction=true AND direction="slash"
+- if is_female=true: left_eye_lash_count=1 AND right_eye_lash_count=1 AND left_eye_direction=right_eye_direction AND left_eye_direction in ["slash","backslash"]
 - if is_female=false: pass=${expectFemale ? "false" : "true"}`;
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -290,14 +306,19 @@ Set pass=true only if:
     const isFemale = Boolean(parsed?.is_female);
     const leftCount = Number(parsed?.left_eye_lash_count ?? -1);
     const rightCount = Number(parsed?.right_eye_lash_count ?? -1);
-    const sameDirection = Boolean(parsed?.same_direction);
-    const direction = String(parsed?.direction ?? "").toLowerCase().trim();
+    const leftDirection = normalizeEyelashDirection(parsed?.left_eye_direction ?? parsed?.left_direction);
+    const rightDirection = normalizeEyelashDirection(parsed?.right_eye_direction ?? parsed?.right_direction);
 
-    const strictFemalePass = isFemale && leftCount === 1 && rightCount === 1 && sameDirection && direction === "slash";
+    const sameAllowedDirection =
+      leftDirection === rightDirection && (leftDirection === "slash" || leftDirection === "backslash");
+    const strictFemalePass = isFemale && leftCount === 1 && rightCount === 1 && sameAllowedDirection;
+
     if (expectFemale) {
       return {
         pass: strictFemalePass,
-        reason: strictFemalePass ? "ok" : `expect_female_failed_l${leftCount}_r${rightCount}_same${sameDirection}_${direction}`,
+        reason: strictFemalePass
+          ? "ok"
+          : `expect_female_failed_l${leftCount}_r${rightCount}_${leftDirection}_${rightDirection}`,
       };
     }
 
@@ -307,7 +328,9 @@ Set pass=true only if:
 
     return {
       pass: strictFemalePass,
-      reason: strictFemalePass ? "ok" : `female_failed_l${leftCount}_r${rightCount}_same${sameDirection}_${direction}`,
+      reason: strictFemalePass
+        ? "ok"
+        : `female_failed_l${leftCount}_r${rightCount}_${leftDirection}_${rightDirection}`,
     };
   } catch {
     return { pass: false, reason: "validator_parse_error" };
