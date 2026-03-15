@@ -473,7 +473,6 @@ serve(async (req) => {
     }
 
     const shouldEnforceIrasutoyaValidation = style === 'irasutoya' && !removeBackground;
-    const expectFemale = shouldEnforceIrasutoyaValidation && isLikelyFemalePrompt(`${text ?? ""} ${emoji ?? ""}`);
 
     let imageUrl = "";
 
@@ -486,7 +485,6 @@ serve(async (req) => {
         const validation = await validateIrasutoyaEyelashes({
           apiKey: LOVABLE_API_KEY,
           imageUrl: candidateImageUrl,
-          expectFemale,
         });
 
         if (validation.pass) {
@@ -502,7 +500,7 @@ serve(async (req) => {
       if (!imageUrl) {
         return new Response(
           JSON.stringify({
-            error: "Failed to satisfy strict Irasutoya eyelash rule after retries. Please try again.",
+            error: "Failed to satisfy strict Irasutoya no-eyelash rule after retries. Please try again.",
             details: lastReason,
           }),
           { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
