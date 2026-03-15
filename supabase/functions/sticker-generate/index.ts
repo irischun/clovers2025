@@ -129,6 +129,8 @@ const stylePromptMap: Record<string, string> = {
   y2k: "Y2K millennium aesthetic (千禧風格), early 2000s design, glossy chrome text, butterfly motifs, baby pink and electric blue, frosted translucent plastic, flip phone era, bedazzled sparkle effects, Bratz doll energy, nostalgic cyber-cute",
 };
 
+const irasutoyaEyelashLockPrompt = "IRASUTOYA FEMALE EYELASH LOCK (ABSOLUTE): If the character is female or feminine-presenting, draw EXACTLY one eyelash per eye (2 total). Both eyelashes must have the EXACT SAME STROKE DIRECTION in image coordinates: both are '/' slanted strokes (leaning from lower-left to upper-right). Never use '\\' direction. Never mirror the slash direction between eyes. Count must be exact: left eye = 1 lash, right eye = 1 lash, total = 2. No extra lashes, no missing lashes.";
+
 function buildSystemMessage(hasReferenceImage: boolean): string {
   let msg = `You are an expert image stylist and sticker designer. Your task is to create high-quality stylized images with these standards:
 
@@ -241,6 +243,12 @@ serve(async (req) => {
       } else {
         promptParts.push("high quality, professional, expressive, visually striking");
       }
+
+      if (style === 'irasutoya') {
+        promptParts.push(irasutoyaEyelashLockPrompt);
+        promptParts.push("Final self-check before output: female eyes must each have exactly one '/' eyelash stroke, with matching angle, matching length, and identical direction on both eyes");
+      }
+
       promptParts.push("512x512 optimal size, centered composition, clear at small sizes");
       
       const enhancedPrompt = promptParts.join('. ');
@@ -269,7 +277,7 @@ serve(async (req) => {
         model: "google/gemini-3.1-flash-image-preview",
         messages,
         modalities: ["image", "text"],
-        temperature: 0.8,
+        temperature: style === 'irasutoya' ? 0.1 : 0.8,
       }),
     });
 
