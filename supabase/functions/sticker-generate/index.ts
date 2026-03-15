@@ -162,7 +162,7 @@ COMPOSITION: character on clean white/transparent background. NO decorative bord
   y2k: "Y2K millennium aesthetic (千禧風格), early 2000s design, glossy chrome text, butterfly motifs, baby pink and electric blue, frosted translucent plastic, flip phone era, bedazzled sparkle effects, Bratz doll energy, nostalgic cyber-cute",
 };
 
-const irasutoyaEyelashLockPrompt = "IRASUTOYA FEMALE EYELASH LOCK (ABSOLUTE OVERRIDE): If the character is female or feminine-presenting, draw EXACTLY one eyelash per eye (2 total). Both eyelashes MUST use the SAME absolute leaning direction. Allowed global direction is EITHER all '/' (right-leaning) OR all '\\' (left-leaning). Pick one direction and apply it identically to both eyes. Never mix directions, never mirror into opposite slants, never use '/\\' or '\\/' combinations. Count must be exact: left eye = 1 lash, right eye = 1 lash, total = 2. No extra lashes, no missing lashes.";
+const irasutoyaEyelashLockPrompt = "IRASUTOYA FEMALE EYELASH LOCK (ABSOLUTE OVERRIDE): If the character is female or feminine-presenting, draw EXACTLY one eyelash per eye (2 total). SAME DIRECTION ONLY means BOTH lashes lean toward the character's right-hand side '/' OR BOTH lashes lean toward the character's left-hand side '\\'. Pick one global direction and apply it identically to both eyes (same slant, same length). Never mix directions, never mirror into opposite slants, never use '/\\' or '\\/' combinations. Count is non-negotiable: left eye = 1 lash, right eye = 1 lash, total = 2. No extra lashes, no missing lashes.";
 
 function buildSystemMessage(hasReferenceImage: boolean): string {
   let msg = `You are an expert image stylist and sticker designer. Your task is to create high-quality stylized images with these standards:
@@ -205,7 +205,7 @@ type ChatMessage = {
 
 function isLikelyFemalePrompt(input: string): boolean {
   if (!input) return false;
-  return /(female|woman|girl|lady|女生|女人|女孩|女性|小姐|女士|姊姊|妹妹|媽媽|太太|wife|mom|mother|her|she)/i.test(input);
+  return /(female|woman|girl|lady|女生|女人|女孩|女性|小姐|女士|姊姊|妹妹|媽媽|太太|wife|mom|mother|her|she|女の子|女性|彼女)/i.test(input);
 }
 
 async function generateStickerCandidate(messages: ChatMessage[], apiKey: string, style: string): Promise<string> {
@@ -253,10 +253,26 @@ function normalizeEyelashDirection(input: unknown): "slash" | "backslash" | "non
 
   if (!value || value === "unknown" || value === "unclear") return "unknown";
   if (value.includes("none") || value.includes("no lash") || value === "0") return "none";
-  if (value.includes("backslash") || value.includes("\\") || value.includes("left-lean") || value.includes("left leaning") || value.includes("leftward")) {
+  if (
+    value.includes("backslash") ||
+    value.includes("\\") ||
+    value.includes("left-lean") ||
+    value.includes("left leaning") ||
+    value.includes("leftward") ||
+    value.includes("left hand") ||
+    value.includes("toward left")
+  ) {
     return "backslash";
   }
-  if (value.includes("slash") || value.includes("/") || value.includes("right-lean") || value.includes("right leaning") || value.includes("rightward")) {
+  if (
+    value.includes("slash") ||
+    value.includes("/") ||
+    value.includes("right-lean") ||
+    value.includes("right leaning") ||
+    value.includes("rightward") ||
+    value.includes("right hand") ||
+    value.includes("toward right")
+  ) {
     return "slash";
   }
 
