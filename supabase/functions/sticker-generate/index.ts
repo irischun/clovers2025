@@ -149,10 +149,10 @@ Use ONLY these warm, slightly desaturated colors — never harsh, vivid, neon, o
 • Dark themes: Deep Purple (268 C) + Black Coffee (426 C) — still with soft grainy texture.
 
 === FACES (CRITICAL — MATCH REFERENCE EXACTLY) ===
-• Cheek blush: TWO perfectly round rosy circles (Pantone 1767 C #FF9AA2) on BOTH cheeks, always present, soft-edged with watercolor grain, slightly larger than eye dots.
-• Nose: A SINGLE TINY round reddish-pink dot (same Pantone 1767 C hue as cheeks). NOT a drawn nose shape, NOT a triangle, NOT nostrils, NOT a line — just ONE tiny dot.
+• Eyes: Small dot circles in charcoal-brown (#3C3C3C). Simple. No detail inside. These are the LARGEST facial feature dots.
+• Cheek blush: TWO perfectly round rosy circles (Pantone 1767 C #FF9AA2) on BOTH cheeks, always present, soft-edged with watercolor grain, similar size to or slightly larger than eye dots.
+• Nose: A SINGLE TINY round reddish-pink dot (same Pantone 1767 C hue as cheeks). This dot must be SIGNIFICANTLY SMALLER than the eye dots — approximately 1/3 to 1/2 the diameter of each eye dot. NOT a drawn nose shape, NOT a triangle, NOT nostrils, NOT a line — just ONE very tiny dot, smaller than eyes.
 • Mouth: A simple small curved line or open oval. Simple and minimal.
-• Eyes: Tiny dot circles in charcoal-brown (#3C3C3C). Simple. No detail inside.
 
 === EYELASHES — ABSOLUTE ZERO RULE ===
 ZERO (0) eyelashes on both eyes for ALL characters (female, male, child, any gender). No lash strokes, no flicks, no ticks, no corner marks near eyes. NON-NEGOTIABLE.
