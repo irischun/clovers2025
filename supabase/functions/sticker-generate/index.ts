@@ -165,6 +165,155 @@ Generate the image now with these principles. Make it expressive, stylish, and p
   return msg;
 }
 
+type ChatMessage = {
+  role: string;
+  content: string | Array<{ type: string; text?: string; image_url?: { url: string } }>;
+};
+
+function isLikelyFemalePrompt(input: string): boolean {
+  if (!input) return false;
+  return /(female|woman|girl|lady|女生|女人|女孩|女性|小姐|女士|姊姊|妹妹|媽媽|太太|wife|mom|mother|her|she)/i.test(input);
+}
+
+async function generateStickerCandidate(messages: ChatMessage[], apiKey: string, style: string): Promise<string> {
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-3.1-flash-image-preview",
+      messages,
+      modalities: ["image", "text"],
+      temperature: style === 'irasutoya' ? 0.1 : 0.8,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    const error = new Error("Sticker generation failed") as Error & { status?: number; details?: string };
+    error.status = response.status;
+    error.details = errorText;
+
+    if (response.status === 429) {
+      error.message = "Rate limit exceeded. Please try again later.";
+    } else if (response.status === 402) {
+      error.message = "AI credits exhausted. Please add credits.";
+    }
+
+    throw error;
+  }
+
+  const data = await response.json();
+  const imageUrl = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
+  if (!imageUrl) {
+    throw new Error("No sticker generated");
+  }
+
+  return imageUrl;
+}
+
+async function validateIrasutoyaEyelashes({
+  apiKey,
+  imageUrl,
+  expectFemale,
+}: {
+  apiKey: string;
+  imageUrl: string;
+  expectFemale: boolean;
+}): Promise<{ pass: boolean; reason: string }> {
+  const validationPrompt = `You are a strict visual QA checker for Irasutoya characters.
+
+Inspect ONLY eyelash count and direction.
+Rules for female faces:
+- Left eye eyelash count must be exactly 1.
+- Right eye eyelash count must be exactly 1.
+- Both eyelash strokes must have the SAME direction in image coordinates.
+- Required direction label is "slash" meaning '/' (lower-left to upper-right).
+
+Return ONLY valid JSON with this schema:
+{
+  "is_female": boolean,
+  "left_eye_lash_count": number,
+  "right_eye_lash_count": number,
+  "same_direction": boolean,
+  "direction": "slash" | "backslash" | "mixed" | "none",
+  "pass": boolean
+}
+
+Set pass=true only if:
+- if is_female=true: left_eye_lash_count=1 AND right_eye_lash_count=1 AND same_direction=true AND direction="slash"
+- if is_female=false: pass=${expectFemale ? "false" : "true"}`;
+
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-pro",
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: validationPrompt },
+            { type: "image_url", image_url: { url: imageUrl } },
+          ],
+        },
+      ],
+      temperature: 0,
+    }),
+  });
+
+  if (!response.ok) {
+    return { pass: false, reason: `validator_http_${response.status}` };
+  }
+
+  const data = await response.json();
+  const rawContent = data?.choices?.[0]?.message?.content;
+  const contentText = typeof rawContent === "string"
+    ? rawContent
+    : Array.isArray(rawContent)
+      ? rawContent.map((item: { text?: string }) => item?.text ?? "").join("\n")
+      : "";
+
+  const jsonMatch = contentText.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    return { pass: false, reason: "validator_no_json" };
+  }
+
+  try {
+    const parsed = JSON.parse(jsonMatch[0]);
+    const isFemale = Boolean(parsed?.is_female);
+    const leftCount = Number(parsed?.left_eye_lash_count ?? -1);
+    const rightCount = Number(parsed?.right_eye_lash_count ?? -1);
+    const sameDirection = Boolean(parsed?.same_direction);
+    const direction = String(parsed?.direction ?? "").toLowerCase().trim();
+
+    const strictFemalePass = isFemale && leftCount === 1 && rightCount === 1 && sameDirection && direction === "slash";
+    if (expectFemale) {
+      return {
+        pass: strictFemalePass,
+        reason: strictFemalePass ? "ok" : `expect_female_failed_l${leftCount}_r${rightCount}_same${sameDirection}_${direction}`,
+      };
+    }
+
+    if (!isFemale) {
+      return { pass: true, reason: "non_female" };
+    }
+
+    return {
+      pass: strictFemalePass,
+      reason: strictFemalePass ? "ok" : `female_failed_l${leftCount}_r${rightCount}_same${sameDirection}_${direction}`,
+    };
+  } catch {
+    return { pass: false, reason: "validator_parse_error" };
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -267,47 +416,44 @@ serve(async (req) => {
       }
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3.1-flash-image-preview",
-        messages,
-        modalities: ["image", "text"],
-        temperature: style === 'irasutoya' ? 0.1 : 0.8,
-      }),
-    });
+    const shouldEnforceIrasutoyaValidation = style === 'irasutoya' && !removeBackground;
+    const expectFemale = shouldEnforceIrasutoyaValidation && isLikelyFemalePrompt(`${text ?? ""} ${emoji ?? ""}`);
 
-    if (!response.ok) {
-      if (response.status === 429) {
+    let imageUrl = "";
+
+    if (shouldEnforceIrasutoyaValidation) {
+      const maxAttempts = 8;
+      let lastReason = "unknown";
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const candidateImageUrl = await generateStickerCandidate(messages, LOVABLE_API_KEY, style);
+        const validation = await validateIrasutoyaEyelashes({
+          apiKey: LOVABLE_API_KEY,
+          imageUrl: candidateImageUrl,
+          expectFemale,
+        });
+
+        if (validation.pass) {
+          imageUrl = candidateImageUrl;
+          console.log(`Irasutoya eyelash validation passed on attempt ${attempt}/${maxAttempts}`);
+          break;
+        }
+
+        lastReason = validation.reason;
+        console.warn(`Irasutoya eyelash validation failed on attempt ${attempt}/${maxAttempts}: ${validation.reason}`);
+      }
+
+      if (!imageUrl) {
         return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({
+            error: "Failed to satisfy strict Irasutoya eyelash rule after retries. Please try again.",
+            details: lastReason,
+          }),
+          { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "AI credits exhausted. Please add credits." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      throw new Error("Sticker generation failed");
-    }
-
-    const data = await response.json();
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-    if (!imageUrl) {
-      console.error("No image URL in response:", JSON.stringify(data));
-      return new Response(
-        JSON.stringify({ error: "No sticker generated" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    } else {
+      imageUrl = await generateStickerCandidate(messages, LOVABLE_API_KEY, style);
     }
 
     return new Response(
@@ -316,9 +462,17 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("sticker-generate error:", error);
+
+    const status = typeof error === "object" && error !== null && "status" in error
+      ? Number((error as { status?: number }).status)
+      : 500;
+
+    const safeStatus = [402, 429].includes(status) ? status : 500;
+    const message = error instanceof Error ? error.message : "Unknown error";
+
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: message }),
+      { status: safeStatus, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
