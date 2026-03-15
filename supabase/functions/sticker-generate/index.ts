@@ -418,7 +418,7 @@ serve(async (req) => {
 
       if (style === 'irasutoya') {
         promptParts.push(irasutoyaEyelashLockPrompt);
-        promptParts.push("Final self-check before output: female eyes must each have exactly one '/' eyelash stroke, with matching angle, matching length, and identical direction on both eyes");
+        promptParts.push("Final self-check before output: female eyes must each have exactly one eyelash; both lashes must lean in the exact same direction, either both '/' or both '\\', with matching angle and length");
       }
 
       promptParts.push("512x512 optimal size, centered composition, clear at small sizes");
