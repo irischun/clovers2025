@@ -277,7 +277,7 @@ serve(async (req) => {
         model: "google/gemini-3.1-flash-image-preview",
         messages,
         modalities: ["image", "text"],
-        temperature: 0.8,
+        temperature: style === 'irasutoya' ? 0.1 : 0.8,
       }),
     });
 
