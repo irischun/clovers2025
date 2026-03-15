@@ -61,6 +61,7 @@ const mainMenuItems = [
 const aiToolsItems = [
   { title: 'AI 文案創作', icon: Sparkles, path: '/dashboard/ai-tools' },
   { title: '圖片生成', icon: ImagePlus, path: '/dashboard/image-generation' },
+  { title: '貼圖製作器', icon: Sticker, path: '/dashboard/sticker-maker' },
   { title: '語音生成', icon: Mic, path: '/dashboard/voice-generation' },
   { title: '語音轉字幕', icon: AudioLines, path: '/dashboard/speech-to-text' },
   { title: '視頻生成', icon: Video, path: '/dashboard/video-generation' },
