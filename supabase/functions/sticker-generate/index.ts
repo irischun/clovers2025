@@ -142,7 +142,7 @@ FORBIDDEN COLORS: Do NOT use any bright saturated, vivid, neon, or cool-toned co
 
 FACES: EXTREMELY simple. A simple small curved line for mouth.
 
-EYELASHES — STRICT RULE FOR ALL FEMALE CHARACTERS: Every female character MUST have EXACTLY ONE (1) single tiny eyelash on each eye — one lash per eye, two lashes total. BOTH eyelashes MUST lean in the SAME absolute direction (both '/' or both '\\'). They must look like a matched pair — same angle, same length. Each lash is a very short, subtle, thin curved stroke from the outer top corner of each eye dot. Count is NON-NEGOTIABLE: ONLY ONE per eye. Male characters must have ZERO eyelashes.
+EYELASHES — ABSOLUTE RULE FOR ALL CHARACTERS: ZERO (0) eyelashes on both eyes. Female characters must have zero eyelashes. Male characters must have zero eyelashes. No lash strokes, no lash hints, no lash flicks, and no tiny eyelash marks at eye corners.
 
 PROPORTIONS: semi-realistic, slightly large head, about 1:3.5 to 1:4 head-to-body ratio. NOT chibi, NOT super-deformed. Natural body proportions with just slightly oversized head.
 
