@@ -162,7 +162,7 @@ COMPOSITION: character on clean white/transparent background. NO decorative bord
   y2k: "Y2K millennium aesthetic (千禧風格), early 2000s design, glossy chrome text, butterfly motifs, baby pink and electric blue, frosted translucent plastic, flip phone era, bedazzled sparkle effects, Bratz doll energy, nostalgic cyber-cute",
 };
 
-const irasutoyaEyelashLockPrompt = "IRASUTOYA FEMALE EYELASH LOCK (ABSOLUTE OVERRIDE): If the character is female or feminine-presenting, draw EXACTLY one eyelash per eye (2 total). Both eyelashes MUST use the SAME absolute leaning direction. Allowed global direction is EITHER all '/' (right-leaning) OR all '\\' (left-leaning). Pick one direction and apply it identically to both eyes. Never mix directions, never mirror into opposite slants, never use '/\\' or '\\/' combinations. Count must be exact: left eye = 1 lash, right eye = 1 lash, total = 2. No extra lashes, no missing lashes.";
+const irasutoyaEyelashLockPrompt = "IRASUTOYA FEMALE EYELASH LOCK (ABSOLUTE OVERRIDE): If the character is female or feminine-presenting, draw EXACTLY one eyelash per eye (2 total). SAME DIRECTION ONLY means BOTH lashes lean toward the character's right-hand side '/' OR BOTH lashes lean toward the character's left-hand side '\\'. Pick one global direction and apply it identically to both eyes (same slant, same length). Never mix directions, never mirror into opposite slants, never use '/\\' or '\\/' combinations. Count is non-negotiable: left eye = 1 lash, right eye = 1 lash, total = 2. No extra lashes, no missing lashes.";
 
 function buildSystemMessage(hasReferenceImage: boolean): string {
   let msg = `You are an expert image stylist and sticker designer. Your task is to create high-quality stylized images with these standards:
@@ -205,7 +205,7 @@ type ChatMessage = {
 
 function isLikelyFemalePrompt(input: string): boolean {
   if (!input) return false;
-  return /(female|woman|girl|lady|女生|女人|女孩|女性|小姐|女士|姊姊|妹妹|媽媽|太太|wife|mom|mother|her|she)/i.test(input);
+  return /(female|woman|girl|lady|女生|女人|女孩|女性|小姐|女士|姊姊|妹妹|媽媽|太太|wife|mom|mother|her|she|女の子|女性|彼女)/i.test(input);
 }
 
 async function generateStickerCandidate(messages: ChatMessage[], apiKey: string, style: string): Promise<string> {
@@ -253,10 +253,26 @@ function normalizeEyelashDirection(input: unknown): "slash" | "backslash" | "non
 
   if (!value || value === "unknown" || value === "unclear") return "unknown";
   if (value.includes("none") || value.includes("no lash") || value === "0") return "none";
-  if (value.includes("backslash") || value.includes("\\") || value.includes("left-lean") || value.includes("left leaning") || value.includes("leftward")) {
+  if (
+    value.includes("backslash") ||
+    value.includes("\\") ||
+    value.includes("left-lean") ||
+    value.includes("left leaning") ||
+    value.includes("leftward") ||
+    value.includes("left hand") ||
+    value.includes("toward left")
+  ) {
     return "backslash";
   }
-  if (value.includes("slash") || value.includes("/") || value.includes("right-lean") || value.includes("right leaning") || value.includes("rightward")) {
+  if (
+    value.includes("slash") ||
+    value.includes("/") ||
+    value.includes("right-lean") ||
+    value.includes("right leaning") ||
+    value.includes("rightward") ||
+    value.includes("right hand") ||
+    value.includes("toward right")
+  ) {
     return "slash";
   }
 
@@ -274,13 +290,16 @@ async function validateIrasutoyaEyelashes({
 }): Promise<{ pass: boolean; reason: string }> {
   const validationPrompt = `You are a strict visual QA checker for Irasutoya characters.
 
-Inspect ONLY eyelash count and direction.
-Rules for female faces:
+Inspect ONLY eyelash count and eyelash direction.
+Direction rule (non-negotiable):
+- If eyelashes are present, they must be a matched pair in the SAME absolute direction.
+- SAME direction means BOTH leaning toward RIGHT-HAND side ("slash" /) OR BOTH leaning toward LEFT-HAND side ("backslash" \\).
+- Mixed/mirrored directions ("/\\" or "\\/") must always fail.
+
+Female rule:
 - Left eye eyelash count must be exactly 1.
 - Right eye eyelash count must be exactly 1.
-- Both eyelashes must lean in the SAME absolute direction.
-- Allowed pass directions: both "slash" (/) OR both "backslash" (\\).
-- Mixed or mirrored directions must fail.
+- Both directions must be identical and allowed (slash or backslash).
 
 Return ONLY valid JSON with this schema:
 {
@@ -292,9 +311,7 @@ Return ONLY valid JSON with this schema:
   "pass": boolean
 }
 
-Set pass=true only if:
-- if is_female=true: left_eye_lash_count=1 AND right_eye_lash_count=1 AND left_eye_direction=right_eye_direction AND left_eye_direction in ["slash","backslash"]
-- if is_female=false: pass=${expectFemale ? "false" : "true"}`;
+Set pass=true only when the above rules are fully satisfied.`;
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -344,27 +361,36 @@ Set pass=true only if:
 
     const sameAllowedDirection =
       leftDirection === rightDirection && (leftDirection === "slash" || leftDirection === "backslash");
-    const strictFemalePass = isFemale && leftCount === 1 && rightCount === 1 && sameAllowedDirection;
+    const strictPairPass = leftCount === 1 && rightCount === 1 && sameAllowedDirection;
+    const hasVisibleLashes =
+      leftCount > 0 ||
+      rightCount > 0 ||
+      (leftDirection !== "none" && leftDirection !== "unknown") ||
+      (rightDirection !== "none" && rightDirection !== "unknown");
 
     if (expectFemale) {
       return {
-        pass: strictFemalePass,
-        reason: strictFemalePass
+        pass: strictPairPass,
+        reason: strictPairPass
           ? "ok"
           : `expect_female_failed_l${leftCount}_r${rightCount}_${leftDirection}_${rightDirection}`,
       };
     }
 
-    if (!isFemale) {
-      return { pass: true, reason: "non_female" };
+    if (hasVisibleLashes) {
+      return {
+        pass: strictPairPass,
+        reason: strictPairPass
+          ? "ok"
+          : `lash_pair_failed_l${leftCount}_r${rightCount}_${leftDirection}_${rightDirection}`,
+      };
     }
 
-    return {
-      pass: strictFemalePass,
-      reason: strictFemalePass
-        ? "ok"
-        : `female_failed_l${leftCount}_r${rightCount}_${leftDirection}_${rightDirection}`,
-    };
+    if (isFemale) {
+      return { pass: false, reason: "female_missing_required_lashes" };
+    }
+
+    return { pass: true, reason: "non_female_no_lashes" };
   } catch {
     return { pass: false, reason: "validator_parse_error" };
   }
