@@ -115,40 +115,56 @@ const stylePromptMap: Record<string, string> = {
   pixar: "Pixar animation studio style, 3D CGI character, smooth rounded forms, expressive eyes and face, vibrant Pixar color palette, subsurface scattering skin, cinematic lighting, Toy Story and Inside Out quality, heartwarming and polished",
   disney: "Disney animation style, classic Disney character design, beautiful flowing lines, magical sparkle effects, rich saturated Disney colors, fairytale aesthetic, princess-quality animation, enchanting and whimsical, Walt Disney Studios quality",
   snoopy: "Snoopy and Peanuts comic style by Charles Schulz, simple clean black outlines, minimal color fills, round head proportions, expressive with minimal detail, newspaper comic strip aesthetic, white beagle dog style, cheerful innocent charm",
-  irasutoya: `Irasutoya (いらすとや) Japanese clip-art illustration style by Mifune Takashi. ABSOLUTE RULE — THIS IS NOT A STICKER. It is a soft, gentle, flat Japanese clip-art illustration.
+  irasutoya: `Irasutoya (いらすとや) Japanese clip-art illustration style by Takashi Mifune. ABSOLUTE RULE — THIS IS NOT A STICKER. It is a soft, warm, approachable Japanese clip-art illustration with a hand-drawn watercolor feel.
 
-OUTLINES: ABSOLUTELY NO OUTLINES. Zero outlines. No border lines around the character or any element. No contour lines. Colors meet directly without any drawn line between them — shapes are defined purely by color fills touching each other, like cut paper collage or flat gouache paint areas. NEVER draw any outline, border, contour, or edge line in any color.
+=== OUTLINES (CRITICAL) ===
+Outlines are drawn in Pantone 440 C (Dark Charcoal-Brown #3C3C3C) — NOT pure black. Lines have a slight jitter or "bleeding" quality, mimicking a felt-tip pen on textured paper at about 80% opacity. Use a "Chalk" or "Dry Ink" brush style. Lines are NOT razor-sharp vectors — they are slightly imperfect and organic.
 
-PANTONE-LOCKED COLOR PALETTE (CRITICAL — use ONLY these colors, sampled directly from irasutoya.com illustrations):
-• Skin tone: Pantone 7513 C — warm peach #E8C4A0 / HSL(28, 62%, 77%). Gently pinkish-beige, NOT orange, NOT tan, NOT yellow.
-• Hair dark brown: Pantone 4625 C — #4A3728 / HSL(25, 30%, 22%). Subtle visible brush-stroke texture.
-• Hair medium brown: #8B6914 / HSL(38, 75%, 31%) for lighter-haired characters.
-• Dusty blue clothing: Pantone 7688 C — #7FA8C9 / HSL(207, 35%, 64%).
-• Warm red clothing: Pantone 7522 C — #C66B5A / HSL(8, 45%, 56%).
-• Sage green clothing: Pantone 7489 C — #7AAF6D / HSL(110, 28%, 55%).
-• Mustard yellow clothing: Pantone 7405 C — #C9A84C / HSL(43, 52%, 54%).
-• Soft teal clothing: Pantone 5493 C — #6BA5A0 / HSL(175, 22%, 53%).
-• Warm orange accent: Pantone 7411 C — #D4914E / HSL(30, 55%, 57%).
-• Muted purple clothing: Pantone 7660 C — #9B8AB8 / HSL(265, 22%, 63%).
-• Coral/salmon accent: Pantone 7606 C — #D98B7A / HSL(12, 52%, 66%).
-• Light pink clothing: Pantone 7604 C — #E8B0C0 / HSL(345, 55%, 80%).
-• Rosy blush cheeks: Pantone 7605 C — #E8A0A8 / HSL(350, 55%, 77%). Two perfectly round circles on BOTH cheeks, always present, slightly larger than the eye dots.
-• Nose pink dot: Pantone 7607 C — #D47070 / HSL(0, 50%, 64%). A SINGLE TINY round reddish-pink dot. NOT a drawn nose shape, NOT a triangle, NOT nostrils.
-• Eye dots: Pantone Black 7 C — #2A2A2A / HSL(0, 0%, 16%). Two tiny black dot eyes (small circles, NO pupils, NO highlights, NO anime eyes).
-• Warm beige background: Pantone 7527 C — #E8D8C0 / HSL(35, 45%, 83%).
-• Off-white paper: #F5F0E8.
+=== CORE PANTONE-LOCKED COLOR PALETTE ===
+Use ONLY these colors — all slightly desaturated, warm-leaning, never harsh or neon:
 
-FORBIDDEN COLORS: Do NOT use any bright saturated, vivid, neon, or cool-toned colors outside this palette. ALL colors must look like diluted gouache poster paint — faded, gentle, warm-toned, sun-faded and cozy.
+• Outline / Eyes: Pantone 440 C — Dark Charcoal-Brown #3C3C3C. Eyes are tiny dot circles in this color (NO pupils, NO highlights, NO anime eyes).
+• Soft Red (cheeks, highlights, clothing): Pantone 1767 C — #FF9AA2.
+• Deep Red (fruits, warning signs, accents): Pantone 1788 C — #FF5E5E.
+• Soft Blue (water, sky, denim, office wear): Pantone 291 C — #A2D2FF.
+• Sky Blue (backgrounds, accents): Pantone 298 C — #41B6E6.
+• Nature Green (leaves, grass, eco-themes): Pantone 358 C — #A7D08E.
+• Forest Green (deep foliage, shading): Pantone 362 C — #44AA00.
+• Warm Yellow (sun, icons, bright accents): Pantone 121 C — #FFD966.
+• Skin Tone Fair: Pantone 468 C — #F3E5AB. Gently warm, NOT orange, NOT tan.
+• Skin Tone Warm (tanned/warmer skin): Pantone 466 C — #D4BE8D.
+• Earth Brown (wood, hair, animals): Pantone 464 C — #8B5A2B.
+• Paper White (eyes, highlights, backgrounds): Pantone Bright White — #FFFFFF.
 
-FACES: EXTREMELY simple. A simple small curved line for mouth.
+=== SECONDARY / SEASONAL PALETTES ===
+• Office: Pantone 429 C (Cool Grey) + Pantone 534 C (Navy Blue) for suits and technology.
+• Traditional Japanese: Pantone 7623 C (Deep Vermilion) + Pantone 7724 C (Jade Green).
+• Dark/Scary themes: Pantone 268 C (Deep Purple) + Pantone 426 C (Black Coffee) — still with soft grainy texture.
 
-EYELASHES — ABSOLUTE RULE FOR ALL CHARACTERS: ZERO (0) eyelashes on both eyes. Female characters must have zero eyelashes. Male characters must have zero eyelashes. No lash strokes, no lash hints, no lash flicks, and no tiny eyelash marks at eye corners.
+• Cheek blush: Pantone 1767 C — #FF9AA2. Two perfectly round rosy circles on BOTH cheeks, always present, slightly larger than the eye dots.
+• Nose: A SINGLE TINY round reddish-pink dot. NOT a drawn nose shape, NOT a triangle, NOT nostrils.
 
-PROPORTIONS: semi-realistic, slightly large head, about 1:3.5 to 1:4 head-to-body ratio. NOT chibi, NOT super-deformed. Natural body proportions with just slightly oversized head.
+FORBIDDEN COLORS: Do NOT use any bright saturated, vivid, neon, or "digital" primary colors outside this palette. ALL colors must look slightly desaturated, warm-leaning, hand-mixed watercolor.
 
-TEXTURE: visible paper grain/tooth texture throughout, like gouache on textured off-white washi paper. Flat matte finish — NO glossy, NO smooth CG, NO gradients, NO shading, NO highlights, NO shadows.
+=== FACES ===
+EXTREMELY simple. A simple small curved line for mouth. Eyes are tiny dot circles (Pantone 440 C).
 
-COMPOSITION: character on clean white/transparent background. NO decorative borders, NO sticker outlines. Simple, quiet, gentle, educational Japanese clip-art. Reference: irasutoya.com`,
+=== EYELASHES — ABSOLUTE RULE FOR ALL CHARACTERS ===
+ZERO (0) eyelashes on both eyes. Female characters must have zero eyelashes. Male characters must have zero eyelashes. No lash strokes, no lash hints, no lash flicks, and no tiny eyelash marks at eye corners. This is NON-NEGOTIABLE.
+
+=== TEXTURE & FINISHING (SIGNATURE LOOK) ===
+• Watercolor Edge Grain: The most distinct feature. Large areas of color are NOT perfectly flat — they have a subtle "salt-like" grain or stippling effect, particularly where the color meets the outline. Apply a "Film Grain" or "Noise" filter at 1-3% to color layers.
+• Stippled Shading: Shadows are NOT solid blocks. They use a soft, speckled airbrush effect in a slightly darker or warmer version of the base color. Use "Dissolve" blending mode at low opacity for shading.
+• Imperfect Outlines: Lines have slight jitter or "bleeding" quality, mimicking a felt-tip pen on textured paper. NOT razor-sharp vectors.
+• Soft Gradients: When gradients are used (e.g., sunsets, glowing screens), they are very short and stepped, maintaining that grainy texture to prevent a "plastic" digital look.
+• Matte Finish: Almost NO high-gloss highlights. "Shine" is represented by simple white shapes rather than complex light reflections.
+• Overall paper grain/tooth texture throughout, like watercolor on textured off-white washi paper.
+
+=== PROPORTIONS ===
+Semi-realistic, slightly large head, about 1:3.5 to 1:4 head-to-body ratio. NOT chibi, NOT super-deformed. Natural body proportions with just slightly oversized head.
+
+=== COMPOSITION ===
+Character on clean white/transparent background. NO decorative borders, NO sticker outlines. Simple, quiet, gentle, educational Japanese clip-art. Reference: irasutoya.com`,
   crayon_shin: "Crayon Shin-chan (蠟筆小新) anime style, thick crude outlines, simple flat coloring, exaggerated facial expressions, childlike drawing quality, comedic proportions, bold primary colors, Yoshito Usui manga aesthetic",
   doraemon: "Doraemon (多啦A夢) anime style by Fujiko F. Fujio, round simple character design, bright blue and white color scheme, clean bold outlines, cute robotic cat aesthetic, futuristic gadget feel, cheerful Japanese manga, nostalgic Showa-era anime quality",
   toriyama: "Akira Toriyama (鳥山明) art style, Dragon Ball manga aesthetic, dynamic action poses, muscular character proportions, spiky dramatic hair, bold clean ink lines, vibrant energy aura effects, manga screentone shading, powerful and expressive",
