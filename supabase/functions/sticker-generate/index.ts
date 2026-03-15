@@ -117,13 +117,16 @@ const stylePromptMap: Record<string, string> = {
   snoopy: "Snoopy and Peanuts comic style by Charles Schulz, simple clean black outlines, minimal color fills, round head proportions, expressive with minimal detail, newspaper comic strip aesthetic, white beagle dog style, cheerful innocent charm",
   irasutoya: `Irasutoya (いらすとや) Japanese clip-art illustration style by Takashi Mifune. ABSOLUTE RULE — THIS IS NOT A STICKER. It is a soft, warm, approachable Japanese clip-art illustration with a hand-drawn watercolor feel.
 
-=== OUTLINES (CRITICAL) ===
-Outlines are drawn in Pantone 440 C (Dark Charcoal-Brown #3C3C3C) — NOT pure black. Lines have a slight jitter or "bleeding" quality, mimicking a felt-tip pen on textured paper at about 80% opacity. Use a "Chalk" or "Dry Ink" brush style. Lines are NOT razor-sharp vectors — they are slightly imperfect and organic.
+=== NO OUTLINES / NO BORDER LINES (CRITICAL — TOP PRIORITY) ===
+There must be ZERO visible outlines, border lines, or contour strokes around characters or objects. NO black lines, NO dark lines, NO edge lines of any kind. Shapes are defined ONLY by color fields meeting each other and by the watercolor edge grain effect. The silhouette emerges naturally from color areas — NOT from drawn lines. This is the #1 most important rule. If any outline or border stroke is visible, the image is INVALID.
+
+=== WATERCOLOR EDGE GRAIN (THE SIGNATURE FEATURE — CRITICAL) ===
+This is THE most distinct and essential feature of Irasutoya style. Large areas of color are NEVER perfectly flat or smooth. They MUST have a visible subtle "salt-like" grain or stippling effect, especially where one color area meets another color area. Since there are no outlines, this grain/stippling at color boundaries is what defines the shapes. Apply a "Film Grain" or "Noise" filter at 1-3% to ALL color layers. The grain must be clearly visible — not subtle to the point of invisibility. Think watercolor paint on textured washi paper where the pigment granulates at edges.
 
 === CORE PANTONE-LOCKED COLOR PALETTE ===
 Use ONLY these colors — all slightly desaturated, warm-leaning, never harsh or neon:
 
-• Outline / Eyes: Pantone 440 C — Dark Charcoal-Brown #3C3C3C. Eyes are tiny dot circles in this color (NO pupils, NO highlights, NO anime eyes).
+• Eyes: Pantone 440 C — Dark Charcoal-Brown #3C3C3C. Eyes are tiny dot circles in this color (NO pupils, NO highlights, NO anime eyes).
 • Soft Red (cheeks, highlights, clothing): Pantone 1767 C — #FF9AA2.
 • Deep Red (fruits, warning signs, accents): Pantone 1788 C — #FF5E5E.
 • Soft Blue (water, sky, denim, office wear): Pantone 291 C — #A2D2FF.
@@ -142,20 +145,19 @@ Use ONLY these colors — all slightly desaturated, warm-leaning, never harsh or
 • Dark/Scary themes: Pantone 268 C (Deep Purple) + Pantone 426 C (Black Coffee) — still with soft grainy texture.
 
 • Cheek blush: Pantone 1767 C — #FF9AA2. Two perfectly round rosy circles on BOTH cheeks, always present, slightly larger than the eye dots.
-• Nose: A SINGLE TINY round reddish-pink dot. NOT a drawn nose shape, NOT a triangle, NOT nostrils.
+• Nose: A SINGLE TINY round reddish-pink dot (same hue as cheek blush, Pantone 1767 C). NOT a drawn nose shape, NOT a triangle, NOT nostrils, NOT a line. Just one tiny dot.
 
 FORBIDDEN COLORS: Do NOT use any bright saturated, vivid, neon, or "digital" primary colors outside this palette. ALL colors must look slightly desaturated, warm-leaning, hand-mixed watercolor.
 
 === FACES ===
-EXTREMELY simple. A simple small curved line for mouth. Eyes are tiny dot circles (Pantone 440 C).
+EXTREMELY simple. A simple small curved line for mouth. Eyes are tiny dot circles (Pantone 440 C). Nose is a SINGLE TINY reddish-pink dot.
 
 === EYELASHES — ABSOLUTE RULE FOR ALL CHARACTERS ===
 ZERO (0) eyelashes on both eyes. Female characters must have zero eyelashes. Male characters must have zero eyelashes. No lash strokes, no lash hints, no lash flicks, and no tiny eyelash marks at eye corners. This is NON-NEGOTIABLE.
 
 === TEXTURE & FINISHING (SIGNATURE LOOK) ===
-• Watercolor Edge Grain: The most distinct feature. Large areas of color are NOT perfectly flat — they have a subtle "salt-like" grain or stippling effect, particularly where the color meets the outline. Apply a "Film Grain" or "Noise" filter at 1-3% to color layers.
+• Watercolor Edge Grain (REPEAT — MOST IMPORTANT): Color areas have visible salt-like grain/stippling at boundaries. NO clean smooth edges between colors. This grain IS the "outline" — it defines where shapes begin and end.
 • Stippled Shading: Shadows are NOT solid blocks. They use a soft, speckled airbrush effect in a slightly darker or warmer version of the base color. Use "Dissolve" blending mode at low opacity for shading.
-• Imperfect Outlines: Lines have slight jitter or "bleeding" quality, mimicking a felt-tip pen on textured paper. NOT razor-sharp vectors.
 • Soft Gradients: When gradients are used (e.g., sunsets, glowing screens), they are very short and stepped, maintaining that grainy texture to prevent a "plastic" digital look.
 • Matte Finish: Almost NO high-gloss highlights. "Shine" is represented by simple white shapes rather than complex light reflections.
 • Overall paper grain/tooth texture throughout, like watercolor on textured off-white washi paper.
@@ -164,7 +166,7 @@ ZERO (0) eyelashes on both eyes. Female characters must have zero eyelashes. Mal
 Semi-realistic, slightly large head, about 1:3.5 to 1:4 head-to-body ratio. NOT chibi, NOT super-deformed. Natural body proportions with just slightly oversized head.
 
 === COMPOSITION ===
-Character on clean white/transparent background. NO decorative borders, NO sticker outlines. Simple, quiet, gentle, educational Japanese clip-art. Reference: irasutoya.com`,
+Character on clean white/transparent background. NO decorative borders, NO sticker outlines, NO border lines around the character. Simple, quiet, gentle, educational Japanese clip-art. Reference: irasutoya.com`,
   crayon_shin: "Crayon Shin-chan (蠟筆小新) anime style, thick crude outlines, simple flat coloring, exaggerated facial expressions, childlike drawing quality, comedic proportions, bold primary colors, Yoshito Usui manga aesthetic",
   doraemon: "Doraemon (多啦A夢) anime style by Fujiko F. Fujio, round simple character design, bright blue and white color scheme, clean bold outlines, cute robotic cat aesthetic, futuristic gadget feel, cheerful Japanese manga, nostalgic Showa-era anime quality",
   toriyama: "Akira Toriyama (鳥山明) art style, Dragon Ball manga aesthetic, dynamic action poses, muscular character proportions, spiky dramatic hair, bold clean ink lines, vibrant energy aura effects, manga screentone shading, powerful and expressive",
