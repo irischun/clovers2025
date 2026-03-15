@@ -203,10 +203,6 @@ type ChatMessage = {
   content: string | Array<{ type: string; text?: string; image_url?: { url: string } }>;
 };
 
-function isLikelyFemalePrompt(input: string): boolean {
-  if (!input) return false;
-  return /(female|woman|girl|lady|女生|女人|女孩|女性|小姐|女士|姊姊|妹妹|媽媽|太太|wife|mom|mother|her|she|女の子|女性|彼女)/i.test(input);
-}
 
 async function generateStickerCandidate(messages: ChatMessage[], apiKey: string, style: string): Promise<string> {
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
