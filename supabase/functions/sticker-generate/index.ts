@@ -117,14 +117,8 @@ const stylePromptMap: Record<string, string> = {
   snoopy: "Snoopy and Peanuts comic style by Charles Schulz, simple clean black outlines, minimal color fills, round head proportions, expressive with minimal detail, newspaper comic strip aesthetic, white beagle dog style, cheerful innocent charm",
   irasutoya: `Irasutoya (いらすとや) Japanese clip-art illustration style by Takashi Mifune. This is a soft, warm, approachable Japanese clip-art illustration with a hand-drawn watercolor feel. NOT a sticker. Reference: irasutoya.com
 
-=== OUTLINES — SOFT & SUBTLE (CRITICAL) ===
-Irasutoya uses SOFT, SUBTLE outlines — NOT bold black lines, NOT clean vector edges. The outlines are:
-• Color: Soft charcoal-brown or warm gray (around Pantone 440 C #3C3C3C to #5C5C5C), NEVER pure black #000000.
-• Weight: Very thin, delicate, slightly varying in thickness.
-• Quality: IMPERFECT — they have a slight jitter, bleeding, and feathering quality as if drawn with a felt-tip pen on textured paper. NOT razor-sharp vector lines.
-• Opacity: Around 60-80%, slightly translucent, blending softly into the color fills.
-• Where used: Around major shape boundaries (hair, clothing edges, hands, shoes, accessories). NOT around every tiny detail.
-• The outlines help define shapes but are SECONDARY to the color fills — the overall impression should be "watercolor illustration with gentle pencil guides", not "outlined cartoon".
+=== NO OUTLINES / NO BORDER LINES (CRITICAL — TOP PRIORITY) ===
+There must be ZERO visible outlines, border lines, contour strokes, or edge lines around characters, clothing, hair, hands, shoes, or any object. NO black lines, NO charcoal lines, NO gray lines, NO dark edge lines of ANY color or opacity. Shapes are defined ONLY by adjacent color fields meeting each other and by the watercolor edge grain texture. The silhouette and forms emerge naturally from where one color area ends and another begins — NEVER from drawn lines. If ANY outline, border stroke, or contour line is visible anywhere in the image, the image is INVALID and must be regenerated.
 
 === WATERCOLOR EDGE GRAIN (THE SIGNATURE FEATURE — CRITICAL) ===
 This is THE most distinct and essential feature of Irasutoya style. Large areas of color are NEVER perfectly flat or digitally smooth. They MUST have:
