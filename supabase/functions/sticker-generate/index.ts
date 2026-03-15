@@ -243,6 +243,12 @@ serve(async (req) => {
       } else {
         promptParts.push("high quality, professional, expressive, visually striking");
       }
+
+      if (style === 'irasutoya') {
+        promptParts.push(irasutoyaEyelashLockPrompt);
+        promptParts.push("Final self-check before output: female eyes must each have exactly one '/' eyelash stroke, with matching angle, matching length, and identical direction on both eyes");
+      }
+
       promptParts.push("512x512 optimal size, centered composition, clear at small sizes");
       
       const enhancedPrompt = promptParts.join('. ');
