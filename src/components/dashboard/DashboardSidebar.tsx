@@ -61,6 +61,7 @@ const mainMenuItems = [
 const aiToolsItems = [
   { title: 'AI 文案創作', icon: Sparkles, path: '/dashboard/ai-tools' },
   { title: '圖片生成', icon: ImagePlus, path: '/dashboard/image-generation' },
+  { title: '貼圖製作器', icon: Sticker, path: '/dashboard/sticker-maker' },
   { title: '語音生成', icon: Mic, path: '/dashboard/voice-generation' },
   { title: '語音轉字幕', icon: AudioLines, path: '/dashboard/speech-to-text' },
   { title: '視頻生成', icon: Video, path: '/dashboard/video-generation' },
@@ -78,7 +79,6 @@ const mediaToolsItems = [
 const publishToolsItems = [
   { title: '自媒體發佈工具', icon: Send, path: '/dashboard/scheduler' },
   { title: '內容整理', icon: FolderEdit, path: '/dashboard/content-organize' },
-  { title: '貼圖製作器', icon: Sticker, path: '/dashboard/sticker-maker' },
   { title: '智能內容發布', icon: Rocket, path: '/dashboard/smart-publish' },
 ];
 
