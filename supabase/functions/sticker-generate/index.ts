@@ -278,28 +278,21 @@ function normalizeEyelashDirection(input: unknown): "slash" | "backslash" | "non
 async function validateIrasutoyaEyelashes({
   apiKey,
   imageUrl,
-  expectFemale,
 }: {
   apiKey: string;
   imageUrl: string;
-  expectFemale: boolean;
 }): Promise<{ pass: boolean; reason: string }> {
   const validationPrompt = `You are a strict visual QA checker for Irasutoya characters.
 
-Inspect ONLY eyelash count and eyelash direction.
-Direction rule (non-negotiable):
-- If eyelashes are present, they must be a matched pair in the SAME absolute direction.
-- SAME direction means BOTH leaning toward RIGHT-HAND side ("slash" /) OR BOTH leaning toward LEFT-HAND side ("backslash" \\).
-- Mixed/mirrored directions ("/\\" or "\\/") must always fail.
-
-Female rule:
-- Left eye eyelash count must be exactly 1.
-- Right eye eyelash count must be exactly 1.
-- Both directions must be identical and allowed (slash or backslash).
+Inspect ONLY eyelashes.
+Absolute rule (non-negotiable):
+- ALL characters must have ZERO eyelashes on both eyes.
+- Left eye eyelash count must be 0.
+- Right eye eyelash count must be 0.
+- Any lash-like stroke/flick/tick at eye corners counts as an eyelash and must fail.
 
 Return ONLY valid JSON with this schema:
 {
-  "is_female": boolean,
   "left_eye_lash_count": number,
   "right_eye_lash_count": number,
   "left_eye_direction": "slash" | "backslash" | "none" | "unknown",
@@ -307,7 +300,7 @@ Return ONLY valid JSON with this schema:
   "pass": boolean
 }
 
-Set pass=true only when the above rules are fully satisfied.`;
+Set pass=true only when both eyes have zero visible eyelashes.`;
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -349,44 +342,29 @@ Set pass=true only when the above rules are fully satisfied.`;
 
   try {
     const parsed = JSON.parse(jsonMatch[0]);
-    const isFemale = Boolean(parsed?.is_female);
     const leftCount = Number(parsed?.left_eye_lash_count ?? -1);
     const rightCount = Number(parsed?.right_eye_lash_count ?? -1);
     const leftDirection = normalizeEyelashDirection(parsed?.left_eye_direction ?? parsed?.left_direction);
     const rightDirection = normalizeEyelashDirection(parsed?.right_eye_direction ?? parsed?.right_direction);
 
-    const sameAllowedDirection =
-      leftDirection === rightDirection && (leftDirection === "slash" || leftDirection === "backslash");
-    const strictPairPass = leftCount === 1 && rightCount === 1 && sameAllowedDirection;
+    const leftNoLash = leftCount === 0 && (leftDirection === "none" || leftDirection === "unknown");
+    const rightNoLash = rightCount === 0 && (rightDirection === "none" || rightDirection === "unknown");
+    const strictNoLashPass = leftNoLash && rightNoLash;
+
     const hasVisibleLashes =
       leftCount > 0 ||
       rightCount > 0 ||
       (leftDirection !== "none" && leftDirection !== "unknown") ||
       (rightDirection !== "none" && rightDirection !== "unknown");
 
-    if (expectFemale) {
-      return {
-        pass: strictPairPass,
-        reason: strictPairPass
-          ? "ok"
-          : `expect_female_failed_l${leftCount}_r${rightCount}_${leftDirection}_${rightDirection}`,
-      };
+    if (strictNoLashPass && !hasVisibleLashes) {
+      return { pass: true, reason: "ok" };
     }
 
-    if (hasVisibleLashes) {
-      return {
-        pass: strictPairPass,
-        reason: strictPairPass
-          ? "ok"
-          : `lash_pair_failed_l${leftCount}_r${rightCount}_${leftDirection}_${rightDirection}`,
-      };
-    }
-
-    if (isFemale) {
-      return { pass: false, reason: "female_missing_required_lashes" };
-    }
-
-    return { pass: true, reason: "non_female_no_lashes" };
+    return {
+      pass: false,
+      reason: `lashes_detected_l${leftCount}_r${rightCount}_${leftDirection}_${rightDirection}`,
+    };
   } catch {
     return { pass: false, reason: "validator_parse_error" };
   }
