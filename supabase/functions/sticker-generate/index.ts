@@ -462,9 +462,17 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("sticker-generate error:", error);
+
+    const status = typeof error === "object" && error !== null && "status" in error
+      ? Number((error as { status?: number }).status)
+      : 500;
+
+    const safeStatus = [402, 429].includes(status) ? status : 500;
+    const message = error instanceof Error ? error.message : "Unknown error";
+
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: message }),
+      { status: safeStatus, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
