@@ -126,6 +126,7 @@ export default {
         "slide-in-right": "slide-in-right 0.4s ease-out",
         shimmer: "shimmer 2.5s linear infinite",
         float: "float 8s ease-in-out infinite",
+        "cta-glow": "cta-glow 2s ease-in-out infinite",
       },
       transitionDuration: {
         '400': '400ms',
