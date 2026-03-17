@@ -91,13 +91,14 @@ const HeroSection = () => {
 
             {/* CTA Button */}
             <Button 
-              className="btn-primary text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 mb-10 sm:mb-12 group" 
+              className="btn-primary text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 mb-10 sm:mb-12 group animate-cta-glow relative overflow-hidden" 
               onClick={() => navigate('/auth')}
             >
-              <Leaf className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300" />
-              <span>來播種你的靈感</span>
-              <span className="ml-2 text-primary-foreground/80">Start Now</span>
-              <span className="ml-3 group-hover:translate-x-1 transition-transform duration-300">→</span>
+              <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary-foreground/20 to-primary/0 animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+              <Leaf className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300 relative z-10" />
+              <span className="relative z-10">來播種你的靈感</span>
+              <span className="ml-2 text-primary-foreground/80 relative z-10">Start Now</span>
+              <span className="ml-3 group-hover:translate-x-1 transition-transform duration-300 relative z-10">→</span>
             </Button>
 
             {/* Social links */}
