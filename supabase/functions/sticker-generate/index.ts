@@ -254,9 +254,49 @@ async function generateStickerCandidate(messages: ChatMessage[], apiKey: string,
   }
 
   const data = await response.json();
-  const imageUrl = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+  
+  // Try multiple extraction paths for the generated image
+  let imageUrl = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+  
+  // Fallback: check for inline_data (base64) in content parts
+  if (!imageUrl) {
+    const content = data?.choices?.[0]?.message?.content;
+    if (Array.isArray(content)) {
+      for (const part of content) {
+        if (part?.type === "image_url" && part?.image_url?.url) {
+          imageUrl = part.image_url.url;
+          break;
+        }
+        if (part?.type === "image" && part?.image_url?.url) {
+          imageUrl = part.image_url.url;
+          break;
+        }
+        // Handle inline base64 data
+        if (part?.type === "image" && part?.data) {
+          imageUrl = `data:image/png;base64,${part.data}`;
+          break;
+        }
+        if (part?.inline_data?.data) {
+          const mimeType = part.inline_data.mime_type || "image/png";
+          imageUrl = `data:${mimeType};base64,${part.inline_data.data}`;
+          break;
+        }
+      }
+    }
+  }
+
+  // Fallback: check top-level images array
+  if (!imageUrl && data?.choices?.[0]?.message?.images?.[0]?.url) {
+    imageUrl = data.choices[0].message.images[0].url;
+  }
+
+  // Fallback: check for base64 in images array
+  if (!imageUrl && data?.choices?.[0]?.message?.images?.[0]?.b64_json) {
+    imageUrl = `data:image/png;base64,${data.choices[0].message.images[0].b64_json}`;
+  }
 
   if (!imageUrl) {
+    console.error("No image found in response. Response structure:", JSON.stringify(data?.choices?.[0]?.message || {}).slice(0, 2000));
     throw new Error("No sticker generated");
   }
 
