@@ -36,103 +36,135 @@ const styleCategories = [
 ];
 
 const textStyles: StyleOption[] = [
-  // Popular
-  { id: 'original', label: '原圖風格', emoji: '🖼️', category: 'popular' },
-  { id: 'realistic', label: '寫實', emoji: '📷', category: 'popular' },
-  { id: 'cute', label: '可愛', emoji: '🥰', category: 'popular' },
-  { id: 'minimal', label: '極簡', emoji: '✨', category: 'popular' },
-  { id: 'bold', label: '醒目', emoji: '💥', category: 'popular' },
-  { id: 'vintage', label: '復古', emoji: '🎞️', category: 'popular' },
-  { id: 'neon', label: '霓虹', emoji: '🌈', category: 'popular' },
-  { id: 'ghibli', label: 'Ghibli', emoji: '🏔️', category: 'popular' },
-
-  // Fun/Cartoon
-  { id: 'cartoon_c4d', label: 'Cartoon C4D', emoji: '🧸', category: 'fun' },
-  { id: 'cg_rendering', label: 'CG Rendering', emoji: '🎮', category: 'fun' },
-  { id: 'anime_cartoon', label: 'Anime Cartoon', emoji: '🎌', category: 'fun' },
-  { id: 'retro_comic', label: 'Retro Comic', emoji: '💬', category: 'fun' },
-  { id: 'q_version', label: 'Q版', emoji: '👶', category: 'fun' },
-  { id: 'chibi_3d', label: 'Chibi 3D', emoji: '🎀', category: 'fun' },
-  { id: 'cotton_doll', label: 'Cotton Doll', emoji: '🧶', category: 'fun' },
-  { id: 'jellycat', label: 'Jellycat', emoji: '🐻', category: 'fun' },
-  { id: 'squishy_toy', label: 'Squishy Toy', emoji: '🍡', category: 'fun' },
-  { id: 'childrens_illustration', label: "Children's Illustration", emoji: '📖', category: 'fun' },
-  { id: 'sticker_style', label: 'Sticker', emoji: '🏷️', category: 'fun' },
-  { id: 'pixel_art', label: 'Pixel Art', emoji: '👾', category: 'fun' },
-  { id: 'ice_cream', label: 'Ice Cream', emoji: '🍦', category: 'fun' },
-
-  // Realistic/Photography
-  { id: 'photography', label: 'Photography', emoji: '📸', category: 'realistic' },
-  { id: 'teal_orange', label: 'Teal & Orange', emoji: '🎬', category: 'realistic' },
-  { id: 'retro_film', label: 'Retro Film', emoji: '🎞️', category: 'realistic' },
-  { id: 'ricoh', label: 'Ricoh', emoji: '📹', category: 'realistic' },
-  { id: 'surreal_photo', label: 'Surreal Photo', emoji: '🌀', category: 'realistic' },
-  { id: 'three_d_polaroid', label: '3D Polaroid', emoji: '📋', category: 'realistic' },
-  { id: 'miniature_landscape', label: 'Miniature', emoji: '🔍', category: 'realistic' },
-
-  // Art & Painting
-  { id: 'watercolor', label: '水彩', emoji: '🎨', category: 'painting' },
-  { id: 'impasto_oil', label: 'Impasto Oil', emoji: '🖌️', category: 'painting' },
-  { id: 'traditional_chinese', label: 'Traditional Chinese', emoji: '🏯', category: 'painting' },
-  { id: 'ink_wash', label: 'Ink Wash', emoji: '🖋️', category: 'painting' },
-  { id: 'monet', label: 'Monet', emoji: '🌸', category: 'painting' },
-  { id: 'colored_pencil', label: 'Colored Pencil', emoji: '✏️', category: 'painting' },
-  { id: 'sketch', label: 'Sketch', emoji: '📝', category: 'painting' },
-  { id: 'wu_guanzhong', label: 'Wu Guanzhong', emoji: '🎭', category: 'painting' },
+  // Graffiti first
   { id: 'graffiti', label: 'Graffiti', emoji: '🧱', category: 'painting' },
-  { id: 'single_line', label: 'Single Line', emoji: '〰️', category: 'painting' },
-
-  // Design & Craft
-  { id: 'glass', label: 'Glass', emoji: '🔮', category: 'design' },
-  { id: 'paper_carving', label: 'Paper Carving', emoji: '📄', category: 'design' },
-  { id: 'knit_fabric', label: 'Knit Fabric', emoji: '🧣', category: 'design' },
-  { id: 'wool_felt', label: 'Wool Felt', emoji: '🐑', category: 'design' },
-  { id: 'plush_texture', label: 'Plush Texture', emoji: '🧸', category: 'design' },
-  { id: 'macaron_color', label: 'Macaron Color', emoji: '🍰', category: 'design' },
-  { id: 'liquid_metal', label: 'Liquid Metal', emoji: '🪩', category: 'design' },
-  { id: 'iridescent_pvc', label: 'Iridescent PVC', emoji: '💿', category: 'design' },
-  { id: 'plaster', label: 'Plaster', emoji: '🗿', category: 'design' },
-  { id: 'logo_design', label: 'Logo Design', emoji: '🏢', category: 'design' },
-  { id: 'computer_graphics', label: 'Computer Graphics', emoji: '💻', category: 'design' },
-  { id: 'ultra_flat', label: 'Ultra-Flat', emoji: '⬜', category: 'design' },
-  { id: 'design_draft', label: 'Design Draft', emoji: '📐', category: 'design' },
-
-  // Fantasy & Themed
-  { id: 'steampunk', label: 'Steampunk', emoji: '⚙️', category: 'fantasy' },
-  { id: 'wasteland', label: 'Wasteland', emoji: '☢️', category: 'fantasy' },
-  { id: 'future_scifi', label: 'Future Sci-Fi', emoji: '🚀', category: 'fantasy' },
-  { id: 'eastern_fantasy', label: 'Eastern Fantasy', emoji: '🐉', category: 'fantasy' },
-  { id: 'dunhuang', label: 'Dunhuang Mural', emoji: '🏛️', category: 'fantasy' },
-  { id: 'dreamcore', label: 'Dreamcore', emoji: '💭', category: 'fantasy' },
-  { id: 'colorful_dream', label: 'Colorful Dream', emoji: '🌈', category: 'fantasy' },
-  { id: 'healing_japanese', label: 'Healing Japanese', emoji: '🍵', category: 'fantasy' },
-  { id: 'city_capsule', label: 'City Capsule', emoji: '🏙️', category: 'fantasy' },
 
   // 3D & Material
-  { id: 'chinese_3d', label: 'Chinese 3D', emoji: '🧧', category: '3d' },
-  { id: 'pvc_model', label: 'PVC Model', emoji: '🎨', category: '3d' },
-  { id: 'festive', label: 'Festive', emoji: '🎉', category: '3d' },
-  { id: 'japanese_anime', label: 'Japanese Anime', emoji: '⛩️', category: '3d' },
-  { id: 'realistic_illustration', label: 'Realistic Illustration', emoji: '🖼️', category: '3d' },
+  { id: 'three_d_polaroid', label: '3D Polaroid', emoji: '📋', category: 'realistic' },
   { id: 'three_d_q', label: '3D Q版', emoji: '🧊', category: '3d' },
   { id: 'three_d_rendering_animation', label: '3D Rendering Animation', emoji: '🎞️', category: '3d' },
 
-  // Character & IP Styles
-  { id: 'pixar', label: 'Pixar Style', emoji: '🎬', category: 'fun' },
-  { id: 'disney', label: 'Disney Style', emoji: '🏰', category: 'fun' },
-  { id: 'snoopy', label: 'Snoopy Style', emoji: '🐶', category: 'fun' },
-  { id: 'irasutoya', label: 'Irasutoya 日系說明', emoji: '🇯🇵', category: 'fun' },
-  { id: 'crayon_shin', label: '蠟筆小新', emoji: '🖍️', category: 'fun' },
-  { id: 'doraemon', label: '多啦A夢風格', emoji: '🐱', category: 'fun' },
-  { id: 'toriyama', label: '鳥山明風格', emoji: '🐲', category: 'fun' },
-  { id: 'jojo', label: 'JOJO風格', emoji: '💪', category: 'fun' },
-  { id: 'nana', label: 'Nana Style', emoji: '🖤', category: 'fun' },
-  { id: 'crayon_doodle', label: '蠟筆塗鴉', emoji: '🖊️', category: 'painting' },
+  // A
+  { id: 'anime_cartoon', label: 'Anime Cartoon', emoji: '🎌', category: 'fun' },
 
-  // Modern & Cyber
-  { id: 'cyberpunk_cool', label: '型格Cyberpunk', emoji: '🌃', category: 'fantasy' },
+  // C
+  { id: 'cartoon_c4d', label: 'Cartoon C4D', emoji: '🧸', category: 'fun' },
+  { id: 'cg_rendering', label: 'CG Rendering', emoji: '🎮', category: 'fun' },
+  { id: 'chibi_3d', label: 'Chibi 3D', emoji: '🎀', category: 'fun' },
+  { id: 'childrens_illustration', label: "Children's Illustration", emoji: '📖', category: 'fun' },
+  { id: 'chinese_3d', label: 'Chinese 3D', emoji: '🧧', category: '3d' },
+  { id: 'city_capsule', label: 'City Capsule', emoji: '🏙️', category: 'fantasy' },
+  { id: 'colored_pencil', label: 'Colored Pencil', emoji: '✏️', category: 'painting' },
+  { id: 'colorful_dream', label: 'Colorful Dream', emoji: '🌈', category: 'fantasy' },
+  { id: 'computer_graphics', label: 'Computer Graphics', emoji: '💻', category: 'design' },
+  { id: 'cotton_doll', label: 'Cotton Doll', emoji: '🧶', category: 'fun' },
+
+  // D
+  { id: 'design_draft', label: 'Design Draft', emoji: '📐', category: 'design' },
+  { id: 'disney', label: 'Disney Style', emoji: '🏰', category: 'fun' },
+  { id: 'dreamcore', label: 'Dreamcore', emoji: '💭', category: 'fantasy' },
+  { id: 'dunhuang', label: 'Dunhuang Mural', emoji: '🏛️', category: 'fantasy' },
+
+  // E
+  { id: 'eastern_fantasy', label: 'Eastern Fantasy', emoji: '🐉', category: 'fantasy' },
+
+  // F
+  { id: 'festive', label: 'Festive', emoji: '🎉', category: '3d' },
+  { id: 'future_scifi', label: 'Future Sci-Fi', emoji: '🚀', category: 'fantasy' },
+
+  // G
+  { id: 'ghibli', label: 'Ghibli', emoji: '🏔️', category: 'popular' },
+  { id: 'glass', label: 'Glass', emoji: '🔮', category: 'design' },
+
+  // H
+  { id: 'healing_japanese', label: 'Healing Japanese', emoji: '🍵', category: 'fantasy' },
+
+  // I
+  { id: 'ice_cream', label: 'Ice Cream', emoji: '🍦', category: 'fun' },
+  { id: 'impasto_oil', label: 'Impasto Oil', emoji: '🖌️', category: 'painting' },
+  { id: 'ink_wash', label: 'Ink Wash', emoji: '🖋️', category: 'painting' },
+  { id: 'irasutoya', label: 'Irasutoya 日系說明', emoji: '🇯🇵', category: 'fun' },
+  { id: 'iridescent_pvc', label: 'Iridescent PVC', emoji: '💿', category: 'design' },
+
+  // J
+  { id: 'japanese_anime', label: 'Japanese Anime', emoji: '⛩️', category: '3d' },
+  { id: 'jellycat', label: 'Jellycat', emoji: '🐻', category: 'fun' },
+  { id: 'jojo', label: 'JOJO風格', emoji: '💪', category: 'fun' },
+
+  // K
+  { id: 'knit_fabric', label: 'Knit Fabric', emoji: '🧣', category: 'design' },
+
+  // L
+  { id: 'liquid_metal', label: 'Liquid Metal', emoji: '🪩', category: 'design' },
+  { id: 'logo_design', label: 'Logo Design', emoji: '🏢', category: 'design' },
+
+  // M
+  { id: 'macaron_color', label: 'Macaron Color', emoji: '🍰', category: 'design' },
+  { id: 'miniature_landscape', label: 'Miniature', emoji: '🔍', category: 'realistic' },
+  { id: 'monet', label: 'Monet', emoji: '🌸', category: 'painting' },
+
+  // N
+  { id: 'nana', label: 'Nana Style', emoji: '🖤', category: 'fun' },
+  { id: 'neon', label: '霓虹', emoji: '🌈', category: 'popular' },
+
+  // P
+  { id: 'paper_carving', label: 'Paper Carving', emoji: '📄', category: 'design' },
+  { id: 'photography', label: 'Photography', emoji: '📸', category: 'realistic' },
+  { id: 'pixar', label: 'Pixar Style', emoji: '🎬', category: 'fun' },
+  { id: 'pixel_art', label: 'Pixel Art', emoji: '👾', category: 'fun' },
+  { id: 'plaster', label: 'Plaster', emoji: '🗿', category: 'design' },
+  { id: 'plush_texture', label: 'Plush Texture', emoji: '🧸', category: 'design' },
+  { id: 'pvc_model', label: 'PVC Model', emoji: '🎨', category: '3d' },
+
+  // Q
+  { id: 'q_version', label: 'Q版', emoji: '👶', category: 'fun' },
   { id: 'cyberpunk_q', label: 'Q版Cyberpunk', emoji: '🤖', category: 'fantasy' },
+
+  // R
+  { id: 'realistic', label: '寫實', emoji: '📷', category: 'popular' },
+  { id: 'realistic_illustration', label: 'Realistic Illustration', emoji: '🖼️', category: '3d' },
+  { id: 'retro_comic', label: 'Retro Comic', emoji: '💬', category: 'fun' },
+  { id: 'retro_film', label: 'Retro Film', emoji: '🎞️', category: 'realistic' },
+  { id: 'ricoh', label: 'Ricoh', emoji: '📹', category: 'realistic' },
+
+  // S
+  { id: 'single_line', label: 'Single Line', emoji: '〰️', category: 'painting' },
+  { id: 'sketch', label: 'Sketch', emoji: '📝', category: 'painting' },
+  { id: 'snoopy', label: 'Snoopy Style', emoji: '🐶', category: 'fun' },
+  { id: 'squishy_toy', label: 'Squishy Toy', emoji: '🍡', category: 'fun' },
+  { id: 'steampunk', label: 'Steampunk', emoji: '⚙️', category: 'fantasy' },
+  { id: 'sticker_style', label: 'Sticker', emoji: '🏷️', category: 'fun' },
+  { id: 'surreal_photo', label: 'Surreal Photo', emoji: '🌀', category: 'realistic' },
+
+  // T
+  { id: 'teal_orange', label: 'Teal & Orange', emoji: '🎬', category: 'realistic' },
+  { id: 'toriyama', label: '鳥山明風格', emoji: '🐲', category: 'fun' },
+  { id: 'traditional_chinese', label: 'Traditional Chinese', emoji: '🏯', category: 'painting' },
+
+  // U
+  { id: 'ultra_flat', label: 'Ultra-Flat', emoji: '⬜', category: 'design' },
+
+  // V
+  { id: 'vintage', label: '復古', emoji: '🎞️', category: 'popular' },
+
+  // W
+  { id: 'wasteland', label: 'Wasteland', emoji: '☢️', category: 'fantasy' },
+  { id: 'watercolor', label: '水彩', emoji: '🎨', category: 'painting' },
+  { id: 'wool_felt', label: 'Wool Felt', emoji: '🐑', category: 'design' },
+  { id: 'wu_guanzhong', label: 'Wu Guanzhong', emoji: '🎭', category: 'painting' },
+
+  // Y
   { id: 'y2k', label: 'Y2K 千禧風格', emoji: '💾', category: 'design' },
+
+  // Chinese-label styles (sorted by label)
+  { id: 'cute', label: '可愛', emoji: '🥰', category: 'popular' },
+  { id: 'original', label: '原圖風格', emoji: '🖼️', category: 'popular' },
+  { id: 'doraemon', label: '多啦A夢風格', emoji: '🐱', category: 'fun' },
+  { id: 'minimal', label: '極簡', emoji: '✨', category: 'popular' },
+  { id: 'cyberpunk_cool', label: '型格Cyberpunk', emoji: '🌃', category: 'fantasy' },
+  { id: 'crayon_shin', label: '蠟筆小新', emoji: '🖍️', category: 'fun' },
+  { id: 'crayon_doodle', label: '蠟筆塗鴉', emoji: '🖊️', category: 'painting' },
+  { id: 'bold', label: '醒目', emoji: '💥', category: 'popular' },
 ];
 
 const StickerMakerPage = () => {
