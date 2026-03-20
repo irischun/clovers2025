@@ -48,7 +48,7 @@ const RSSPage = () => {
       </div>
 
       <div className="flex gap-2">
-        <Input value={feedUrl} onChange={(e) => setFeedUrl(e.target.value)} placeholder="輸入 RSS Feed 網址..." />
+        <Input value={feedUrl} onChange={(e) => setFeedUrl(e.target.value)} placeholder={t('rss.enterFeedUrl')} />
         <Button onClick={handleAddFeed} disabled={isLoading}>
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
         </Button>
