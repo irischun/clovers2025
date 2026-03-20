@@ -229,7 +229,7 @@ const DashboardHome = () => {
                     <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-primary mt-1" />
                   ) : (
                     <h3 className="text-lg sm:text-xl font-bold text-primary group-hover:text-primary/80 transition-colors">
-                      {points.toLocaleString()} 點
+                      {points.toLocaleString()} {t('dash.points')}
                     </h3>
                   )}
                 </div>
