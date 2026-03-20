@@ -196,7 +196,14 @@ function buildSystemMessage(hasReferenceImage: boolean): string {
 
 5. EXPRESSIVENESS: Results should be visually striking, instantly recognizable, and emotionally engaging. Exaggerated features are welcome for sticker styles.
 
-6. DETAIL: Render textures, materials, and surfaces accurately for the chosen style. A watercolor should look painted, a 3D render should look rendered, etc.`;
+6. DETAIL: Render textures, materials, and surfaces accurately for the chosen style. A watercolor should look painted, a 3D render should look rendered, etc.
+
+7. SPEECH BUBBLE RULE (CRITICAL — NON-NEGOTIABLE):
+   Every generated sticker that contains a speech bubble MUST have EXACTLY ONE speech bubble tail/pointer. 
+   - There must be only ONE tail/pointer in the entire image — no duplicates, no extras.
+   - The single tail/pointer must point toward the character.
+   - If more than one tail/pointer is visible, the image is INVALID and must be regenerated.
+   - This rule applies to ALL styles without exception.`;
 
   if (hasReferenceImage) {
     msg += `
