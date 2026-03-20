@@ -17,6 +17,51 @@ import cloversLogo from '@/assets/clovers-logo-icon.jpeg';
 
 const LANDING_AUDIO_VOLUME = 0.1;
 
+const functionMenuSections = [
+  {
+    label: '主選單',
+    items: [
+      { title: '儀表板', icon: LayoutDashboard, path: '/dashboard' },
+      { title: '訂閱方案', icon: CreditCard, path: '/dashboard/subscription' },
+      { title: '購買點數', icon: Coins, path: '/dashboard/buy-points' },
+      { title: '點數紀錄', icon: History, path: '/dashboard/point-history' },
+      { title: '作品畫廊', icon: GalleryHorizontalEnd, path: '/dashboard/gallery' },
+      { title: '提示詞管理', icon: FileText, path: '/dashboard/prompts' },
+      { title: '用戶資料', icon: Settings, path: '/dashboard/settings' },
+    ],
+  },
+  {
+    label: 'AI 內容工具',
+    items: [
+      { title: 'AI 文案創作', icon: Sparkles, path: '/dashboard/ai-tools' },
+      { title: '圖片生成', icon: ImagePlus, path: '/dashboard/image-generation' },
+      { title: '貼圖製作器', icon: Sticker, path: '/dashboard/sticker-maker' },
+      { title: '語音生成', icon: Mic, path: '/dashboard/voice-generation' },
+      { title: '語音轉字幕', icon: AudioLines, path: '/dashboard/speech-to-text' },
+      { title: '視頻生成', icon: Video, path: '/dashboard/video-generation' },
+      { title: '視頻生成 2.0', icon: Video, path: '/dashboard/video-generation-2' },
+      { title: 'LipSync 影片', icon: Tv, path: '/dashboard/lip-sync' },
+    ],
+  },
+  {
+    label: '自媒體工具',
+    items: [
+      { title: 'YouTube 搜尋', icon: Youtube, path: '/dashboard/youtube-search' },
+      { title: '小紅書搜尋', icon: BookOpen, path: '/dashboard/xiaohongshu-search' },
+      { title: 'RSS 訂閱', icon: Rss, path: '/dashboard/rss' },
+      { title: '媒體庫', icon: Image, path: '/dashboard/media' },
+    ],
+  },
+  {
+    label: '發佈工具',
+    items: [
+      { title: '自媒體發佈工具', icon: Send, path: '/dashboard/scheduler' },
+      { title: '內容整理', icon: FolderEdit, path: '/dashboard/content-organize' },
+      { title: '智能內容發布', icon: Rocket, path: '/dashboard/smart-publish' },
+    ],
+  },
+];
+
 const Navigation = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
