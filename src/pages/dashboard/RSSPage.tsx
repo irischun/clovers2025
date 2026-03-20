@@ -85,7 +85,7 @@ const RSSPage = () => {
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>{item.pubDate}</span>
                       <a href={item.link} target="_blank" className="flex items-center gap-1 hover:text-primary">
-                        閱讀原文 <ExternalLink className="w-3 h-3" />
+                        {t('rss.readOriginal')} <ExternalLink className="w-3 h-3" />
                       </a>
                     </div>
                   </CardContent>
