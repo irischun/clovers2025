@@ -326,7 +326,7 @@ const DashboardHome = () => {
                 to="/dashboard/ai-tools" 
                 className="inline-flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium"
               >
-                開始使用 AI 工具
+                {t('dash.startAI')}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
