@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Facebook, Instagram, Linkedin, Twitter, Youtube, Leaf, Gem } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/i18n/LanguageContext';
 import cloversLogo from '@/assets/clovers-hero-logo.jpeg';
 import slideSingleSeedling from '@/assets/slide-single-seedling.png';
 import slideFieldClovers1 from '@/assets/slide-field-clovers-1.png';
@@ -18,6 +19,7 @@ const heroSlides = [
 
 const HeroSection = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const nextSlide = useCallback(() => {
@@ -28,6 +30,7 @@ const HeroSection = () => {
     const interval = setInterval(nextSlide, 4000);
     return () => clearInterval(interval);
   }, [nextSlide]);
+
   const socialLinks = [
     { icon: Facebook, href: '#', label: 'Facebook' },
     { icon: Instagram, href: '#', label: 'Instagram' },
@@ -38,15 +41,10 @@ const HeroSection = () => {
 
   return (
     <section className="relative min-h-[95vh] flex items-center overflow-hidden">
-      {/* Dark luxury background */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-card" />
-      
-      {/* Emerald glow elements */}
       <div className="absolute top-20 left-10 w-96 h-96 rounded-full bg-primary/5 blur-3xl" />
       <div className="absolute bottom-20 right-10 w-80 h-80 rounded-full bg-accent/5 blur-3xl" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/3 blur-3xl opacity-20" />
-      
-      {/* Subtle geometric pattern */}
       <div 
         className="absolute inset-0 opacity-[0.02]"
         style={{
@@ -56,68 +54,51 @@ const HeroSection = () => {
 
       <div className="section-container relative z-10 py-16 sm:py-20 md:py-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16 items-center">
-          {/* Left content */}
           <div className="animate-slide-up text-center lg:text-left order-2 lg:order-1">
-            {/* Main Heading */}
             <h1 className="heading-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl mb-4 leading-[0.9]">
               <span className="text-gradient-nature">Clovers</span>
             </h1>
 
-            {/* Badge */}
             <div className="badge-nature mb-6 sm:mb-8 inline-flex">
               <Gem className="w-4 h-4" />
-              <span>AI Smart Marketing</span>
+              <span>{t('hero.badge')}</span>
             </div>
             
-            {/* English Tagline */}
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground/90 mb-6 sm:mb-8 font-light tracking-wide max-w-lg mx-auto lg:mx-0 leading-relaxed">
-              From a single seedling to a field of clovers, 
+              {t('hero.tagline')}
               <br className="hidden sm:block" />
-              nurtured on one united platform
+              {t('hero.tagline2')}
             </p>
 
-            {/* Chinese Content */}
             <div className="space-y-3 mb-8 sm:mb-10">
               <p className="text-2xl sm:text-3xl md:text-4xl text-primary font-heading font-bold tracking-tight">
-                一站式營銷AI生成系統
+                {t('hero.zhTitle')}
               </p>
-              
               <p className="text-lg sm:text-xl md:text-2xl text-foreground/85 font-medium leading-relaxed">
-                從一葉初生到綠野連天，
+                {t('hero.zhSubtitle')}
                 <br className="sm:hidden" />
-                孕育於一平台間。
+                {t('hero.zhSubtitle2')}
               </p>
             </div>
 
-            {/* CTA Button */}
             <Button 
               className="btn-primary text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 mb-10 sm:mb-12 group animate-cta-glow relative overflow-hidden" 
               onClick={() => navigate('/auth')}
             >
               <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary-foreground/20 to-primary/0 animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
               <Leaf className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform duration-300 relative z-10" />
-              <span className="relative z-10">來播種你的靈感</span>
-              <span className="ml-2 text-primary-foreground/80 relative z-10">Start Now</span>
+              <span className="relative z-10">{t('hero.cta')}</span>
+              <span className="ml-2 text-primary-foreground/80 relative z-10">{t('hero.ctaEn')}</span>
               <span className="ml-3 group-hover:translate-x-1 transition-transform duration-300 relative z-10">→</span>
             </Button>
 
-            {/* Social links */}
             <div className="flex items-center justify-center lg:justify-start gap-3">
               {socialLinks.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  className="social-icon"
-                  aria-label={social.label}
-                >
+                <a key={social.label} href={social.href} className="social-icon" aria-label={social.label}>
                   <social.icon className="w-5 h-5" />
                 </a>
               ))}
-              <a
-                href="#"
-                className="social-icon"
-                aria-label="Threads"
-              >
+              <a href="#" className="social-icon" aria-label="Threads">
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.5 12.068V12c.015-3.63.908-6.537 2.657-8.64C5.966 1.378 8.73.12 12.186.096h.014c2.648.018 4.886.758 6.65 2.2 1.693 1.385 2.888 3.402 3.55 5.996l-2.098.506c-1.077-4.239-4.01-6.246-8.102-6.217-2.766.021-4.91.98-6.373 2.853-1.378 1.765-2.07 4.206-2.057 7.258v.067c.014 3.13.696 5.58 2.026 7.28 1.395 1.782 3.522 2.714 6.32 2.766 2.373-.044 4.259-.73 5.608-2.042 1.264-1.228 1.903-2.866 1.903-4.87 0-1.503-.373-2.665-1.11-3.454-.634-.678-1.521-1.07-2.636-1.166-.21 1.694-.867 3.02-1.95 3.94-1.12.95-2.578 1.432-4.333 1.432-1.427 0-2.636-.39-3.594-1.16-.992-.797-1.495-1.867-1.495-3.18 0-1.407.565-2.552 1.68-3.406 1.062-.812 2.472-1.241 4.194-1.276.814-.017 1.713.044 2.684.18l.077.012v-.836c0-1.14-.243-1.97-.723-2.466-.459-.475-1.156-.716-2.072-.716h-.044c-1.654.026-2.74.831-3.228 2.395l-2.023-.574c.683-2.35 2.565-3.733 5.275-3.771h.052c1.556 0 2.816.454 3.745 1.35.951.918 1.434 2.222 1.434 3.879v1.626c.72.185 1.348.472 1.878.86 1.028.755 1.55 1.862 1.55 3.29v.038c-.006 1.03-.225 1.948-.651 2.73-.42.77-.995 1.42-1.71 1.931-1.458 1.043-3.334 1.573-5.576 1.573zm-1.099-9.514c-1.207.021-2.12.268-2.717.737-.517.405-.78.942-.78 1.594 0 .627.22 1.106.654 1.424.49.359 1.197.541 2.1.541 1.224 0 2.196-.31 2.888-.922.67-.593 1.035-1.447 1.085-2.538-.986-.175-2.02-.298-3.23-.298v-.538z"/>
                 </svg>
@@ -125,30 +106,20 @@ const HeroSection = () => {
             </div>
           </div>
 
-          {/* Right content - Slideshow with luxury effects */}
           <div className="relative flex justify-center order-1 lg:order-2 animate-slide-in-right">
             <div className="relative w-56 sm:w-72 md:w-96 lg:w-[500px] aspect-square">
-              {/* Multi-layered glow effect - emerald tones */}
               <div className="absolute inset-0 -z-10 blur-3xl bg-gradient-to-br from-primary/20 via-accent/10 to-meadow/10 rounded-full scale-110 animate-pulse-glow" />
               <div className="absolute inset-0 -z-20 blur-[100px] bg-primary/10 rounded-full scale-150" />
-              
               {heroSlides.map((slide, index) => (
-                <img
-                  key={index}
-                  src={slide.src}
-                  alt={slide.alt}
+                <img key={index} src={slide.src} alt={slide.alt}
                   className={`absolute inset-0 w-full h-full object-cover rounded-3xl drop-shadow-2xl transition-opacity duration-1000 ${
                     index === currentSlide ? 'opacity-100' : 'opacity-0'
                   } ${index === 0 ? 'animate-float' : ''}`}
                 />
               ))}
-
-              {/* Slide indicators */}
               <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
                 {heroSlides.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentSlide(index)}
+                  <button key={index} onClick={() => setCurrentSlide(index)}
                     className={`w-2 h-2 rounded-full transition-all duration-300 ${
                       index === currentSlide ? 'bg-primary w-6' : 'bg-muted-foreground/40'
                     }`}
@@ -160,8 +131,6 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
-      
-      {/* Bottom fade */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-card to-transparent" />
     </section>
   );

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const AnnouncementBanner = () => {
   const [isVisible, setIsVisible] = useState(true);
+  const { t } = useLanguage();
 
   if (!isVisible) return null;
 
@@ -10,7 +12,7 @@ const AnnouncementBanner = () => {
     <div className="bg-primary/10 border-b border-primary/20 text-primary py-2 px-4 relative">
       <div className="section-container flex items-center justify-center gap-2 text-sm">
         <span>🍀</span>
-        <span className="font-medium">系統升級中，網絡可能會較慢，請耐心等待</span>
+        <span className="font-medium">{t('announcement.text')}</span>
       </div>
       <button
         onClick={() => setIsVisible(false)}

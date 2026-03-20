@@ -14,55 +14,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import cloversLogo from '@/assets/clovers-logo-icon.jpeg';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const LANDING_AUDIO_VOLUME = 0.1;
 
-const functionMenuSections = [
-  {
-    label: '主選單',
-    items: [
-      { title: '儀表板', icon: LayoutDashboard, path: '/dashboard' },
-      { title: '訂閱方案', icon: CreditCard, path: '/dashboard/subscription' },
-      { title: '購買點數', icon: Coins, path: '/dashboard/buy-points' },
-      { title: '點數紀錄', icon: History, path: '/dashboard/point-history' },
-      { title: '作品畫廊', icon: GalleryHorizontalEnd, path: '/dashboard/gallery' },
-      { title: '提示詞管理', icon: FileText, path: '/dashboard/prompts' },
-      { title: '用戶資料', icon: Settings, path: '/dashboard/settings' },
-    ],
-  },
-  {
-    label: 'AI 內容工具',
-    items: [
-      { title: 'AI 文案創作', icon: Sparkles, path: '/dashboard/ai-tools' },
-      { title: '圖片生成', icon: ImagePlus, path: '/dashboard/image-generation' },
-      { title: '貼圖製作器', icon: Sticker, path: '/dashboard/sticker-maker' },
-      { title: '語音生成', icon: Mic, path: '/dashboard/voice-generation' },
-      { title: '語音轉字幕', icon: AudioLines, path: '/dashboard/speech-to-text' },
-      { title: '視頻生成', icon: Video, path: '/dashboard/video-generation' },
-      { title: '視頻生成 2.0', icon: Video, path: '/dashboard/video-generation-2' },
-      { title: 'LipSync 影片', icon: Tv, path: '/dashboard/lip-sync' },
-    ],
-  },
-  {
-    label: '自媒體工具',
-    items: [
-      { title: 'YouTube 搜尋', icon: Youtube, path: '/dashboard/youtube-search' },
-      { title: '小紅書搜尋', icon: BookOpen, path: '/dashboard/xiaohongshu-search' },
-      { title: 'RSS 訂閱', icon: Rss, path: '/dashboard/rss' },
-      { title: '媒體庫', icon: Image, path: '/dashboard/media' },
-    ],
-  },
-  {
-    label: '發佈工具',
-    items: [
-      { title: '自媒體發佈工具', icon: Send, path: '/dashboard/scheduler' },
-      { title: '內容整理', icon: FolderEdit, path: '/dashboard/content-organize' },
-      { title: '智能內容發布', icon: Rocket, path: '/dashboard/smart-publish' },
-    ],
-  },
-];
-
 const Navigation = () => {
+  const { t } = useLanguage();
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -76,6 +34,51 @@ const Navigation = () => {
 
   const isLandingPage = location.pathname === '/' || location.pathname.includes('/main');
 
+  const functionMenuSections = [
+    {
+      label: t('nav.menu.main'),
+      items: [
+        { title: t('nav.item.dashboard'), icon: LayoutDashboard, path: '/dashboard' },
+        { title: t('nav.item.subscription'), icon: CreditCard, path: '/dashboard/subscription' },
+        { title: t('nav.item.buyPoints'), icon: Coins, path: '/dashboard/buy-points' },
+        { title: t('nav.item.pointHistory'), icon: History, path: '/dashboard/point-history' },
+        { title: t('nav.item.gallery'), icon: GalleryHorizontalEnd, path: '/dashboard/gallery' },
+        { title: t('nav.item.prompts'), icon: FileText, path: '/dashboard/prompts' },
+        { title: t('nav.item.settings'), icon: Settings, path: '/dashboard/settings' },
+      ],
+    },
+    {
+      label: t('nav.menu.aiTools'),
+      items: [
+        { title: t('nav.item.aiCopywriting'), icon: Sparkles, path: '/dashboard/ai-tools' },
+        { title: t('nav.item.imageGen'), icon: ImagePlus, path: '/dashboard/image-generation' },
+        { title: t('nav.item.stickerMaker'), icon: Sticker, path: '/dashboard/sticker-maker' },
+        { title: t('nav.item.voiceGen'), icon: Mic, path: '/dashboard/voice-generation' },
+        { title: t('nav.item.speechToText'), icon: AudioLines, path: '/dashboard/speech-to-text' },
+        { title: t('nav.item.videoGen'), icon: Video, path: '/dashboard/video-generation' },
+        { title: t('nav.item.videoGen2'), icon: Video, path: '/dashboard/video-generation-2' },
+        { title: t('nav.item.lipSync'), icon: Tv, path: '/dashboard/lip-sync' },
+      ],
+    },
+    {
+      label: t('nav.menu.mediaTools'),
+      items: [
+        { title: t('nav.item.youtubeSearch'), icon: Youtube, path: '/dashboard/youtube-search' },
+        { title: t('nav.item.xiaohongshuSearch'), icon: BookOpen, path: '/dashboard/xiaohongshu-search' },
+        { title: t('nav.item.rss'), icon: Rss, path: '/dashboard/rss' },
+        { title: t('nav.item.mediaLibrary'), icon: Image, path: '/dashboard/media' },
+      ],
+    },
+    {
+      label: t('nav.menu.publishTools'),
+      items: [
+        { title: t('nav.item.socialPublish'), icon: Send, path: '/dashboard/scheduler' },
+        { title: t('nav.item.contentOrganize'), icon: FolderEdit, path: '/dashboard/content-organize' },
+        { title: t('nav.item.smartPublish'), icon: Rocket, path: '/dashboard/smart-publish' },
+      ],
+    },
+  ];
+
   useEffect(() => {
     if (isLandingPage) {
       if (!audioRef.current) {
@@ -86,7 +89,6 @@ const Navigation = () => {
         audio.muted = isMuted;
         audioRef.current = audio;
       }
-
       audioRef.current.play().catch(() => {});
     } else {
       if (audioRef.current) {
@@ -94,10 +96,7 @@ const Navigation = () => {
         audioRef.current.currentTime = 0;
       }
     }
-
-    return () => {
-      // cleanup only on unmount
-    };
+    return () => {};
   }, [isLandingPage]);
 
   useEffect(() => {
@@ -109,32 +108,23 @@ const Navigation = () => {
 
   useEffect(() => {
     if (!isLandingPage || !audioRef.current) return;
-
     const handleFirstInteraction = () => {
       if (audioRef.current && !isMuted && audioRef.current.paused) {
         audioRef.current.play().catch(() => {});
       }
     };
-
     window.addEventListener('pointerdown', handleFirstInteraction, { once: true });
     return () => window.removeEventListener('pointerdown', handleFirstInteraction);
   }, [isLandingPage, isMuted]);
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
     });
-
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
-
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-
+    const handleScroll = () => { setScrolled(window.scrollY > 20); };
     window.addEventListener('scroll', handleScroll);
     return () => {
       subscription.unsubscribe();
@@ -148,21 +138,12 @@ const Navigation = () => {
     navigate('/');
   };
 
-  const getUserName = () => {
-    return user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
-  };
-
-  const getUserInitials = () => {
-    const name = getUserName();
-    return name.substring(0, 2).toUpperCase();
-  };
+  const getUserName = () => user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const getUserInitials = () => getUserName().substring(0, 2).toUpperCase();
 
   const scrollToSection = (sectionId: string) => {
     setMobileMenuOpen(false);
-    const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth' });
-    }
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const toggleMute = () => {
@@ -188,11 +169,7 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <a href="/" className="flex items-center gap-3 group">
-          <img
-            src={cloversLogo}
-            alt="Clovers AI Logo"
-            className="w-11 h-11 object-contain rounded-lg group-hover:scale-105 transition-transform duration-300"
-          />
+          <img src={cloversLogo} alt="Clovers AI Logo" className="w-11 h-11 object-contain rounded-lg group-hover:scale-105 transition-transform duration-300" />
           <span className="font-heading text-xl font-bold text-foreground tracking-tight uppercase">
             Clovers <span className="text-primary">AI</span>
           </span>
@@ -203,7 +180,7 @@ const Navigation = () => {
           <DropdownMenu>
             <DropdownMenuTrigger className="text-sm font-semibold text-primary hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest inline-flex items-center gap-1 outline-none animate-pulse-glow">
               <span className="relative">
-                功能/Functions
+                {t('nav.functions')}
                 <span className="absolute inset-0 blur-md bg-primary/30 rounded-lg animate-pulse pointer-events-none" />
               </span>
               <ChevronDown className="w-3.5 h-3.5 animate-bounce" style={{ animationDuration: '2s' }} />
@@ -215,11 +192,7 @@ const Navigation = () => {
                   {idx > 0 && <DropdownMenuSeparator className="bg-border/50" />}
                   <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wider">{section.label}</DropdownMenuLabel>
                   {section.items.map((item) => (
-                    <DropdownMenuItem
-                      key={item.path}
-                      onClick={() => navigate(item.path)}
-                      className="gap-3 rounded-lg cursor-pointer"
-                    >
+                    <DropdownMenuItem key={item.path} onClick={() => navigate(item.path)} className="gap-3 rounded-lg cursor-pointer">
                       <item.icon className="w-4 h-4 text-primary" />
                       <span>{item.title}</span>
                     </DropdownMenuItem>
@@ -229,34 +202,31 @@ const Navigation = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <button
-            onClick={() => scrollToSection('pricing')}
-            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest"
-          >
-            Pricing/定價
+          <button onClick={() => scrollToSection('pricing')} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest">
+            {t('nav.pricing')}
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 rounded-full" />
           </button>
 
-          <button
-            onClick={() => scrollToSection('faq')}
-            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest"
-          >
-            FAQ
+          <button onClick={() => scrollToSection('faq')} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest">
+            {t('nav.faq')}
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 rounded-full" />
           </button>
         </div>
 
         {/* Right side */}
         <div className="flex items-center gap-3 shrink-0">
-{isLandingPage && (
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+
+          {isLandingPage && (
             <button
               onClick={toggleMute}
               className="inline-flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-semibold text-foreground bg-card/85 border-2 border-primary/30 hover:bg-secondary rounded-xl transition-colors duration-300 uppercase tracking-wider shadow-sm animate-pulse-glow"
               aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
-              title={isMuted ? 'Unmute/取消靜音' : 'Mute/靜音'}
+              title={isMuted ? t('nav.unmute') : t('nav.mute')}
             >
               {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-              <span className="hidden sm:inline">{isMuted ? 'Unmute/取消靜音' : 'Mute/靜音'}</span>
+              <span className="hidden sm:inline">{isMuted ? t('nav.unmute') : t('nav.mute')}</span>
             </button>
           )}
 
@@ -273,18 +243,15 @@ const Navigation = () => {
                   <span className="text-sm font-medium hidden sm:block">{getUserName()}</span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-52 bg-card/95 backdrop-blur-xl border-border/50 rounded-xl shadow-xl"
-              >
+              <DropdownMenuContent align="end" className="w-52 bg-card/95 backdrop-blur-xl border-border/50 rounded-xl shadow-xl">
                 <DropdownMenuItem onClick={() => navigate('/dashboard')} className="rounded-lg cursor-pointer">
                   <User className="w-4 h-4 mr-2" />
-                  儀表板
+                  {t('nav.dashboard')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-border/50" />
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive rounded-lg cursor-pointer">
                   <LogOut className="w-4 h-4 mr-2" />
-                  登出
+                  {t('nav.logout')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -295,7 +262,7 @@ const Navigation = () => {
               onClick={() => navigate('/auth')}
             >
               <LogIn className="w-4 h-4" />
-              <span>登入</span>
+              <span>{t('nav.login')}</span>
             </Button>
           )}
 
@@ -313,18 +280,13 @@ const Navigation = () => {
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-background/98 backdrop-blur-2xl border-b border-border/50 animate-slide-up shadow-2xl">
           <div className="px-4 py-6 space-y-2">
-            {/* Functions sections */}
             <div className="mb-3">
-              <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-widest">功能/Functions</p>
+              <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-widest">{t('nav.functions')}</p>
               {functionMenuSections.map((section) => (
                 <div key={section.label} className="mb-2">
                   <p className="px-4 py-1.5 text-xs text-muted-foreground/70 uppercase tracking-wider">{section.label}</p>
                   {section.items.map((item) => (
-                    <button
-                      key={item.path}
-                      onClick={() => { setMobileMenuOpen(false); navigate(item.path); }}
-                      className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300"
-                    >
+                    <button key={item.path} onClick={() => { setMobileMenuOpen(false); navigate(item.path); }} className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300">
                       <item.icon className="w-4 h-4 text-primary" />
                       <span>{item.title}</span>
                     </button>
@@ -335,56 +297,38 @@ const Navigation = () => {
 
             <div className="border-t border-border/50 pt-2" />
 
-            <button
-              onClick={() => scrollToSection('pricing')}
-              className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm"
-            >
-              Pricing/定價
+            <button onClick={() => scrollToSection('pricing')} className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm">
+              {t('nav.pricing')}
             </button>
 
-            <button
-              onClick={() => scrollToSection('faq')}
-              className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm"
-            >
-              FAQ
+            <button onClick={() => scrollToSection('faq')} className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm">
+              {t('nav.faq')}
             </button>
 
             {!user && (
-              <Button
-                className="w-full mt-4 gap-2 btn-primary"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  navigate('/auth');
-                }}
-              >
+              <Button className="w-full mt-4 gap-2 btn-primary" onClick={() => { setMobileMenuOpen(false); navigate('/auth'); }}>
                 <LogIn className="w-4 h-4" />
-                <span>登入</span>
+                <span>{t('nav.login')}</span>
               </Button>
             )}
 
             {user && (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  navigate('/dashboard');
-                }}
-                className="block w-full text-left px-4 py-3.5 text-base font-medium text-primary hover:bg-primary/10 rounded-xl transition-all duration-300"
-              >
-                前往儀表板
+              <button onClick={() => { setMobileMenuOpen(false); navigate('/dashboard'); }} className="block w-full text-left px-4 py-3.5 text-base font-medium text-primary hover:bg-primary/10 rounded-xl transition-all duration-300">
+                {t('nav.goToDashboard')}
               </button>
             )}
           </div>
         </div>
       )}
 
-{isLandingPage && (
+      {isLandingPage && (
         <button
           onClick={toggleMute}
           className="sm:hidden fixed bottom-24 left-4 z-[60] inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold text-foreground bg-card/90 border-2 border-primary/30 rounded-xl shadow-lg animate-pulse-glow"
           aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
         >
           {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          <span>{isMuted ? 'Unmute' : 'Mute'}</span>
+          <span>{isMuted ? t('nav.unmuteMobile') : t('nav.muteMobile')}</span>
         </button>
       )}
     </nav>

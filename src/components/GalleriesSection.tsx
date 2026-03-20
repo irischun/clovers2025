@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ImageIcon, Sparkles, Box, Palette } from 'lucide-react';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface GalleryItem {
   id: string;
@@ -21,7 +22,6 @@ const GallerySection = ({ title, subtitle, items, icon }: GalleryProps) => {
   return (
     <section className="py-16 first:pt-0 last:pb-0">
       <div className="section-container">
-        {/* Section header */}
         <div className="mb-10 flex items-start gap-4">
           {icon && (
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/5 flex items-center justify-center border border-primary/20 shrink-0">
@@ -34,26 +34,13 @@ const GallerySection = ({ title, subtitle, items, icon }: GalleryProps) => {
           </div>
         </div>
 
-        {/* Gallery grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-5">
           {items.map((item, index) => (
-            <div
-              key={item.id}
-              className="group cursor-pointer overflow-hidden rounded-2xl bg-card border border-border/50 hover:border-primary/40 transition-all duration-500 animate-slide-up hover:shadow-xl hover:shadow-primary/5"
-              style={{ animationDelay: `${index * 50}ms` }}
-              onClick={() => setSelectedImage(item)}
-            >
+            <div key={item.id} className="group cursor-pointer overflow-hidden rounded-2xl bg-card border border-border/50 hover:border-primary/40 transition-all duration-500 animate-slide-up hover:shadow-xl hover:shadow-primary/5" style={{ animationDelay: `${index * 50}ms` }} onClick={() => setSelectedImage(item)}>
               <div className="aspect-square relative overflow-hidden">
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                {/* Overlay with title */}
+                <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-end p-4">
-                  <p className="text-sm font-medium text-foreground line-clamp-2 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                    {item.title}
-                  </p>
+                  <p className="text-sm font-medium text-foreground line-clamp-2 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">{item.title}</p>
                 </div>
               </div>
             </div>
@@ -61,19 +48,12 @@ const GallerySection = ({ title, subtitle, items, icon }: GalleryProps) => {
         </div>
       </div>
 
-      {/* Lightbox */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="max-w-[95vw] sm:max-w-4xl p-2 bg-background/95 backdrop-blur-xl border-border/50 rounded-2xl shadow-2xl">
           {selectedImage && (
             <div className="space-y-4">
-              <img
-                src={selectedImage.imageUrl}
-                alt={selectedImage.title}
-                className="w-full h-auto rounded-xl"
-              />
-              <p className="text-center text-foreground font-heading font-semibold px-4 pb-2">
-                {selectedImage.title}
-              </p>
+              <img src={selectedImage.imageUrl} alt={selectedImage.title} className="w-full h-auto rounded-xl" />
+              <p className="text-center text-foreground font-heading font-semibold px-4 pb-2">{selectedImage.title}</p>
             </div>
           )}
         </DialogContent>
@@ -82,7 +62,6 @@ const GallerySection = ({ title, subtitle, items, icon }: GalleryProps) => {
   );
 };
 
-// Manga gallery data
 const mangaItems: GalleryItem[] = [
   { id: 'manga-1', title: '老散投資日記 - 點解刷新十次都仲係跌', imageUrl: 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=400&h=400&fit=crop' },
   { id: 'manga-2', title: '乒壇奇聞是與非 - 好人好者打粒粒', imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop' },
@@ -91,7 +70,6 @@ const mangaItems: GalleryItem[] = [
   { id: 'manga-5', title: '乒壇是與非 - 球技咁夠科技搭救', imageUrl: 'https://images.unsplash.com/photo-1614583225154-5fcdda07019e?w=400&h=400&fit=crop' },
 ];
 
-// Cover images data
 const coverItems: GalleryItem[] = [
   { id: 'cover-1', title: 'Nano Banana Pro - 谷歌全新AI生成模型', imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=400&fit=crop' },
   { id: 'cover-2', title: 'Clovers一人公司 - 雙子塔檸檬角色', imageUrl: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=400&h=400&fit=crop' },
@@ -100,7 +78,6 @@ const coverItems: GalleryItem[] = [
   { id: 'cover-5', title: 'Nano Banana Pro - 爆炸網絡熱潮', imageUrl: 'https://images.unsplash.com/photo-1676299081847-5c0c7bdf3e3f?w=400&h=400&fit=crop' },
 ];
 
-// Product images data
 const productItems: GalleryItem[] = [
   { id: 'product-1', title: '產品攝影 - 彩色糖果威士忌', imageUrl: 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=400&h=400&fit=crop' },
   { id: 'product-2', title: '產品攝影 - 威士忌展示', imageUrl: 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400&h=400&fit=crop' },
@@ -110,48 +87,27 @@ const productItems: GalleryItem[] = [
 ];
 
 const GalleriesSection = () => {
+  const { t } = useLanguage();
+
   return (
     <section className="py-24 sm:py-32 relative overflow-hidden">
-      {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-card via-background to-card" />
-      
-      {/* Decorative elements */}
       <div className="absolute top-40 left-10 w-72 h-72 rounded-full bg-primary/5 blur-3xl" />
       <div className="absolute bottom-40 right-10 w-80 h-80 rounded-full bg-accent/5 blur-3xl" />
       
       <div className="relative z-10">
-        {/* Main header */}
         <div className="section-container text-center mb-16">
           <div className="badge-nature mb-6 inline-flex">
             <ImageIcon className="w-4 h-4" />
-            <span>Gallery</span>
+            <span>{t('gallery.badge')}</span>
           </div>
-          <h2 className="heading-display text-4xl sm:text-5xl lg:text-6xl mb-6">
-            作品展示
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            探索 Clovers 幫助創作者製作的精彩內容
-          </p>
+          <h2 className="heading-display text-4xl sm:text-5xl lg:text-6xl mb-6">{t('gallery.title')}</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t('gallery.subtitle')}</p>
         </div>
         
-        <GallerySection
-          title="漫畫生成案例"
-          subtitle="查看AI生成的專業漫畫作品集"
-          items={mangaItems}
-          icon={<Palette className="w-6 h-6 text-primary" />}
-        />
-        <GallerySection
-          title="封面圖生成案例"
-          subtitle="查看AI生成的專業封面圖作品集"
-          items={coverItems}
-          icon={<Sparkles className="w-6 h-6 text-primary" />}
-        />
-        <GallerySection
-          title="產品圖片生成案例"
-          subtitle="查看AI生成的專業產品攝影作品集"
-          items={productItems}
-          icon={<Box className="w-6 h-6 text-primary" />}
-        />
+        <GallerySection title={t('gallery.manga')} subtitle={t('gallery.mangaSub')} items={mangaItems} icon={<Palette className="w-6 h-6 text-primary" />} />
+        <GallerySection title={t('gallery.cover')} subtitle={t('gallery.coverSub')} items={coverItems} icon={<Sparkles className="w-6 h-6 text-primary" />} />
+        <GallerySection title={t('gallery.product')} subtitle={t('gallery.productSub')} items={productItems} icon={<Box className="w-6 h-6 text-primary" />} />
       </div>
     </section>
   );
