@@ -95,10 +95,10 @@ const DashboardHome = () => {
   }, []);
 
   const statCards = [
-    { title: '總提示詞', value: stats.prompts, icon: FileText, color: 'text-blue-500', bgColor: 'bg-blue-500/10', gradient: 'from-blue-500/20 to-blue-600/5' },
-    { title: '已排程內容', value: stats.scheduledPosts, icon: Calendar, color: 'text-green-500', bgColor: 'bg-green-500/10', gradient: 'from-green-500/20 to-green-600/5' },
-    { title: '媒體檔案', value: stats.mediaFiles, icon: Image, color: 'text-purple-500', bgColor: 'bg-purple-500/10', gradient: 'from-purple-500/20 to-purple-600/5' },
-    { title: 'AI 使用量', value: stats.aiGenerations, icon: Sparkles, color: 'text-yellow-500', bgColor: 'bg-yellow-500/10', gradient: 'from-yellow-500/20 to-yellow-600/5' },
+    { title: t('dash.totalPrompts'), value: stats.prompts, icon: FileText, color: 'text-blue-500', bgColor: 'bg-blue-500/10', gradient: 'from-blue-500/20 to-blue-600/5' },
+    { title: t('dash.scheduledContent'), value: stats.scheduledPosts, icon: Calendar, color: 'text-green-500', bgColor: 'bg-green-500/10', gradient: 'from-green-500/20 to-green-600/5' },
+    { title: t('dash.mediaFiles'), value: stats.mediaFiles, icon: Image, color: 'text-purple-500', bgColor: 'bg-purple-500/10', gradient: 'from-purple-500/20 to-purple-600/5' },
+    { title: t('dash.aiUsage'), value: stats.aiGenerations, icon: Sparkles, color: 'text-yellow-500', bgColor: 'bg-yellow-500/10', gradient: 'from-yellow-500/20 to-yellow-600/5' },
   ];
 
   const getActivityIcon = (type: RecentActivity['type']) => {
