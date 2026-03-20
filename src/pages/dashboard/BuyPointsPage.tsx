@@ -3,35 +3,19 @@ import { Button } from "@/components/ui/button";
 import { Coins, Check, Zap, Wallet, Sparkles, AlertCircle } from "lucide-react";
 import { useUserPoints } from "@/hooks/useUserPoints";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useLanguage } from '@/i18n/LanguageContext';
+import { useTranslatedPlans } from '@/data/useTranslatedPlans';
 
 const pointPackages = [
-  {
-    points: 100,
-    price: 60,
-    pricePerPoint: 0.6,
-    savings: null,
-  },
-  {
-    points: 350,
-    price: 140,
-    pricePerPoint: 0.4,
-    savings: 70,
-  },
-  {
-    points: 1000,
-    price: 330,
-    pricePerPoint: 0.33,
-    savings: 270,
-  },
+  { points: 100, price: 60, pricePerPoint: 0.6, savings: null },
+  { points: 350, price: 140, pricePerPoint: 0.4, savings: 70 },
+  { points: 1000, price: 330, pricePerPoint: 0.33, savings: 270 },
 ];
 
 const BuyPointsPage = () => {
-  const { t } = useLanguage();
+  const { t } = useTranslatedPlans();
   const { points, isLoading, addPoints, isAddingPoints } = useUserPoints();
 
   const handlePurchase = (pointsAmount: number, price: number) => {
-    // Demo: directly add points without payment
     addPoints(pointsAmount);
   };
 
@@ -47,10 +31,10 @@ const BuyPointsPage = () => {
             <div className="space-y-2">
               <h3 className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 animate-bounce" />
-                重要提示：訂閱後才能購買額外點數
+                {t('buyPoints.importantNotice')}
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                購買額外點數套餐是訂閱會員的專屬福利。請先選擇並訂閱下方任一方案，即可在需要時隨時購買額外點數補充帳戶。
+                {t('buyPoints.importantDesc')}
               </p>
             </div>
           </div>
@@ -70,7 +54,7 @@ const BuyPointsPage = () => {
                 {isLoading ? (
                   <Skeleton className="h-8 w-24 mt-1" />
                 ) : (
-                  <p className="text-3xl font-bold text-primary">{points} 點</p>
+                  <p className="text-3xl font-bold text-primary">{points} {t('sub.points')}</p>
                 )}
               </div>
             </div>
@@ -94,7 +78,7 @@ const BuyPointsPage = () => {
           <h1 className="text-3xl font-bold">{t('buyPoints.title')}</h1>
         </div>
         <p className="text-muted-foreground text-lg">
-          選擇合適的點數套餐
+          {t('buyPoints.subtitle')}
         </p>
       </div>
 
@@ -111,7 +95,7 @@ const BuyPointsPage = () => {
               <div className="absolute top-3 right-3">
                 <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
                   <Zap className="w-3 h-3" />
-                  最優惠
+                  {t('buyPoints.bestValue')}
                 </span>
               </div>
             )}
@@ -121,7 +105,7 @@ const BuyPointsPage = () => {
                 <Coins className="w-8 h-8 text-primary" />
               </div>
               <CardTitle className="text-2xl font-bold">
-                {pkg.points} 點數
+                {pkg.points} {t('buyPoints.points')}
               </CardTitle>
             </CardHeader>
             
@@ -135,13 +119,13 @@ const BuyPointsPage = () => {
               <div className="space-y-2 text-sm text-muted-foreground">
                 <div className="flex items-center justify-center gap-2">
                   <Check className="w-4 h-4 text-primary" />
-                  <span>平均每點數：港幣${pkg.pricePerPoint.toFixed(2)}/點</span>
+                  <span>{t('buyPoints.avgPerPoint', { price: pkg.pricePerPoint.toFixed(2) })}</span>
                 </div>
                 
                 {pkg.savings && (
                   <div className="flex items-center justify-center gap-2 text-primary font-medium">
                     <Check className="w-4 h-4" />
-                    <span>節省 ${pkg.savings}</span>
+                    <span>{t('buyPoints.save', { amount: String(pkg.savings) })}</span>
                   </div>
                 )}
               </div>
@@ -152,7 +136,7 @@ const BuyPointsPage = () => {
                 onClick={() => handlePurchase(pkg.points, pkg.price)}
                 disabled={isAddingPoints}
               >
-                {isAddingPoints ? "處理中..." : "立即購買"}
+                {isAddingPoints ? t('buyPoints.processing') : t('buyPoints.buyNow')}
               </Button>
             </CardContent>
           </Card>
@@ -161,7 +145,7 @@ const BuyPointsPage = () => {
 
       {/* Footer Note */}
       <p className="text-center text-sm text-muted-foreground">
-        點數購買後即時發放到您的帳戶，可用於所有 AI 功能。
+        {t('buyPoints.footerNote')}
       </p>
     </div>
   );

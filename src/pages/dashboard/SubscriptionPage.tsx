@@ -24,10 +24,10 @@ import { useUserSubscription } from '@/hooks/useUserSubscription';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { monthlyPlans, yearlyPlans, type YearlyPlan } from '@/data/subscriptionPlans';
-import { useLanguage } from '@/i18n/LanguageContext';
+import { useTranslatedPlans } from '@/data/useTranslatedPlans';
 
 const SubscriptionPage = () => {
-  const { t } = useLanguage();
+  const { translatePlanName, translateFeature, translatePeriod, t } = useTranslatedPlans();
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const { points, isLoading: isLoadingPoints, addPoints } = useUserPoints();
   const { 
@@ -55,12 +55,12 @@ const SubscriptionPage = () => {
     }, {
       onSuccess: () => {
         addPoints(pointsAmount);
-        toast.success(`已訂閱 ${planName}`, {
-          description: `已發放 ${pointsAmount} 點數到您的帳戶`,
+        toast.success(t('sub.subscribeTo', { plan: translatePlanName(planName) }), {
+          description: t('sub.pointsGranted', { points: String(pointsAmount) }),
         });
       },
       onError: (error) => {
-        toast.error('訂閱失敗', {
+        toast.error(t('sub.subscribeFailed'), {
           description: error.message,
         });
       },
@@ -70,10 +70,10 @@ const SubscriptionPage = () => {
   const handleCancelSubscription = () => {
     cancelSubscription(undefined, {
       onSuccess: () => {
-        toast.success('訂閱取消成功');
+        toast.success(t('sub.cancelSuccess'));
       },
       onError: (error) => {
-        toast.error('取消訂閱失敗', {
+        toast.error(t('sub.cancelFailed'), {
           description: error.message,
         });
       },
@@ -102,11 +102,11 @@ const SubscriptionPage = () => {
                 <Wallet className="w-7 h-7 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">目前點數餘額</p>
+                <p className="text-sm text-muted-foreground">{t('sub.currentBalance')}</p>
                 {isLoadingPoints ? (
                   <Skeleton className="h-8 w-24 mt-1" />
                 ) : (
-                  <p className="text-3xl font-bold text-primary">{points} 點</p>
+                  <p className="text-3xl font-bold text-primary">{points} {t('sub.points')}</p>
                 )}
               </div>
             </div>
@@ -126,16 +126,16 @@ const SubscriptionPage = () => {
                   <Crown className="w-7 h-7 text-accent" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">目前訂閱計劃</p>
+                  <p className="text-sm text-muted-foreground">{t('sub.currentPlan')}</p>
                   <div className="flex items-center gap-2">
-                    <p className="text-xl font-bold">{subscription.plan_name}</p>
+                    <p className="text-xl font-bold">{translatePlanName(subscription.plan_name)}</p>
                     <Badge variant="secondary">
-                      {subscription.billing_period === 'monthly' ? '月付' : '年付'}
+                      {subscription.billing_period === 'monthly' ? t('sub.monthly') : t('sub.yearly')}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
                     <Calendar className="w-3.5 h-3.5" />
-                    <span>到期日: {format(new Date(subscription.expiration_date), 'yyyy/MM/dd')}</span>
+                    <span>{t('sub.expirationLabel')} {format(new Date(subscription.expiration_date), 'yyyy/MM/dd')}</span>
                   </div>
                 </div>
               </div>
@@ -145,8 +145,8 @@ const SubscriptionPage = () => {
                   <Crown className="w-7 h-7 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">目前訂閱計劃</p>
-                  <p className="text-xl font-bold text-muted-foreground">尚未訂閱</p>
+                  <p className="text-sm text-muted-foreground">{t('sub.currentPlan')}</p>
+                  <p className="text-xl font-bold text-muted-foreground">{t('sub.notSubscribed')}</p>
                 </div>
               </div>
             )}
@@ -163,10 +163,10 @@ const SubscriptionPage = () => {
           </div>
           <div>
             <AlertTitle className="text-primary font-semibold text-base">
-              重要提示：訂閱後才能購買額外點數
+              {t('sub.importantTitle')}
             </AlertTitle>
             <AlertDescription className="text-muted-foreground mt-1">
-              購買額外點數套餐是訂閱會員的專屬福利。請先選擇並訂閱下方任一方案，即可在需要時隨時購買額外點數補充帳戶。
+              {t('sub.importantNotice')}
             </AlertDescription>
           </div>
         </div>
@@ -175,14 +175,14 @@ const SubscriptionPage = () => {
       {/* Header */}
       <div className="text-center space-y-4">
         <div className="flex items-center justify-center gap-3">
-          <h1 className="text-3xl md:text-4xl font-bold">選擇您的訂閱計劃</h1>
+          <h1 className="text-3xl md:text-4xl font-bold">{t('sub.choosePlan')}</h1>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent text-accent-foreground text-sm font-medium animate-pulse">
             <Sparkles className="w-4 h-4" />
-            限時優惠
+            {t('sub.limitedOffer')}
           </span>
         </div>
         <p className="text-muted-foreground text-lg">
-          選擇最適合您的計劃，隨時可以升級或降級
+          {t('sub.choosePlanDesc')}
         </p>
       </div>
 
@@ -198,7 +198,7 @@ const SubscriptionPage = () => {
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            月付
+            {t('sub.monthly')}
           </button>
           <button
             onClick={() => setBillingPeriod('yearly')}
@@ -209,14 +209,14 @@ const SubscriptionPage = () => {
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            年付
+            {t('sub.yearly')}
             <span className={cn(
               "px-2 py-0.5 rounded-full text-xs",
               billingPeriod === 'yearly'
                 ? "bg-accent text-accent-foreground"
                 : "bg-accent/50 text-accent-foreground"
             )}>
-              慳更多
+              {t('sub.savingsLabel')}
             </span>
           </button>
         </div>
@@ -241,7 +241,7 @@ const SubscriptionPage = () => {
               {isCurrent && (
                 <div className="absolute -top-3 right-4">
                   <span className="px-3 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">
-                    目前計劃
+                    {t('sub.currentPlanLabel')}
                   </span>
                 </div>
               )}
@@ -250,20 +250,20 @@ const SubscriptionPage = () => {
               {plan.popular && !isCurrent && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="px-4 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">
-                    最受歡迎
+                    {t('sub.mostPopular')}
                   </span>
                 </div>
               )}
 
               {/* Plan Name */}
-              <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
+              <h3 className="text-xl font-bold mb-2">{translatePlanName(plan.name)}</h3>
               
               {/* Points per month */}
               <p className={cn(
                 "text-sm mb-4",
                 plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
               )}>
-                每月 {plan.pointsPerMonth} 點數
+                {t('plan.pointsPerMonth', { points: String(plan.pointsPerMonth) })}
               </p>
 
               {/* Price */}
@@ -273,7 +273,7 @@ const SubscriptionPage = () => {
                   "text-sm ml-1",
                   plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
                 )}>
-                  / {plan.period}
+                  {billingPeriod === 'monthly' ? t('plan.period.month') : t('plan.period.year')}
                 </span>
                 
                 {/* Yearly savings */}
@@ -283,13 +283,13 @@ const SubscriptionPage = () => {
                       "text-sm",
                       plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
                     )}>
-                      平均每月 ${(plan as typeof yearlyPlans[0]).monthlyPrice}
+                      {t('plan.monthlyAvgPrice', { price: String((plan as typeof yearlyPlans[0]).monthlyPrice) })}
                     </p>
                     <p className={cn(
                       "text-sm font-medium",
                       plan.popular ? "text-primary-foreground" : "text-primary"
                     )}>
-                      年費慳 ${(plan as typeof yearlyPlans[0]).savings}
+                      {t('plan.annualSave', { amount: String((plan as typeof yearlyPlans[0]).savings) })}
                     </p>
                   </div>
                 )}
@@ -307,7 +307,7 @@ const SubscriptionPage = () => {
                       "text-sm",
                       plan.popular ? "text-primary-foreground/90" : ""
                     )}>
-                      {feature}
+                      {translateFeature(feature)}
                     </span>
                   </li>
                 ))}
@@ -325,7 +325,7 @@ const SubscriptionPage = () => {
                 )}
                 variant={plan.popular ? "secondary" : "outline"}
               >
-                {isCurrent ? '目前計劃' : isSubscribing ? "處理中..." : "立即訂閱"}
+                {isCurrent ? t('sub.currentPlanLabel') : isSubscribing ? t('sub.cancelling') : t('sub.subscribe')}
               </Button>
             </div>
           );
@@ -339,10 +339,10 @@ const SubscriptionPage = () => {
             <AlertCircle className="h-5 w-5 text-destructive" />
             <div>
               <AlertTitle className="text-destructive font-semibold text-base">
-                訂閱即將到期
+                {t('sub.expiringTitle')}
               </AlertTitle>
               <AlertDescription className="text-muted-foreground mt-1">
-                您的訂閱將在 {daysUntilExpiration} 天後到期。請及時續訂以確保服務不中斷。
+                {t('sub.expiringWarning', { days: String(daysUntilExpiration) })}
               </AlertDescription>
             </div>
           </div>
@@ -355,7 +355,7 @@ const SubscriptionPage = () => {
           <CardContent className="py-6">
             <div className="flex items-center gap-3 mb-4">
               <History className="w-5 h-5 text-muted-foreground" />
-              <h2 className="text-xl font-semibold">訂閱歷史</h2>
+              <h2 className="text-xl font-semibold">{t('sub.subscriptionHistory')}</h2>
             </div>
             {isLoadingHistory ? (
               <div className="space-y-2">
@@ -367,19 +367,19 @@ const SubscriptionPage = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>計劃</TableHead>
-                    <TableHead>付款方式</TableHead>
-                    <TableHead>價格</TableHead>
-                    <TableHead>開始日期</TableHead>
-                    <TableHead>到期日期</TableHead>
-                    <TableHead>狀態</TableHead>
+                    <TableHead>{t('sub.plan')}</TableHead>
+                    <TableHead>{t('sub.paymentMethod')}</TableHead>
+                    <TableHead>{t('sub.price')}</TableHead>
+                    <TableHead>{t('sub.startDate')}</TableHead>
+                    <TableHead>{t('sub.expirationDate')}</TableHead>
+                    <TableHead>{t('sub.status')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {subscriptionHistory.map((sub) => (
                     <TableRow key={sub.id}>
-                      <TableCell className="font-medium">{sub.plan_name}</TableCell>
-                      <TableCell>{sub.billing_period === 'monthly' ? '月付' : '年付'}</TableCell>
+                      <TableCell className="font-medium">{translatePlanName(sub.plan_name)}</TableCell>
+                      <TableCell>{sub.billing_period === 'monthly' ? t('sub.monthly') : t('sub.yearly')}</TableCell>
                       <TableCell>${sub.price}</TableCell>
                       <TableCell>{format(new Date(sub.start_date), 'yyyy/MM/dd')}</TableCell>
                       <TableCell>{format(new Date(sub.expiration_date), 'yyyy/MM/dd')}</TableCell>
@@ -391,7 +391,7 @@ const SubscriptionPage = () => {
                             sub.status === 'cancelled' && 'bg-muted text-muted-foreground'
                           )}
                         >
-                          {sub.status === 'active' ? '生效中' : sub.status === 'cancelled' ? '已取消' : '已過期'}
+                          {sub.status === 'active' ? t('sub.active') : sub.status === 'cancelled' ? t('sub.cancelled') : t('sub.expired')}
                         </Badge>
                       </TableCell>
                     </TableRow>
@@ -410,7 +410,7 @@ const SubscriptionPage = () => {
             onClick={handleChangeSubscription}
             className="bg-green-600 hover:bg-green-700 text-white"
           >
-            更改訂閱
+            {t('sub.changePlan')}
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -418,28 +418,28 @@ const SubscriptionPage = () => {
                 variant="outline"
                 disabled={isCancelling}
               >
-                {isCancelling ? '處理中...' : '取消訂閱'}
+                {isCancelling ? t('sub.cancelling') : t('sub.cancelSubscription')}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>確定要取消訂閱嗎？</AlertDialogTitle>
+                <AlertDialogTitle>{t('sub.cancelConfirmTitle')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  取消訂閱後，您將在當前計費週期結束後失去以下權益：
+                  {t('sub.cancelConfirmDesc')}
                   <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>每月自動發放的點數</li>
-                    <li>購買額外點數的權限</li>
-                    <li>訂閱專屬功能</li>
+                    <li>{t('sub.cancelBenefit1')}</li>
+                    <li>{t('sub.cancelBenefit2')}</li>
+                    <li>{t('sub.cancelBenefit3')}</li>
                   </ul>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>返回</AlertDialogCancel>
+                <AlertDialogCancel>{t('sub.goBack')}</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleCancelSubscription}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
-                  確定取消
+                  {t('sub.confirmCancel')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -449,7 +449,7 @@ const SubscriptionPage = () => {
 
       {/* Footer Note */}
       <p className="text-center text-sm text-muted-foreground">
-        所有計劃都可以隨時取消。點數每月自動發放。
+        {t('sub.footerNote')}
       </p>
     </div>
   );
