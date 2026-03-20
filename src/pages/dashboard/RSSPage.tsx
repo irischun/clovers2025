@@ -70,7 +70,7 @@ const RSSPage = () => {
               </CardContent>
             </Card>
           ))}
-          {feeds.length === 0 && <p className="text-sm text-muted-foreground">尚未添加訂閱源</p>}
+          {feeds.length === 0 && <p className="text-sm text-muted-foreground">{t('rss.noFeeds')}</p>}
         </div>
 
         <div className="lg:col-span-2">
