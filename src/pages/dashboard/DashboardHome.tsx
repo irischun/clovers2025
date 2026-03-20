@@ -182,7 +182,7 @@ const DashboardHome = () => {
               </div>
               {subscription && (
                 <Badge variant="outline" className="border-amber-500/50 text-amber-600 dark:text-amber-400 text-xs hidden sm:inline-flex">
-                  {subscription.billing_period === 'monthly' ? '月付' : '年付'}
+                  {subscription.billing_period === 'monthly' ? t('dash.monthly') : t('dash.yearly')}
                 </Badge>
               )}
             </div>
