@@ -204,7 +204,7 @@ const DashboardHome = () => {
             {!subscription && !subscriptionLoading && (
               <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
                 <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-amber-500" />
-                立即訂閱解鎖全部功能
+                {t('dash.subscribeNow')}
               </p>
             )}
           </div>
