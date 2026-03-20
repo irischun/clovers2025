@@ -200,6 +200,32 @@ const Navigation = () => {
 
         {/* Desktop Navigation Links */}
         <div className="hidden md:flex items-center gap-8">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest inline-flex items-center gap-1 outline-none">
+              功能/Functions
+              <ChevronDown className="w-3.5 h-3.5" />
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 rounded-full" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="w-64 max-h-[70vh] overflow-y-auto bg-card/95 backdrop-blur-xl border-border/50 rounded-xl shadow-xl">
+              {functionMenuSections.map((section, idx) => (
+                <div key={section.label}>
+                  {idx > 0 && <DropdownMenuSeparator className="bg-border/50" />}
+                  <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wider">{section.label}</DropdownMenuLabel>
+                  {section.items.map((item) => (
+                    <DropdownMenuItem
+                      key={item.path}
+                      onClick={() => navigate(item.path)}
+                      className="gap-3 rounded-lg cursor-pointer"
+                    >
+                      <item.icon className="w-4 h-4 text-primary" />
+                      <span>{item.title}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </div>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <button
             onClick={() => scrollToSection('pricing')}
             className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest"
