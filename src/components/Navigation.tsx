@@ -201,10 +201,13 @@ const Navigation = () => {
         {/* Desktop Navigation Links */}
         <div className="hidden md:flex items-center gap-8">
           <DropdownMenu>
-            <DropdownMenuTrigger className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest inline-flex items-center gap-1 outline-none">
-              功能/Functions
-              <ChevronDown className="w-3.5 h-3.5" />
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 rounded-full" />
+            <DropdownMenuTrigger className="text-sm font-semibold text-primary hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest inline-flex items-center gap-1 outline-none animate-pulse-glow">
+              <span className="relative">
+                功能/Functions
+                <span className="absolute inset-0 blur-md bg-primary/30 rounded-lg animate-pulse pointer-events-none" />
+              </span>
+              <ChevronDown className="w-3.5 h-3.5 animate-bounce" style={{ animationDuration: '2s' }} />
+              <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary rounded-full shadow-[0_0_8px_hsl(var(--primary)/0.6)]" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" className="w-64 max-h-[70vh] overflow-y-auto bg-card/95 backdrop-blur-xl border-border/50 rounded-xl shadow-xl">
               {functionMenuSections.map((section, idx) => (
