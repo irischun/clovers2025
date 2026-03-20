@@ -195,7 +195,7 @@ const DashboardHome = () => {
                 </div>
                 {daysUntilExpiration !== null && daysUntilExpiration <= 7 && (
                   <Badge variant="destructive" className="animate-pulse text-xs">
-                    剩餘 {daysUntilExpiration} 天
+                    {t('dash.daysLeft', { days: String(daysUntilExpiration) })}
                   </Badge>
                 )}
               </div>
