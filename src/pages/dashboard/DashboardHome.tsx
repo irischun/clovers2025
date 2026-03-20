@@ -26,6 +26,7 @@ interface RecentActivity {
 }
 
 const DashboardHome = () => {
+  const { t } = useLanguage();
   const [stats, setStats] = useState<Stats>({
     prompts: 0,
     scheduledPosts: 0,
