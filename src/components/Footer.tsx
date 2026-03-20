@@ -1,8 +1,11 @@
 import { Facebook, Instagram, Linkedin, Twitter, Youtube, Mail, ArrowUp, Heart } from 'lucide-react';
 import cloversLogo from '@/assets/clovers-logo-icon.jpeg';
 import { APP_VERSION } from '@/config/version';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const Footer = () => {
+  const { t } = useLanguage();
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -13,6 +16,13 @@ const Footer = () => {
     { icon: Linkedin, href: '#', label: 'LinkedIn' },
     { icon: Twitter, href: '#', label: 'Twitter' },
     { icon: Youtube, href: '#', label: 'YouTube' },
+  ];
+
+  const quickLinks = [
+    { label: t('footer.features'), href: '#features' },
+    { label: t('footer.pricing'), href: '#pricing' },
+    { label: t('nav.faq'), href: '#faq' },
+    { label: t('footer.contactUs'), href: '#contact' },
   ];
 
   return (
@@ -31,8 +41,8 @@ const Footer = () => {
               </span>
             </div>
             <p className="text-muted-foreground mb-6 max-w-md leading-relaxed">
-              From a single seedling to a field of clovers, nurtured on one united platform.
-              <br />一站式營銷AI生成系統
+              {t('footer.description')}
+              <br />{t('footer.zhDescription')}
             </p>
             <div className="flex items-center gap-3">
               {socialLinks.map((social) => (
@@ -44,19 +54,18 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-heading font-bold text-foreground mb-6 uppercase tracking-widest text-sm">快速連結</h4>
+            <h4 className="font-heading font-bold text-foreground mb-6 uppercase tracking-widest text-sm">{t('footer.quickLinks')}</h4>
             <ul className="space-y-4">
-              {['功能', '定價', 'FAQ', '聯繫我們'].map((link) => (
-                <li key={link}>
-                  <a href={`#${link === '功能' ? 'features' : link === '定價' ? 'pricing' : link === 'FAQ' ? 'faq' : 'contact'}`}
-                    className="text-muted-foreground hover:text-primary transition-colors duration-300">{link}</a>
+              {quickLinks.map((link) => (
+                <li key={link.label}>
+                  <a href={link.href} className="text-muted-foreground hover:text-primary transition-colors duration-300">{link.label}</a>
                 </li>
               ))}
             </ul>
           </div>
           
           <div>
-            <h4 className="font-heading font-bold text-foreground mb-6 uppercase tracking-widest text-sm">聯繫方式</h4>
+            <h4 className="font-heading font-bold text-foreground mb-6 uppercase tracking-widest text-sm">{t('footer.contactMethod')}</h4>
             <div className="space-y-4">
               <a href="mailto:hello@clover.com" className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors duration-300">
                 <Mail className="w-5 h-5" /><span>hello@clover.com</span>
@@ -70,7 +79,7 @@ const Footer = () => {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground flex items-center gap-1">
             © {new Date().getFullYear()} Clovers AI. Made with
-            <Heart className="w-4 h-4 text-primary fill-primary" /> for creators.
+            <Heart className="w-4 h-4 text-primary fill-primary" /> {t('footer.forCreators')}
           </p>
           <p className="text-xs text-muted-foreground/60">v{APP_VERSION}</p>
         </div>

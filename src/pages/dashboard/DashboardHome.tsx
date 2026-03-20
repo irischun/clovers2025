@@ -9,6 +9,7 @@ import { useUserSubscription } from '@/hooks/useUserSubscription';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { monthlyPlans, yearlyPlans } from '@/data/subscriptionPlans';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface Stats {
   prompts: number;
@@ -25,6 +26,7 @@ interface RecentActivity {
 }
 
 const DashboardHome = () => {
+  const { t } = useLanguage();
   const [stats, setStats] = useState<Stats>({
     prompts: 0,
     scheduledPosts: 0,
@@ -93,10 +95,10 @@ const DashboardHome = () => {
   }, []);
 
   const statCards = [
-    { title: '總提示詞', value: stats.prompts, icon: FileText, color: 'text-blue-500', bgColor: 'bg-blue-500/10', gradient: 'from-blue-500/20 to-blue-600/5' },
-    { title: '已排程內容', value: stats.scheduledPosts, icon: Calendar, color: 'text-green-500', bgColor: 'bg-green-500/10', gradient: 'from-green-500/20 to-green-600/5' },
-    { title: '媒體檔案', value: stats.mediaFiles, icon: Image, color: 'text-purple-500', bgColor: 'bg-purple-500/10', gradient: 'from-purple-500/20 to-purple-600/5' },
-    { title: 'AI 使用量', value: stats.aiGenerations, icon: Sparkles, color: 'text-yellow-500', bgColor: 'bg-yellow-500/10', gradient: 'from-yellow-500/20 to-yellow-600/5' },
+    { title: t('dash.totalPrompts'), value: stats.prompts, icon: FileText, color: 'text-blue-500', bgColor: 'bg-blue-500/10', gradient: 'from-blue-500/20 to-blue-600/5' },
+    { title: t('dash.scheduledContent'), value: stats.scheduledPosts, icon: Calendar, color: 'text-green-500', bgColor: 'bg-green-500/10', gradient: 'from-green-500/20 to-green-600/5' },
+    { title: t('dash.mediaFiles'), value: stats.mediaFiles, icon: Image, color: 'text-purple-500', bgColor: 'bg-purple-500/10', gradient: 'from-purple-500/20 to-purple-600/5' },
+    { title: t('dash.aiUsage'), value: stats.aiGenerations, icon: Sparkles, color: 'text-yellow-500', bgColor: 'bg-yellow-500/10', gradient: 'from-yellow-500/20 to-yellow-600/5' },
   ];
 
   const getActivityIcon = (type: RecentActivity['type']) => {
@@ -114,14 +116,10 @@ const DashboardHome = () => {
 
   const getActivityLabel = (type: RecentActivity['type']) => {
     switch (type) {
-      case 'prompt':
-        return '新增提示詞';
-      case 'post':
-        return '排程內容';
-      case 'media':
-        return '上傳媒體';
-      case 'ai':
-        return 'AI 生成';
+      case 'prompt': return t('dash.newPrompt');
+      case 'post': return t('dash.scheduledPost');
+      case 'media': return t('dash.uploadMedia');
+      case 'ai': return t('dash.aiGen');
     }
   };
 
@@ -152,10 +150,8 @@ const DashboardHome = () => {
       {/* Page Header */}
       <div className="flex flex-col gap-3 sm:gap-4">
         <div>
-          <h1 className="heading-display text-2xl sm:text-3xl mb-1 sm:mb-2">儀表板</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            歡迎回來！這是您的 Clovers 儀表板，開始創建精彩內容吧。
-          </p>
+          <h1 className="heading-display text-2xl sm:text-3xl mb-1 sm:mb-2">{t('dash.title')}</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">{t('dash.welcome')}</p>
         </div>
       </div>
 
@@ -174,19 +170,19 @@ const DashboardHome = () => {
                   <Crown className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <span className="text-xs sm:text-sm text-muted-foreground">已訂閱方案</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">{t('dash.subscribedPlan')}</span>
                   {subscriptionLoading ? (
                     <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-amber-500 mt-1" />
                   ) : (
                     <h3 className="text-lg sm:text-xl font-bold text-amber-600 dark:text-amber-400 group-hover:text-amber-500 transition-colors">
-                      {subscription ? subscription.plan_name : '尚未訂閱'}
+                      {subscription ? subscription.plan_name : t('dash.notSubscribed')}
                     </h3>
                   )}
                 </div>
               </div>
               {subscription && (
                 <Badge variant="outline" className="border-amber-500/50 text-amber-600 dark:text-amber-400 text-xs hidden sm:inline-flex">
-                  {subscription.billing_period === 'monthly' ? '月付' : '年付'}
+                  {subscription.billing_period === 'monthly' ? t('dash.monthly') : t('dash.yearly')}
                 </Badge>
               )}
             </div>
@@ -199,7 +195,7 @@ const DashboardHome = () => {
                 </div>
                 {daysUntilExpiration !== null && daysUntilExpiration <= 7 && (
                   <Badge variant="destructive" className="animate-pulse text-xs">
-                    剩餘 {daysUntilExpiration} 天
+                    {t('dash.daysLeft', { days: String(daysUntilExpiration) })}
                   </Badge>
                 )}
               </div>
@@ -208,7 +204,7 @@ const DashboardHome = () => {
             {!subscription && !subscriptionLoading && (
               <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
                 <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-amber-500" />
-                立即訂閱解鎖全部功能
+                {t('dash.subscribeNow')}
               </p>
             )}
           </div>
@@ -228,19 +224,19 @@ const DashboardHome = () => {
                   <Coins className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <span className="text-xs sm:text-sm text-muted-foreground">所剩點數</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">{t('dash.remainingPoints')}</span>
                   {pointsLoading ? (
                     <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-primary mt-1" />
                   ) : (
                     <h3 className="text-lg sm:text-xl font-bold text-primary group-hover:text-primary/80 transition-colors">
-                      {points.toLocaleString()} 點
+                      {points.toLocaleString()} {t('dash.points')}
                     </h3>
                   )}
                 </div>
               </div>
               {monthlyPoints > 0 && (
                 <Badge variant="outline" className="border-primary/50 text-primary text-xs hidden sm:inline-flex">
-                  每月 {monthlyPoints.toLocaleString()} 點
+                  每月 {monthlyPoints.toLocaleString()} {t('dash.points')}
                 </Badge>
               )}
             </div>
@@ -248,7 +244,7 @@ const DashboardHome = () => {
             {monthlyPoints > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs sm:text-sm">
-                  <span className="text-muted-foreground">本月用量</span>
+                  <span className="text-muted-foreground">{t('dash.monthlyUsage')}</span>
                   <span className="font-medium">{points.toLocaleString()} / {monthlyPoints.toLocaleString()}</span>
                 </div>
                 <Progress value={pointsUsagePercent} className="h-1.5 sm:h-2" />
@@ -258,7 +254,7 @@ const DashboardHome = () => {
             {!subscription && !subscriptionLoading && (
               <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
                 <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
-                訂閱後可獲得每月點數
+                {t('dash.subscribeForPoints')}
               </p>
             )}
           </div>
@@ -295,35 +291,17 @@ const DashboardHome = () => {
 
       {/* Quick actions */}
       <div>
-        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">快速操作</h2>
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">{t('dash.quickActions')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          <QuickActionCard
-            title="創建提示詞"
-            description="新增自定義提示詞到您的庫中"
-            icon={FileText}
-            href="/dashboard/prompts"
-            color="blue"
-          />
-          <QuickActionCard
-            title="排程內容"
-            description="計劃並排程您的社交媒體內容"
-            icon={Calendar}
-            href="/dashboard/scheduler"
-            color="green"
-          />
-          <QuickActionCard
-            title="AI 生成"
-            description="使用 AI 生成創意內容"
-            icon={Sparkles}
-            href="/dashboard/ai-tools"
-            color="yellow"
-          />
+          <QuickActionCard title={t('dash.createPrompt')} description={t('dash.createPromptDesc')} icon={FileText} href="/dashboard/prompts" color="blue" />
+          <QuickActionCard title={t('dash.scheduleContent')} description={t('dash.scheduleContentDesc')} icon={Calendar} href="/dashboard/scheduler" color="green" />
+          <QuickActionCard title={t('dash.aiGenerate')} description={t('dash.aiGenerateDesc')} icon={Sparkles} href="/dashboard/ai-tools" color="yellow" />
         </div>
       </div>
 
       {/* Recent activity */}
       <div>
-        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">最近活動</h2>
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">{t('dash.recentActivity')}</h2>
         <div className="bg-card border border-border rounded-lg sm:rounded-xl overflow-hidden">
           {loading ? (
             <div className="p-6 space-y-4">
@@ -342,15 +320,13 @@ const DashboardHome = () => {
               <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-muted/50 flex items-center justify-center">
                 <Sparkles className="w-8 h-8 text-muted-foreground/50" />
               </div>
-              <p className="text-muted-foreground font-medium">暫無活動記錄</p>
-              <p className="text-sm text-muted-foreground mt-1 mb-4">
-                開始使用 Clovers 後，您的活動將會顯示在這裡。
-              </p>
+              <p className="text-muted-foreground font-medium">{t('dash.noActivity')}</p>
+              <p className="text-sm text-muted-foreground mt-1 mb-4">{t('dash.noActivityDesc')}</p>
               <Link 
                 to="/dashboard/ai-tools" 
                 className="inline-flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium"
               >
-                開始使用 AI 工具
+                {t('dash.startAI')}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
