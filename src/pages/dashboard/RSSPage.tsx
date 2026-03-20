@@ -39,12 +39,12 @@ const RSSPage = () => {
 
       <div>
         <div className="flex items-center gap-3 mb-1">
-          <h1 className="heading-display text-2xl">RSS 訂閱</h1>
+          <h1 className="heading-display text-2xl">{t('rss.title')}</h1>
           <span className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-primary/20 text-primary border border-primary/30">
-            Coming Soon
+            {t('common.comingSoon')}
           </span>
         </div>
-        <p className="text-muted-foreground">訂閱並追蹤您喜愛的內容來源</p>
+        <p className="text-muted-foreground">{t('rss.subtitle')}</p>
       </div>
 
       <div className="flex gap-2">
