@@ -1,101 +1,40 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLanguage, Language } from '@/i18n/LanguageContext';
-import { supabase } from '@/integrations/supabase/client';
-
-// In-memory cache shared across all hook instances
-const translationCache = new Map<string, string>();
-const pendingRequests = new Map<string, Promise<string>>();
-
-function getCacheKey(text: string, targetLang: Language): string {
-  return `${targetLang}::${text}`;
-}
+import { translationCacheManager } from '@/i18n/translationCache';
 
 /**
  * Hook for auto-translating dynamic/user-generated content at runtime.
- * Uses AI translation with aggressive caching for performance.
+ * Uses persistent caching (localStorage + memory) with intelligent batch queuing.
  * 
  * Usage:
- *   const { translate, autoT } = useAutoTranslate();
- *   const translated = autoT("需要翻譯的文字", "zh-TW"); // auto translates to current language
+ *   const { translateText, batchTranslate } = useAutoTranslate();
+ *   
+ *   // Single text
+ *   const translated = useAutoTranslatedText("需要翻譯的文字");
+ *   
+ *   // Batch
+ *   const results = await batchTranslate([
+ *     { key: "title", text: "標題" },
+ *     { key: "desc", text: "描述" },
+ *   ]);
  */
 export function useAutoTranslate() {
   const { language } = useLanguage();
 
-  const translateTexts = useCallback(
-    async (
-      texts: { key: string; text: string }[],
-      sourceLang: Language,
-      targetLangs: Language[]
-    ): Promise<Record<Language, Record<string, string>>> => {
-      try {
-        const { data, error } = await supabase.functions.invoke('auto-translate', {
-          body: { texts, sourceLang, targetLangs },
-        });
-        if (error) throw error;
-        return data?.translations || {};
-      } catch (err) {
-        console.error('Auto-translate failed:', err);
-        return {} as Record<Language, Record<string, string>>;
-      }
+  /**
+   * Translate a single text. Returns a promise.
+   */
+  const translateText = useCallback(
+    async (text: string, sourceLang: Language = 'zh-TW'): Promise<string> => {
+      if (!text || language === sourceLang) return text;
+      return translationCacheManager.queueTranslation(text, sourceLang, language);
     },
-    []
+    [language]
   );
 
   /**
-   * Translate a single text string to the user's current language.
-   * Returns the original text immediately, then updates when translation is ready.
-   */
-  const useTranslatedText = (text: string, sourceLang: Language = 'zh-TW'): string => {
-    const [translated, setTranslated] = useState<string>(() => {
-      if (language === sourceLang) return text;
-      const cached = translationCache.get(getCacheKey(text, language));
-      return cached || text;
-    });
-
-    useEffect(() => {
-      if (language === sourceLang || !text) {
-        setTranslated(text);
-        return;
-      }
-
-      const cacheKey = getCacheKey(text, language);
-      const cached = translationCache.get(cacheKey);
-      if (cached) {
-        setTranslated(cached);
-        return;
-      }
-
-      // Deduplicate in-flight requests
-      let promise = pendingRequests.get(cacheKey);
-      if (!promise) {
-        promise = (async () => {
-          try {
-            const result = await translateTexts(
-              [{ key: 'text', text }],
-              sourceLang,
-              [language]
-            );
-            const t = result[language]?.text || text;
-            translationCache.set(cacheKey, t);
-            return t;
-          } catch {
-            return text;
-          } finally {
-            pendingRequests.delete(cacheKey);
-          }
-        })();
-        pendingRequests.set(cacheKey, promise);
-      }
-
-      promise.then(setTranslated);
-    }, [text, language, sourceLang]);
-
-    return translated;
-  };
-
-  /**
    * Batch translate multiple texts. Returns cached results immediately
-   * and fetches missing ones in a single API call.
+   * and fetches missing ones via the batch queue.
    */
   const batchTranslate = useCallback(
     async (
@@ -107,43 +46,63 @@ export function useAutoTranslate() {
       }
 
       const results: Record<string, string> = {};
-      const missing: { key: string; text: string }[] = [];
+      const promises: Promise<void>[] = [];
 
       for (const item of items) {
-        const cached = translationCache.get(getCacheKey(item.text, language));
+        const cached = translationCacheManager.get(item.text, language);
         if (cached) {
           results[item.key] = cached;
         } else {
-          missing.push(item);
+          promises.push(
+            translationCacheManager
+              .queueTranslation(item.text, sourceLang, language)
+              .then((t) => { results[item.key] = t; })
+          );
         }
       }
 
-      if (missing.length > 0) {
-        const translated = await translateTexts(missing, sourceLang, [language]);
-        const langResults = translated[language] || {};
-        for (const item of missing) {
-          const t = langResults[item.key] || item.text;
-          translationCache.set(getCacheKey(item.text, language), t);
-          results[item.key] = t;
-        }
-      }
-
+      await Promise.all(promises);
       return results;
     },
-    [language, translateTexts]
+    [language]
   );
 
-  return {
-    translateTexts,
-    useTranslatedText,
-    batchTranslate,
-    currentLanguage: language,
-  };
+  return { translateText, batchTranslate, currentLanguage: language };
+}
+
+/**
+ * Hook that returns the translated version of a text string.
+ * Automatically re-translates when language changes.
+ */
+export function useAutoTranslatedText(text: string, sourceLang: Language = 'zh-TW'): string {
+  const { language } = useLanguage();
+  
+  const [translated, setTranslated] = useState<string>(() => {
+    if (!text || language === sourceLang) return text;
+    return translationCacheManager.get(text, language) || text;
+  });
+
+  useEffect(() => {
+    if (!text || language === sourceLang) {
+      setTranslated(text);
+      return;
+    }
+
+    const cached = translationCacheManager.get(text, language);
+    if (cached) {
+      setTranslated(cached);
+      return;
+    }
+
+    translationCacheManager.queueTranslation(text, sourceLang, language).then(setTranslated);
+  }, [text, language, sourceLang]);
+
+  return translated;
 }
 
 /**
  * Clear the translation cache (useful for testing or memory management)
  */
 export function clearTranslationCache() {
-  translationCache.clear();
+  translationCacheManager.clear();
 }
