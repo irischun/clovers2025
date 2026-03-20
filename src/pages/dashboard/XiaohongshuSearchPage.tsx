@@ -60,13 +60,13 @@ const XiaohongshuSearchPage = () => {
 
   const handleSearch = async () => {
     if (!keyword.trim()) {
-      toast({ title: '請輸入關鍵詞', variant: 'destructive' });
+      toast({ title: t('xhsSearch.enterKeyword'), variant: 'destructive' });
       return;
     }
 
     const cost = getPointsCost();
     if (userPoints < cost) {
-      toast({ title: '點數不足', description: '請購買更多點數', variant: 'destructive' });
+      toast({ title: t('ytSearch.insufficientPoints'), description: t('buyPoints.subtitle'), variant: 'destructive' });
       return;
     }
 
@@ -96,9 +96,9 @@ const XiaohongshuSearchPage = () => {
       };
       setSearchHistory(prev => [historyItem, ...prev.slice(0, 19)]);
 
-      toast({ title: '搜尋完成', description: `找到 ${searchResults.length} 個結果` });
+      toast({ title: t('xhsSearch.searchComplete'), description: t('xhsSearch.foundResults', { count: searchResults.length }) });
     } catch (error) {
-      toast({ title: '搜尋失敗', variant: 'destructive' });
+      toast({ title: t('xhsSearch.searchFailed'), variant: 'destructive' });
     } finally {
       setIsSearching(false);
     }
@@ -113,7 +113,7 @@ const XiaohongshuSearchPage = () => {
 
   const clearHistory = () => {
     setSearchHistory([]);
-    toast({ title: '歷史記錄已清除' });
+    toast({ title: t('ytSearch.historyCleared') });
   };
 
   return (
@@ -123,10 +123,10 @@ const XiaohongshuSearchPage = () => {
 
       {/* Header */}
       <div>
-        <h1 className="heading-display text-2xl mb-1">小紅書熱門貼文搜尋</h1>
+        <h1 className="heading-display text-2xl mb-1">{t('xhsSearch.title')}</h1>
         <div className="mt-4 bg-muted/50 border border-border rounded-lg px-4 py-3">
-          <span className="text-primary font-semibold">點數消耗：1 點/10 個結果</span>
-          <span className="text-muted-foreground ml-1">(結果數量越多消耗越多點數)</span>
+          <span className="text-primary font-semibold">{t('xhsSearch.pointsCost')}</span>
+          <span className="text-muted-foreground ml-1">{t('xhsSearch.pointsCostDesc')}</span>
         </div>
       </div>
 
@@ -148,17 +148,17 @@ const XiaohongshuSearchPage = () => {
             <CardContent className="p-6 space-y-6">
               {/* Section Header */}
               <div>
-                <h2 className="text-lg font-semibold text-primary mb-1">搜尋小紅書貼文</h2>
-                <p className="text-sm text-muted-foreground">輸入關鍵詞搜尋熱門貼文</p>
+                <h2 className="text-lg font-semibold text-primary mb-1">{t('xhsSearch.searchPosts')}</h2>
+                <p className="text-sm text-muted-foreground">{t('xhsSearch.searchPostsDesc')}</p>
               </div>
 
               {/* Keyword Input */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">關鍵詞</label>
+                <label className="text-sm font-medium">{t('xhsSearch.keyword')}</label>
                 <Input 
                   value={keyword} 
                   onChange={(e) => setKeyword(e.target.value)} 
-                  placeholder="例如：美妝、旅遊、美食..."
+                  placeholder={t('xhsSearch.keywordPlaceholder')}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   className="w-full"
                 />
@@ -168,7 +168,7 @@ const XiaohongshuSearchPage = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 {/* Sort By */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">排序方式</label>
+                  <label className="text-sm font-medium">{t('xhsSearch.sortBy')}</label>
                   <Select value={sortBy} onValueChange={setSortBy}>
                     <SelectTrigger>
                       <SelectValue />
@@ -185,7 +185,7 @@ const XiaohongshuSearchPage = () => {
 
                 {/* Result Count */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">結果數量</label>
+                  <label className="text-sm font-medium">{t('xhsSearch.resultCount')}</label>
                   <Select value={resultCount} onValueChange={setResultCount}>
                     <SelectTrigger>
                       <SelectValue />
@@ -230,7 +230,7 @@ const XiaohongshuSearchPage = () => {
           {/* Search Results */}
           {results.length > 0 && (
             <div className="space-y-4">
-              <h3 className="font-semibold">搜尋結果 ({results.length} 個)</h3>
+              <h3 className="font-semibold">{t('xhsSearch.searchResults', { count: results.length })}</h3>
               <div className="grid md:grid-cols-2 gap-4">
                 {results.map((item, i) => (
                   <Card key={i} className="hover:shadow-lg transition-shadow">
@@ -269,14 +269,14 @@ const XiaohongshuSearchPage = () => {
           {results.length === 0 && !isSearching && (
             <div className="text-center py-12 text-muted-foreground">
               <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p>輸入關鍵詞探索小紅書熱門內容</p>
+              <p>{t('xhsSearch.exploreContent')}</p>
             </div>
           )}
         </TabsContent>
 
         <TabsContent value="history" className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold">搜尋歷史</h3>
+            <h3 className="font-semibold">{t('ytSearch.searchHistory')}</h3>
             {searchHistory.length > 0 && (
               <Button variant="ghost" size="sm" onClick={clearHistory}>
                 清除全部
@@ -321,7 +321,7 @@ const XiaohongshuSearchPage = () => {
           ) : (
             <div className="text-center py-12 text-muted-foreground">
               <History className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p>暫無搜尋歷史</p>
+              <p>{t('xhsSearch.noHistory')}</p>
             </div>
           )}
         </TabsContent>

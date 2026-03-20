@@ -26,7 +26,7 @@ const SchedulerPage = () => {
       <div className="w-full rounded-lg border border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20 p-4">
         <div className="flex items-center gap-2">
           <Coins className="h-4 w-4 text-yellow-600" />
-          <span className="font-semibold text-yellow-700 dark:text-yellow-400">點數消耗：1 點/次</span>
+          <span className="font-semibold text-yellow-700 dark:text-yellow-400">{t('scheduler.pointsCost')}</span>
         </div>
       </div>
 
@@ -37,14 +37,14 @@ const SchedulerPage = () => {
         onClick={() => setShowTutorial(true)}
       >
         <Play className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
-        <span className="text-lg font-semibold">📺 觀看教學：如何一鍵發佈到不同Social Media平台</span>
+        <span className="text-lg font-semibold">{t('scheduler.watchTutorial')}</span>
       </Button>
 
       {/* Tutorial Video Modal */}
       <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
         <DialogContent className="max-w-4xl p-6">
           <DialogHeader>
-            <DialogTitle className="text-center text-xl">教學影片即將推出</DialogTitle>
+            <DialogTitle className="text-center text-xl">{t('scheduler.tutorialTitle')}</DialogTitle>
           </DialogHeader>
           <div className="text-center space-y-4">
             <Play className="h-16 w-16 mx-auto text-muted-foreground" />

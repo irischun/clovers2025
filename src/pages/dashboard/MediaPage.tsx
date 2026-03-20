@@ -109,8 +109,8 @@ const MediaPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="heading-display text-2xl mb-1">媒體庫</h1>
-          <p className="text-muted-foreground">管理您的圖片和視頻檔案</p>
+          <h1 className="heading-display text-2xl mb-1">{t('media.title')}</h1>
+          <p className="text-muted-foreground">{t('media.subtitle')}</p>
         </div>
         <Button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="gap-2">
           <Upload className="w-4 h-4" />
@@ -134,8 +134,8 @@ const MediaPage = () => {
         onClick={() => fileInputRef.current?.click()}
       >
         <Upload className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
-        <p className="text-muted-foreground">拖放檔案到這裡或點擊上傳</p>
-        <p className="text-sm text-muted-foreground mt-1">支援圖片和視頻，最大 50MB</p>
+        <p className="text-muted-foreground">{t('media.dropOrClick')}</p>
+        <p className="text-sm text-muted-foreground mt-1">{t('media.supportedTypes')}</p>
       </div>
 
       {/* Filters */}
@@ -143,7 +143,7 @@ const MediaPage = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="搜尋檔案..."
+            placeholder={t('media.searchFiles')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -181,7 +181,7 @@ const MediaPage = () => {
         <div className="bg-card border border-border rounded-xl p-12 text-center">
           <ImageIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
           <p className="text-muted-foreground mb-2">
-            {files.length === 0 ? '還沒有上傳任何檔案' : '沒有找到匹配的檔案'}
+            {files.length === 0 ? t('media.noFiles') : t('media.noMatchingFiles')}
           </p>
         </div>
       ) : viewMode === 'grid' ? (
@@ -273,7 +273,7 @@ const MediaPage = () => {
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="max-w-4xl p-2 bg-background">
           <DialogHeader className="sr-only">
-            <DialogTitle>圖片預覽</DialogTitle>
+            <DialogTitle>{t('media.imagePreview')}</DialogTitle>
           </DialogHeader>
           {selectedImage && (
             <img src={selectedImage} alt="Preview" className="w-full h-auto max-h-[80vh] object-contain rounded-lg" />

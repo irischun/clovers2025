@@ -77,7 +77,7 @@ const YouTubeSearchPage = () => {
 
   const handleSearch = async () => {
     if (keywords.length === 0) {
-      toast({ title: '請至少添加一個關鍵字', variant: 'destructive' });
+      toast({ title: t('ytSearch.addAtLeastOneKeyword'), variant: 'destructive' });
       return;
     }
 
@@ -109,9 +109,9 @@ const YouTubeSearchPage = () => {
       };
       setSearchHistory(prev => [historyItem, ...prev.slice(0, 9)]);
       
-      toast({ title: '搜尋完成', description: `找到 ${data.results?.length || 0} 部影片，消耗 ${pointsRequired} 點` });
+      toast({ title: t('ytSearch.searchComplete'), description: `找到 ${data.results?.length || 0} 部影片，消耗 ${pointsRequired} 點` });
     } catch (error) {
-      toast({ title: '搜尋失敗', variant: 'destructive' });
+      toast({ title: t('ytSearch.searchFailed'), variant: 'destructive' });
     } finally {
       setIsSearching(false);
     }
@@ -124,7 +124,7 @@ const YouTubeSearchPage = () => {
 
   const handleClearHistory = () => {
     setSearchHistory([]);
-    toast({ title: '歷史記錄已清除' });
+    toast({ title: t('ytSearch.historyCleared') });
   };
 
   return (
@@ -135,20 +135,20 @@ const YouTubeSearchPage = () => {
       {/* Header */}
       <div className="flex items-center gap-3">
         <Search className="w-7 h-7 text-primary" />
-        <h1 className="heading-display text-2xl">熱門 YouTube 影片搜尋</h1>
+        <h1 className="heading-display text-2xl">{t('ytSearch.title')}</h1>
       </div>
 
       {/* Points Info Banner */}
       <div className="bg-muted/50 border border-border rounded-lg px-4 py-3">
-        <span className="text-primary font-semibold">點數消耗：1 點/10 部影片</span>
-        <span className="text-muted-foreground ml-1">(影片數量越多消耗越多點數)</span>
+        <span className="text-primary font-semibold">{t('ytSearch.pointsCost')}</span>
+        <span className="text-muted-foreground ml-1">{t('ytSearch.pointsCostDesc')}</span>
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="w-auto">
-          <TabsTrigger value="search">搜尋影片</TabsTrigger>
-          <TabsTrigger value="history">歷史記錄</TabsTrigger>
+          <TabsTrigger value="search">{t('ytSearch.searchVideos')}</TabsTrigger>
+          <TabsTrigger value="history">{t('ytSearch.searchHistory')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="search" className="space-y-6 mt-6">
@@ -162,12 +162,12 @@ const YouTubeSearchPage = () => {
 
           {/* Keyword Input */}
           <div className="space-y-3">
-            <Label className="text-base">搜尋關鍵字</Label>
+            <Label className="text-base">{t('ytSearch.searchKeywords')}</Label>
             <div className="flex gap-2">
               <Input 
                 value={keywordInput} 
                 onChange={(e) => setKeywordInput(e.target.value)} 
-                placeholder="請輸入一個關鍵字，例如: AI Agent" 
+                placeholder={t('ytSearch.enterKeyword')} 
                 onKeyDown={handleKeyDown}
                 className="flex-1"
               />
@@ -197,30 +197,30 @@ const YouTubeSearchPage = () => {
           {/* Filter Options - 2 columns for Sort & Date */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>排序方式</Label>
+              <Label>{t('ytSearch.sortBy')}</Label>
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="relevance">相關性最高</SelectItem>
-                  <SelectItem value="viewCount">觀看次數最多</SelectItem>
-                  <SelectItem value="date">上傳日期最新</SelectItem>
+                  <SelectItem value="relevance">{t('ytSearch.relevance')}</SelectItem>
+                  <SelectItem value="viewCount">{t('ytSearch.viewCount')}</SelectItem>
+                  <SelectItem value="date">{t('ytSearch.dateNewest')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>發佈日期</Label>
+              <Label>{t('ytSearch.publishedDate')}</Label>
               <Select value={publishedDate} onValueChange={setPublishedDate}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">全部時間</SelectItem>
-                  <SelectItem value="week">過去一週</SelectItem>
-                  <SelectItem value="month">過去一個月</SelectItem>
-                  <SelectItem value="year">過去一年</SelectItem>
+                  <SelectItem value="all">{t('ytSearch.allTime')}</SelectItem>
+                  <SelectItem value="week">{t('ytSearch.pastWeek')}</SelectItem>
+                  <SelectItem value="month">{t('ytSearch.pastMonth')}</SelectItem>
+                  <SelectItem value="year">{t('ytSearch.pastYear')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -228,7 +228,7 @@ const YouTubeSearchPage = () => {
 
           {/* Video Count */}
           <div className="space-y-2">
-            <Label>影片數量</Label>
+            <Label>{t('ytSearch.videoCount')}</Label>
             <Select value={videoCount} onValueChange={setVideoCount}>
               <SelectTrigger className="md:w-1/2">
                 <SelectValue />
@@ -245,7 +245,7 @@ const YouTubeSearchPage = () => {
 
           {/* Video Features - Radio style (single select) */}
           <div className="space-y-3">
-            <Label>影片特性</Label>
+            <Label>{t('ytSearch.videoFeatures')}</Label>
             <div className="grid grid-cols-2 gap-3">
               {[
                 { key: 'hd', label: 'HD 高畫質' },
@@ -297,7 +297,7 @@ const YouTubeSearchPage = () => {
           {/* Results */}
           {results.length > 0 && (
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold">搜尋結果 ({results.length} 部影片)</h2>
+              <h2 className="text-lg font-semibold">{t('ytSearch.searchResults', { count: results.length })}</h2>
               <div className="grid gap-4">
                 {results.map((item, i) => (
                   <Card key={i} className="overflow-hidden hover:shadow-md transition-shadow">
@@ -328,8 +328,8 @@ const YouTubeSearchPage = () => {
           {results.length === 0 && !isSearching && (
             <div className="text-center py-16 text-muted-foreground">
               <Youtube className="w-20 h-20 mx-auto mb-4 opacity-30" />
-              <p className="text-lg">添加關鍵字並點擊「開始搜尋」</p>
-              <p className="text-sm mt-2">搜尋 YouTube 熱門影片和趨勢內容</p>
+              <p className="text-lg">{t('ytSearch.addKeywords')}</p>
+              <p className="text-sm mt-2">{t('ytSearch.searchTrending')}</p>
             </div>
           )}
         </TabsContent>
@@ -337,7 +337,7 @@ const YouTubeSearchPage = () => {
         <TabsContent value="history" className="mt-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">搜尋歷史記錄</h2>
+              <h2 className="text-lg font-semibold">{t('ytSearch.searchHistory')}</h2>
               {searchHistory.length > 0 && (
                 <Button variant="ghost" size="sm" onClick={handleClearHistory}>
                   <Trash2 className="w-4 h-4 mr-2" />
@@ -375,7 +375,7 @@ const YouTubeSearchPage = () => {
             ) : (
               <div className="text-center py-16 text-muted-foreground">
                 <Clock className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                <p>尚無搜尋歷史記錄</p>
+                <p>{t('ytSearch.noHistory')}</p>
               </div>
             )}
           </div>

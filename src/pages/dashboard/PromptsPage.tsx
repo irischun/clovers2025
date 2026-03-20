@@ -82,7 +82,7 @@ const PromptsPage = () => {
 
   const handleSave = async () => {
     if (!formData.title || !formData.content) {
-      toast({ title: '請填寫標題和內容', variant: 'destructive' });
+      toast({ title: t('prompts.fillTitleContent'), variant: 'destructive' });
       return;
     }
 
@@ -104,7 +104,7 @@ const PromptsPage = () => {
 
   const handleCopy = (content: string) => {
     navigator.clipboard.writeText(content);
-    toast({ title: '已複製到剪貼板' });
+    toast({ title: t('common.copiedToClipboard') });
   };
 
   const handleImportTemplate = async (template: PromptTemplate) => {
@@ -115,7 +115,7 @@ const PromptsPage = () => {
       tags: template.tags,
       is_favorite: false,
     });
-    toast({ title: '模板已導入到我的提示詞庫' });
+    toast({ title: t('prompts.templateImported') });
     setActiveTab('my-prompts');
   };
 
@@ -128,8 +128,8 @@ const PromptsPage = () => {
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div>
-        <h1 className="heading-display text-2xl mb-1">提示詞庫</h1>
-        <p className="text-muted-foreground">管理和組織您的 AI 提示詞</p>
+        <h1 className="heading-display text-2xl mb-1">{t('prompts.title')}</h1>
+        <p className="text-muted-foreground">{t('prompts.subtitle')}</p>
       </div>
 
       {/* Action Buttons - Left Aligned */}
@@ -147,8 +147,8 @@ const PromptsPage = () => {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="my-prompts">我的提示詞</TabsTrigger>
-          <TabsTrigger value="template-library">提示詞庫</TabsTrigger>
+          <TabsTrigger value="my-prompts">{t('prompts.myPrompts')}</TabsTrigger>
+          <TabsTrigger value="template-library">{t('prompts.templateLibrary')}</TabsTrigger>
         </TabsList>
 
         {/* My Prompts Tab */}
@@ -159,7 +159,7 @@ const PromptsPage = () => {
             <div className="relative w-full max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="搜尋提示詞..."
+                placeholder={t('prompts.searchPrompts')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -174,7 +174,7 @@ const PromptsPage = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">全部分類</SelectItem>
+                  <SelectItem value="all">{t('prompts.allCategories')}</SelectItem>
                   {categories.map(cat => (
                     <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
                   ))}
@@ -234,7 +234,7 @@ const PromptsPage = () => {
           ) : filteredPrompts.length === 0 ? (
             <div className="bg-card border border-border rounded-xl p-12 text-center">
               <p className="text-muted-foreground mb-2">
-                {prompts.length === 0 ? '還沒有提示詞' : '沒有找到匹配的提示詞'}
+                {prompts.length === 0 ? t('prompts.noPrompts') : t('prompts.noMatchingPrompts')}
               </p>
               <p className="text-sm text-muted-foreground mb-4">
                 試試從提示詞庫導入模板開始
@@ -337,7 +337,7 @@ const PromptsPage = () => {
             <div className="relative w-full max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="搜尋模板..."
+                placeholder={t('prompts.searchTemplates')}
                 value={templateSearch}
                 onChange={(e) => setTemplateSearch(e.target.value)}
                 className="pl-10"
