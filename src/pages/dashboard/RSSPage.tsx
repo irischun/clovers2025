@@ -56,7 +56,7 @@ const RSSPage = () => {
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="space-y-2">
-          <h3 className="font-medium mb-3">訂閱源</h3>
+          <h3 className="font-medium mb-3">{t('rss.feedSources')}</h3>
           {feeds.map((feed, i) => (
             <Card key={i} className={`cursor-pointer transition-colors ${selectedFeed === feed ? 'border-primary' : ''}`} onClick={() => setSelectedFeed(feed)}>
               <CardContent className="p-3 flex items-center justify-between">
