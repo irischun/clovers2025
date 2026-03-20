@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const languages = [
   { id: 'yue', label: '粵語 (廣東話)' },
@@ -156,6 +157,7 @@ const validateVoiceId = (id: string): boolean => {
 };
 
 const VoiceGenerationPage = () => {
+  const { t } = useLanguage();
   // Get user points
   const { points: userPoints } = useUserPoints();
   

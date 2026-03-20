@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { usePublishingHistory } from '@/hooks/usePublishingHistory';
 import { format } from 'date-fns';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const platforms = [
   { id: 'facebook', label: 'Facebook', icon: '📘' },
@@ -23,6 +24,7 @@ const platforms = [
 ];
 
 const SmartPublishPage = () => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('create');
   const [content, setContent] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);

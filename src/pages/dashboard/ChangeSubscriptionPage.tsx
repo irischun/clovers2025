@@ -7,8 +7,10 @@ import { useNavigate } from 'react-router-dom';
 import { useUserSubscription } from '@/hooks/useUserSubscription';
 import { useUserPoints } from '@/hooks/useUserPoints';
 import { monthlyPlans, yearlyPlans, type YearlyPlan } from '@/data/subscriptionPlans';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const ChangeSubscriptionPage = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { subscription, subscribe, isSubscribing } = useUserSubscription();
   const { addPoints } = useUserPoints();

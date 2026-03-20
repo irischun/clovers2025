@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface GeneratedImage {
   id: string;
@@ -29,6 +30,7 @@ interface VoiceGeneration {
 }
 
 const LipSyncPage = () => {
+  const { t } = useLanguage();
   // Image selection
   const [imageTab, setImageTab] = useState<'gallery' | 'upload'>('gallery');
   const [galleryImages, setGalleryImages] = useState<GeneratedImage[]>([]);

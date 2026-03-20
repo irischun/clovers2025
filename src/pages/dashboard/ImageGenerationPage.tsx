@@ -19,6 +19,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 // Image analysis result interface
 interface ImageAnalysisSubject {
@@ -314,6 +315,7 @@ const aspectRatios = [
 ];
 
 const ImageGenerationPage = () => {
+  const { t } = useLanguage();
   // Get user points and generated images
   const { points: userPoints } = useUserPoints();
   const { images: savedImages, saveImage, toggleFavorite } = useGeneratedImages();

@@ -16,6 +16,7 @@ import { useGeneratedImages, GeneratedImage } from '@/hooks/useGeneratedImages';
 import { useVoiceGenerations, VoiceGeneration } from '@/hooks/useVoiceGenerations';
 import { useSubtitleConversions, SubtitleConversion } from '@/hooks/useSubtitleConversions';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '—';
@@ -27,6 +28,7 @@ const formatFileSize = (bytes: number): string => {
 type ActiveTab = 'images' | 'videos' | 'audio' | 'subtitles';
 
 const GalleryPage = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { images: generatedImages, loading: imgLoading, toggleFavorite, deleteImage } = useGeneratedImages();

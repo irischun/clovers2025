@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useMediaFiles, MediaFile } from '@/hooks/useMediaFiles';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const MediaPage = () => {
+  const { t } = useLanguage();
   const { files, loading, uploadFile, deleteFile, getSignedUrl } = useMediaFiles();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);

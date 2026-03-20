@@ -10,8 +10,10 @@ import { ScheduledPostsManager } from '@/components/publishing/ScheduledPostsMan
 import { PublishingHistory } from '@/components/publishing/PublishingHistory';
 import { UploadPostSettings } from '@/components/publishing/UploadPostSettings';
 import { SocialMediaPublisher } from '@/components/publishing/SocialMediaPublisher';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const SchedulerPage = () => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('wordpress');
   const [showTutorial, setShowTutorial] = useState(false);
 

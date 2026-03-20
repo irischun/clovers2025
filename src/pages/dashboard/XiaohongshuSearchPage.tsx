@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface SearchHistoryItem {
   id: string;
@@ -42,6 +43,7 @@ const SORT_OPTIONS = [
 ];
 
 const XiaohongshuSearchPage = () => {
+  const { t } = useLanguage();
   const [keyword, setKeyword] = useState('');
   const [sortBy, setSortBy] = useState('popular');
   const [resultCount, setResultCount] = useState('10');

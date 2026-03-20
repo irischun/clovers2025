@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface SearchHistoryItem {
   id: string;
@@ -31,6 +32,7 @@ interface VideoResult {
 }
 
 const YouTubeSearchPage = () => {
+  const { t } = useLanguage();
   const [keywordInput, setKeywordInput] = useState('');
   const [keywords, setKeywords] = useState<string[]>([]);
   const [isSearching, setIsSearching] = useState(false);

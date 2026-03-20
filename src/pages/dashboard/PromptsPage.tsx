@@ -11,6 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { usePrompts, Prompt } from '@/hooks/usePrompts';
 import { useToast } from '@/hooks/use-toast';
 import { promptTemplates, templateCategories, PromptTemplate } from '@/data/promptTemplates';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const categories = [
   { value: 'general', label: '一般' },
@@ -22,6 +23,7 @@ const categories = [
 ];
 
 const PromptsPage = () => {
+  const { t } = useLanguage();
   const { prompts, loading, createPrompt, updatePrompt, deletePrompt, toggleFavorite } = usePrompts();
   const { toast } = useToast();
   

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Coins, Check, Zap, Wallet, Sparkles, AlertCircle } from "lucide-react";
 import { useUserPoints } from "@/hooks/useUserPoints";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const pointPackages = [
   {
@@ -26,6 +27,7 @@ const pointPackages = [
 ];
 
 const BuyPointsPage = () => {
+  const { t } = useLanguage();
   const { points, isLoading, addPoints, isAddingPoints } = useUserPoints();
 
   const handlePurchase = (pointsAmount: number, price: number) => {

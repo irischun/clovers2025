@@ -7,8 +7,10 @@ import { Coins, TrendingUp, TrendingDown, Clock, ArrowUpRight, ArrowDownRight } 
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { Link } from "react-router-dom";
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const PointHistoryPage = () => {
+  const { t } = useLanguage();
   const { transactions, isLoading } = usePointTransactions();
   const { points, isLoading: pointsLoading } = useUserPoints();
 

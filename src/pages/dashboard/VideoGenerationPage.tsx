@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 // Camera angles data
 const cameraAngles = [
@@ -65,6 +66,7 @@ const durations = [
 ];
 
 const VideoGenerationPage = () => {
+  const { t } = useLanguage();
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState('16:9');
   const [duration, setDuration] = useState('5');
