@@ -75,7 +75,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       key;
 
     // Dev warning for missing keys
-    if (process.env.NODE_ENV === 'development' && text === key && !missingKeys.has(key)) {
+    if (import.meta.env.DEV && text === key && !missingKeys.has(key)) {
       missingKeys.add(key);
       console.warn(`[i18n] Missing translation key: "${key}" for language "${language}"`);
     }
