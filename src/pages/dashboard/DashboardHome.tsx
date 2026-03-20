@@ -320,10 +320,8 @@ const DashboardHome = () => {
               <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-muted/50 flex items-center justify-center">
                 <Sparkles className="w-8 h-8 text-muted-foreground/50" />
               </div>
-              <p className="text-muted-foreground font-medium">暫無活動記錄</p>
-              <p className="text-sm text-muted-foreground mt-1 mb-4">
-                開始使用 Clovers 後，您的活動將會顯示在這裡。
-              </p>
+              <p className="text-muted-foreground font-medium">{t('dash.noActivity')}</p>
+              <p className="text-sm text-muted-foreground mt-1 mb-4">{t('dash.noActivityDesc')}</p>
               <Link 
                 to="/dashboard/ai-tools" 
                 className="inline-flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium"
