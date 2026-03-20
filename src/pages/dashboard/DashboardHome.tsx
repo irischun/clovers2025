@@ -175,7 +175,7 @@ const DashboardHome = () => {
                     <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-amber-500 mt-1" />
                   ) : (
                     <h3 className="text-lg sm:text-xl font-bold text-amber-600 dark:text-amber-400 group-hover:text-amber-500 transition-colors">
-                      {subscription ? subscription.plan_name : '尚未訂閱'}
+                      {subscription ? subscription.plan_name : t('dash.notSubscribed')}
                     </h3>
                   )}
                 </div>
