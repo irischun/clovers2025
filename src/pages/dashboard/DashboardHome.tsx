@@ -236,7 +236,7 @@ const DashboardHome = () => {
               </div>
               {monthlyPoints > 0 && (
                 <Badge variant="outline" className="border-primary/50 text-primary text-xs hidden sm:inline-flex">
-                  每月 {monthlyPoints.toLocaleString()} 點
+                  每月 {monthlyPoints.toLocaleString()} {t('dash.points')}
                 </Badge>
               )}
             </div>
