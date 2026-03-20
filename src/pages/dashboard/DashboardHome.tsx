@@ -9,6 +9,7 @@ import { useUserSubscription } from '@/hooks/useUserSubscription';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { monthlyPlans, yearlyPlans } from '@/data/subscriptionPlans';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface Stats {
   prompts: number;
