@@ -24,9 +24,9 @@ const RSSPage = () => {
       if (error) throw error;
       setFeeds(prev => [...prev, { ...data.feed, items: data.items }]);
       setFeedUrl('');
-      toast({ title: 'RSS 訂閱成功' });
+      toast({ title: t('rss.subscribeSuccess') });
     } catch (error) {
-      toast({ title: '訂閱失敗', description: '請檢查 RSS 網址是否正確', variant: 'destructive' });
+      toast({ title: t('rss.subscribeFailed'), description: t('rss.checkUrl'), variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
