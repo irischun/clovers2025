@@ -244,7 +244,7 @@ const DashboardHome = () => {
             {monthlyPoints > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs sm:text-sm">
-                  <span className="text-muted-foreground">本月用量</span>
+                  <span className="text-muted-foreground">{t('dash.monthlyUsage')}</span>
                   <span className="font-medium">{points.toLocaleString()} / {monthlyPoints.toLocaleString()}</span>
                 </div>
                 <Progress value={pointsUsagePercent} className="h-1.5 sm:h-2" />
