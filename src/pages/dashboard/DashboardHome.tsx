@@ -170,7 +170,7 @@ const DashboardHome = () => {
                   <Crown className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <span className="text-xs sm:text-sm text-muted-foreground">已訂閱方案</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">{t('dash.subscribedPlan')}</span>
                   {subscriptionLoading ? (
                     <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-amber-500 mt-1" />
                   ) : (
