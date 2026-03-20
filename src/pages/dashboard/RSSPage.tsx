@@ -95,7 +95,7 @@ const RSSPage = () => {
           ) : (
             <div className="text-center py-12 text-muted-foreground">
               <Rss className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p>選擇訂閱源查看內容</p>
+              <p>{t('rss.selectFeedToView')}</p>
             </div>
           )}
         </div>
