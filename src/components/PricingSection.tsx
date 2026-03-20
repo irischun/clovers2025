@@ -2,11 +2,11 @@ import { Check, Sparkles, Crown, Diamond } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { landingPlans } from '@/data/subscriptionPlans';
-import { useLanguage } from '@/i18n/LanguageContext';
+import { useTranslatedPlans } from '@/data/useTranslatedPlans';
 
 const PricingSection = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { translatePlanName, translatePlanEn, translateDescription, translateCta, translateFeature, translatePeriod, t } = useTranslatedPlans();
 
   const getPlanIcon = (index: number) => {
     const icons = [Diamond, Crown, Sparkles];
@@ -52,16 +52,16 @@ const PricingSection = () => {
                         <IconComponent className={`w-5 h-5 ${plan.popular ? 'text-primary-foreground' : 'text-primary'}`} />
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider">{plan.nameEn}</p>
-                        <h3 className="text-xl font-heading font-bold text-foreground">{plan.name}</h3>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">{translatePlanEn(plan.nameEn)}</p>
+                        <h3 className="text-xl font-heading font-bold text-foreground">{translatePlanName(plan.name)}</h3>
                       </div>
                     </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{plan.description}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{translateDescription(plan.description)}</p>
                   </div>
                   <div className="mb-8">
                     <div className="flex items-baseline gap-2">
                       <span className="text-5xl font-bold text-foreground">{plan.price}</span>
-                      <span className="text-muted-foreground text-sm">{plan.period}</span>
+                      <span className="text-muted-foreground text-sm">{translatePeriod(plan.period)}</span>
                     </div>
                   </div>
                   <ul className="space-y-4 mb-8">
@@ -70,12 +70,12 @@ const PricingSection = () => {
                         <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${plan.popular ? 'bg-primary/20' : 'bg-secondary'}`}>
                           <Check className={`w-3 h-3 ${plan.popular ? 'text-primary' : 'text-muted-foreground'}`} />
                         </div>
-                        <span className="text-sm text-muted-foreground">{feature}</span>
+                        <span className="text-sm text-muted-foreground">{translateFeature(feature)}</span>
                       </li>
                     ))}
                   </ul>
                   <Button onClick={() => navigate('/auth')} className={`w-full py-6 font-semibold transition-all duration-300 ${plan.popular ? 'btn-primary' : 'btn-secondary'}`}>
-                    {plan.cta}
+                    {translateCta(plan.cta)}
                   </Button>
                 </div>
               </div>

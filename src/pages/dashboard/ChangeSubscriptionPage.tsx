@@ -7,10 +7,10 @@ import { useNavigate } from 'react-router-dom';
 import { useUserSubscription } from '@/hooks/useUserSubscription';
 import { useUserPoints } from '@/hooks/useUserPoints';
 import { monthlyPlans, yearlyPlans, type YearlyPlan } from '@/data/subscriptionPlans';
-import { useLanguage } from '@/i18n/LanguageContext';
+import { useTranslatedPlans } from '@/data/useTranslatedPlans';
 
 const ChangeSubscriptionPage = () => {
-  const { t } = useLanguage();
+  const { translatePlanName, translateFeature, t } = useTranslatedPlans();
   const navigate = useNavigate();
   const { subscription, subscribe, isSubscribing } = useUserSubscription();
   const { addPoints } = useUserPoints();
@@ -24,8 +24,8 @@ const ChangeSubscriptionPage = () => {
     }, {
       onSuccess: () => {
         addPoints(pointsPerMonth);
-        toast.success('你的訂閱計劃已更新', {
-          description: `已更改為 ${planName} (${billingPeriod === 'monthly' ? '月' : '年'}付)`,
+        toast.success(t('sub.planChanged'), {
+          description: t('sub.planChangedDesc', { plan: translatePlanName(planName), period: billingPeriod === 'monthly' ? t('sub.monthly') : t('sub.yearly') }),
         });
         navigate('/dashboard/subscription');
       },
@@ -62,7 +62,7 @@ const ChangeSubscriptionPage = () => {
           <div className="absolute -top-3 right-4">
             <span className="px-3 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium flex items-center gap-1">
               <Crown className="w-3 h-3" />
-              目前計劃
+              {t('sub.currentPlanLabel')}
             </span>
           </div>
         )}
@@ -71,20 +71,20 @@ const ChangeSubscriptionPage = () => {
         {plan.popular && !isCurrent && (
           <div className="absolute -top-3 left-1/2 -translate-x-1/2">
             <span className="px-4 py-1 rounded-full bg-accent text-accent-foreground text-xs font-medium">
-              最受歡迎
+              {t('sub.mostPopular')}
             </span>
           </div>
         )}
 
         {/* Plan Name */}
-        <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
+        <h3 className="text-xl font-bold mb-2">{translatePlanName(plan.name)}</h3>
         
         {/* Points per month */}
         <p className={cn(
           "text-sm mb-4",
           plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
         )}>
-          每月 {plan.pointsPerMonth} 點數
+          {t('plan.pointsPerMonth', { points: String(plan.pointsPerMonth) })}
         </p>
 
         {/* Price */}
@@ -94,7 +94,7 @@ const ChangeSubscriptionPage = () => {
             "text-sm ml-1",
             plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
           )}>
-            / {plan.period}
+            {isYearly ? t('plan.period.year') : t('plan.period.month')}
           </span>
           
           {/* Yearly savings */}
@@ -104,13 +104,13 @@ const ChangeSubscriptionPage = () => {
                 "text-sm",
                 plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
               )}>
-                平均每月 ${(plan as typeof yearlyPlans[0]).monthlyPrice}
+                {t('plan.monthlyAvgPrice', { price: String((plan as typeof yearlyPlans[0]).monthlyPrice) })}
               </p>
               <p className={cn(
                 "text-sm font-medium",
                 plan.popular ? "text-primary-foreground" : "text-primary"
               )}>
-                年費慳 ${(plan as typeof yearlyPlans[0]).savings}
+                {t('plan.annualSave', { amount: String((plan as typeof yearlyPlans[0]).savings) })}
               </p>
             </div>
           )}
@@ -128,7 +128,7 @@ const ChangeSubscriptionPage = () => {
                 "text-sm",
                 plan.popular ? "text-primary-foreground/90" : ""
               )}>
-                {feature}
+                {translateFeature(feature)}
               </span>
             </li>
           ))}
@@ -146,7 +146,7 @@ const ChangeSubscriptionPage = () => {
           )}
           variant={plan.popular ? "secondary" : "outline"}
         >
-          {isCurrent ? '目前計劃' : isSubscribing ? "處理中..." : "選擇此計劃"}
+          {isCurrent ? t('sub.currentPlanLabel') : isSubscribing ? t('sub.cancelling') : t('changeSub.selectPlan')}
         </Button>
       </div>
     );
@@ -167,7 +167,7 @@ const ChangeSubscriptionPage = () => {
           <h1 className="text-3xl md:text-4xl font-bold">{t('changeSub.title')}</h1>
           {subscription && (
             <p className="text-muted-foreground mt-1">
-              目前計劃: <Badge variant="secondary">{subscription.plan_name} ({subscription.billing_period === 'monthly' ? '月付' : '年付'})</Badge>
+              {t('changeSub.currentPlan')} <Badge variant="secondary">{translatePlanName(subscription.plan_name)} ({subscription.billing_period === 'monthly' ? t('sub.monthly') : t('sub.yearly')})</Badge>
             </p>
           )}
         </div>
@@ -191,7 +191,7 @@ const ChangeSubscriptionPage = () => {
 
       {/* Footer Note */}
       <p className="text-center text-sm text-muted-foreground">
-        更改計劃後，新計劃將在下個計費週期生效。
+        {t('sub.footerNote')}
       </p>
     </div>
   );
