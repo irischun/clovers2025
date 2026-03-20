@@ -9,8 +9,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const SettingsPage = () => {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -77,10 +79,10 @@ const SettingsPage = () => {
         });
 
       if (error) throw error;
-      toast({ title: '個人資料已更新' });
+      toast({ title: t('settings.profileUpdated') });
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast({ title: '更新失敗', variant: 'destructive' });
+      toast({ title: t('settings.updateFailed'), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -88,12 +90,12 @@ const SettingsPage = () => {
 
   const handleChangePassword = async () => {
     if (passwords.new !== passwords.confirm) {
-      toast({ title: '新密碼不一致', variant: 'destructive' });
+      toast({ title: t('settings.passwordMismatch'), variant: 'destructive' });
       return;
     }
 
     if (passwords.new.length < 6) {
-      toast({ title: '密碼至少需要 6 個字元', variant: 'destructive' });
+      toast({ title: t('settings.passwordTooShort'), variant: 'destructive' });
       return;
     }
 
@@ -103,10 +105,10 @@ const SettingsPage = () => {
       if (error) throw error;
       
       setPasswords({ current: '', new: '', confirm: '' });
-      toast({ title: '密碼已更新' });
+      toast({ title: t('settings.passwordUpdated') });
     } catch (error) {
       console.error('Error changing password:', error);
-      toast({ title: '密碼更新失敗', variant: 'destructive' });
+      toast({ title: t('settings.passwordUpdateFailed'), variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -133,8 +135,8 @@ const SettingsPage = () => {
     <div className="space-y-6 animate-fade-in max-w-2xl">
       {/* Header */}
       <div>
-        <h1 className="heading-display text-2xl mb-1">用戶資料</h1>
-        <p className="text-muted-foreground">管理您的個人資訊</p>
+        <h1 className="heading-display text-2xl mb-1">{t('settings.title')}</h1>
+        <p className="text-muted-foreground">{t('settings.subtitle')}</p>
       </div>
 
       {/* Profile Section */}
@@ -144,7 +146,7 @@ const SettingsPage = () => {
             <User className="w-5 h-5" />
             個人資料
           </CardTitle>
-          <CardDescription>更新您的個人資訊</CardDescription>
+          <CardDescription>{t('settings.profileDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Avatar */}
@@ -159,9 +161,9 @@ const SettingsPage = () => {
               <Input
                 value={profile.avatar_url}
                 onChange={(e) => setProfile({ ...profile, avatar_url: e.target.value })}
-                placeholder="頭像 URL"
+                placeholder={t('settings.avatarUrl')}
               />
-              <p className="text-xs text-muted-foreground mt-1">輸入圖片網址作為頭像</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('settings.avatarUrlDesc')}</p>
             </div>
           </div>
 
@@ -169,7 +171,7 @@ const SettingsPage = () => {
 
           {/* Name */}
           <div>
-            <label className="text-sm font-medium mb-2 block">姓名</label>
+            <label className="text-sm font-medium mb-2 block">{t('settings.name')}</label>
             <Input
               value={profile.full_name}
               onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
@@ -184,12 +186,12 @@ const SettingsPage = () => {
               電子郵件
             </label>
             <Input value={email} disabled className="bg-muted" />
-            <p className="text-xs text-muted-foreground mt-1">電子郵件無法更改</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('settings.emailCannotChange')}</p>
           </div>
 
           {/* Registration time (read-only) */}
           <div>
-            <label className="text-sm font-medium mb-2 block">註冊時間</label>
+            <label className="text-sm font-medium mb-2 block">{t('settings.registeredAt')}</label>
             <Input 
               value={createdAt ? new Date(createdAt).toLocaleString('zh-TW', { 
                 year: 'numeric', 
@@ -205,11 +207,11 @@ const SettingsPage = () => {
 
           {/* Bio */}
           <div>
-            <label className="text-sm font-medium mb-2 block">個人簡介</label>
+            <label className="text-sm font-medium mb-2 block">{t('settings.bio')}</label>
             <Textarea
               value={profile.bio}
               onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-              placeholder="簡單介紹一下自己..."
+              placeholder={t('settings.bioPlaceholder')}
               rows={3}
             />
           </div>
@@ -228,26 +230,26 @@ const SettingsPage = () => {
             <Lock className="w-5 h-5" />
             安全設定
           </CardTitle>
-          <CardDescription>更新您的密碼</CardDescription>
+          <CardDescription>{t('settings.securityDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-sm font-medium mb-2 block">新密碼</label>
+            <label className="text-sm font-medium mb-2 block">{t('settings.newPassword')}</label>
             <Input
               type="password"
               value={passwords.new}
               onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
-              placeholder="輸入新密碼"
+              placeholder={t('settings.newPassword')}
             />
           </div>
 
           <div>
-            <label className="text-sm font-medium mb-2 block">確認新密碼</label>
+            <label className="text-sm font-medium mb-2 block">{t('settings.confirmPassword')}</label>
             <Input
               type="password"
               value={passwords.confirm}
               onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-              placeholder="再次輸入新密碼"
+              placeholder={t('settings.confirmPassword')}
             />
           </div>
 
@@ -270,19 +272,19 @@ const SettingsPage = () => {
             <Info className="w-5 h-5" />
             版本資訊
           </CardTitle>
-          <CardDescription>系統版本與更新資訊</CardDescription>
+          <CardDescription>{t('settings.versionDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
           <div className="flex justify-between items-center py-2 border-b border-border/50">
-            <span className="text-sm text-muted-foreground">版本號碼</span>
+            <span className="text-sm text-muted-foreground">{t('settings.versionNumber')}</span>
             <span className="font-mono text-sm">v{APP_VERSION}</span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-border/50">
-            <span className="text-sm text-muted-foreground">版本名稱</span>
+            <span className="text-sm text-muted-foreground">{t('settings.versionName')}</span>
             <span className="text-sm">{VERSION_NAME}</span>
           </div>
           <div className="flex justify-between items-center py-2">
-            <span className="text-sm text-muted-foreground">發布日期</span>
+            <span className="text-sm text-muted-foreground">{t('settings.releaseDate')}</span>
             <span className="text-sm">{VERSION_DATE}</span>
           </div>
         </CardContent>

@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const outputLanguages = [
   { value: 'zh-TW', label: '繁體中文' },
@@ -51,6 +52,7 @@ interface HistoryItem {
 }
 
 const ContentOrganizePage = () => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'rewrite' | 'history'>('rewrite');
   const [mode, setMode] = useState<'single' | 'batch'>('single');
   const { toast } = useToast();

@@ -7,8 +7,10 @@ import { useNavigate } from 'react-router-dom';
 import { useUserSubscription } from '@/hooks/useUserSubscription';
 import { useUserPoints } from '@/hooks/useUserPoints';
 import { monthlyPlans, yearlyPlans, type YearlyPlan } from '@/data/subscriptionPlans';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const ChangeSubscriptionPage = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { subscription, subscribe, isSubscribing } = useUserSubscription();
   const { addPoints } = useUserPoints();
@@ -28,7 +30,7 @@ const ChangeSubscriptionPage = () => {
         navigate('/dashboard/subscription');
       },
       onError: (error) => {
-        toast.error('更改訂閱失敗', {
+        toast.error(t('sub.changeFailed'), {
           description: error.message,
         });
       },
@@ -162,7 +164,7 @@ const ChangeSubscriptionPage = () => {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold">更改訂閱</h1>
+          <h1 className="text-3xl md:text-4xl font-bold">{t('changeSub.title')}</h1>
           {subscription && (
             <p className="text-muted-foreground mt-1">
               目前計劃: <Badge variant="secondary">{subscription.plan_name} ({subscription.billing_period === 'monthly' ? '月付' : '年付'})</Badge>
@@ -173,7 +175,7 @@ const ChangeSubscriptionPage = () => {
 
       {/* Monthly Plans Section */}
       <div className="space-y-6">
-        <h2 className="text-2xl font-semibold">月付</h2>
+        <h2 className="text-2xl font-semibold">{t('changeSub.monthlyPlans')}</h2>
         <div className="grid md:grid-cols-3 gap-6">
           {monthlyPlans.map((plan) => renderPlanCard(plan, false))}
         </div>
@@ -181,7 +183,7 @@ const ChangeSubscriptionPage = () => {
 
       {/* Yearly Plans Section */}
       <div className="space-y-6">
-        <h2 className="text-2xl font-semibold">年付</h2>
+        <h2 className="text-2xl font-semibold">{t('changeSub.yearlyPlans')}</h2>
         <div className="grid md:grid-cols-3 gap-6">
           {yearlyPlans.map((plan) => renderPlanCard(plan, true))}
         </div>

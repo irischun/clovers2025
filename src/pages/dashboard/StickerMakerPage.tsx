@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useMediaFiles } from '@/hooks/useMediaFiles';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface ImageFrame {
   id: string;
@@ -168,6 +169,7 @@ const textStyles: StyleOption[] = [
 ];
 
 const StickerMakerPage = () => {
+  const { t } = useLanguage();
   const [frames, setFrames] = useState<ImageFrame[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);

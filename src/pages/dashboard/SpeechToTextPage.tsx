@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface VoiceGeneration {
   id: string;
@@ -41,6 +42,7 @@ const VIDEO_FORMATS = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video
 const ACCEPTED_FORMATS = [...AUDIO_FORMATS, ...VIDEO_FORMATS].join(',');
 
 const SpeechToTextPage = () => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('convert');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);

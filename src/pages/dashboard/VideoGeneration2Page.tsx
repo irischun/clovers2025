@@ -8,8 +8,10 @@ import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Upload, Image, Music, Wand2, Play, RefreshCw, Sparkles, Film, Shield, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const VideoGeneration2Page = () => {
+  const { t } = useLanguage();
   const { toast } = useToast();
   
   // Image selection

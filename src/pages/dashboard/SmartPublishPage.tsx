@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { usePublishingHistory } from '@/hooks/usePublishingHistory';
 import { format } from 'date-fns';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const platforms = [
   { id: 'facebook', label: 'Facebook', icon: '📘' },
@@ -23,6 +24,7 @@ const platforms = [
 ];
 
 const SmartPublishPage = () => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('create');
   const [content, setContent] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
@@ -59,11 +61,11 @@ const SmartPublishPage = () => {
 
   const handlePublish = async () => {
     if (!content.trim()) { 
-      toast({ title: '請輸入內容', variant: 'destructive' }); 
+      toast({ title: t('smartPub.enterContentFirst'), variant: 'destructive' }); 
       return; 
     }
     if (selectedPlatforms.length === 0 && !otherPlatform.trim()) { 
-      toast({ title: '請選擇至少一個平台', variant: 'destructive' }); 
+      toast({ title: t('smartPub.selectAtLeastOnePlatform'), variant: 'destructive' }); 
       return; 
     }
     
@@ -99,7 +101,7 @@ const SmartPublishPage = () => {
       refetch();
     } catch (error) {
       toast({ 
-        title: '發布失敗', 
+        title: t('smartPub.publishFailed'), 
         description: '請稍後再試',
         variant: 'destructive' 
       });
@@ -140,7 +142,7 @@ const SmartPublishPage = () => {
       <div className="flex items-center gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="heading-display text-2xl">智能內容發布</h1>
+            <h1 className="heading-display text-2xl">{t('smartPub.title')}</h1>
             <Badge variant="secondary" className="bg-amber-500/20 text-amber-400 border-amber-500/30">Beta</Badge>
           </div>
           <p className="text-muted-foreground text-sm mt-1">
@@ -168,7 +170,7 @@ const SmartPublishPage = () => {
             {/* Content Input */}
             <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle>發布內容</CardTitle>
+                <CardTitle>{t('smartPub.publishContent')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* File Upload */}
@@ -209,7 +211,7 @@ const SmartPublishPage = () => {
                 <Textarea 
                   value={content} 
                   onChange={(e) => setContent(e.target.value)} 
-                  placeholder="輸入要發布的內容..." 
+                  placeholder={t('smartPub.enterContent')} 
                   rows={8}
                   className="resize-none"
                 />
@@ -251,7 +253,7 @@ const SmartPublishPage = () => {
             {/* Platform Selection */}
             <Card>
               <CardHeader>
-                <CardTitle>選擇平台</CardTitle>
+                <CardTitle>{t('smartPub.selectPlatform')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {/* Select All */}
@@ -263,7 +265,7 @@ const SmartPublishPage = () => {
                     checked={selectedPlatforms.length === platforms.length}
                     onCheckedChange={selectAllPlatforms}
                   />
-                  <span className="font-medium">全部</span>
+                  <span className="font-medium">{t('common.selectAll')}</span>
                 </label>
 
                 {/* Individual Platforms */}
@@ -302,7 +304,7 @@ const SmartPublishPage = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="搜尋檔案名稱或標題..."
+                placeholder={t('smartPub.searchFiles')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -313,9 +315,9 @@ const SmartPublishPage = () => {
                 <SelectValue placeholder="全部狀態" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">全部狀態</SelectItem>
-                <SelectItem value="completed">已完成</SelectItem>
-                <SelectItem value="ready">已就緒</SelectItem>
+                <SelectItem value="all">{t('smartPub.allStatus')}</SelectItem>
+                <SelectItem value="completed">{t('smartPub.completed')}</SelectItem>
+                <SelectItem value="ready">{t('smartPub.ready')}</SelectItem>
                 <SelectItem value="failed">失敗</SelectItem>
               </SelectContent>
             </Select>
@@ -335,7 +337,7 @@ const SmartPublishPage = () => {
               ) : filteredRecords.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>尚無發布記錄</p>
+                  <p>{t('smartPub.noRecords')}</p>
                 </div>
               ) : (
                 <div className="divide-y divide-border">

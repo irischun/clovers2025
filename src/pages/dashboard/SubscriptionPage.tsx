@@ -24,8 +24,10 @@ import { useUserSubscription } from '@/hooks/useUserSubscription';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { monthlyPlans, yearlyPlans, type YearlyPlan } from '@/data/subscriptionPlans';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const SubscriptionPage = () => {
+  const { t } = useLanguage();
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const { points, isLoading: isLoadingPoints, addPoints } = useUserPoints();
   const { 

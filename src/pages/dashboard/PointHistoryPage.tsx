@@ -7,8 +7,10 @@ import { Coins, TrendingUp, TrendingDown, Clock, ArrowUpRight, ArrowDownRight } 
 import { format } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { Link } from "react-router-dom";
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const PointHistoryPage = () => {
+  const { t } = useLanguage();
   const { transactions, isLoading } = usePointTransactions();
   const { points, isLoading: pointsLoading } = useUserPoints();
 
@@ -25,8 +27,8 @@ const PointHistoryPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="heading-display text-3xl">點數紀錄</h1>
-          <p className="text-muted-foreground">查看您的點數交易歷史</p>
+          <h1 className="heading-display text-3xl">{t('pointHistory.title')}</h1>
+          <p className="text-muted-foreground">{t('pointHistory.subtitle')}</p>
         </div>
         <Link 
           to="/dashboard/buy-points"
@@ -43,7 +45,7 @@ const PointHistoryPage = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">目前餘額</p>
+                <p className="text-sm text-muted-foreground">{t('pointHistory.currentBalance')}</p>
                 {pointsLoading ? (
                   <Skeleton className="h-8 w-24 mt-1" />
                 ) : (
@@ -61,7 +63,7 @@ const PointHistoryPage = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">總增加</p>
+                <p className="text-sm text-muted-foreground">{t('pointHistory.totalAdded')}</p>
                 <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                   +{totalAdded.toLocaleString()} 點
                 </p>
@@ -77,7 +79,7 @@ const PointHistoryPage = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">總扣除</p>
+                <p className="text-sm text-muted-foreground">{t('pointHistory.totalDeducted')}</p>
                 <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                   -{totalDeducted.toLocaleString()} 點
                 </p>
@@ -97,7 +99,7 @@ const PointHistoryPage = () => {
             <Clock className="w-5 h-5" />
             交易紀錄
           </CardTitle>
-          <CardDescription>最近 50 筆交易紀錄</CardDescription>
+          <CardDescription>{t('pointHistory.recentTransactions')}</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -118,7 +120,7 @@ const PointHistoryPage = () => {
           ) : transactions.length === 0 ? (
             <div className="text-center py-12">
               <Coins className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-              <p className="text-muted-foreground">尚無交易紀錄</p>
+              <p className="text-muted-foreground">{t('pointHistory.noTransactions')}</p>
               <Link 
                 to="/dashboard/buy-points"
                 className="inline-flex items-center gap-1 text-primary hover:underline mt-2"

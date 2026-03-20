@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Coins, Check, Zap, Wallet, Sparkles, AlertCircle } from "lucide-react";
 import { useUserPoints } from "@/hooks/useUserPoints";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const pointPackages = [
   {
@@ -26,6 +27,7 @@ const pointPackages = [
 ];
 
 const BuyPointsPage = () => {
+  const { t } = useLanguage();
   const { points, isLoading, addPoints, isAddingPoints } = useUserPoints();
 
   const handlePurchase = (pointsAmount: number, price: number) => {
@@ -64,7 +66,7 @@ const BuyPointsPage = () => {
                 <Wallet className="w-7 h-7 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">目前點數餘額</p>
+                <p className="text-sm text-muted-foreground">{t('buyPoints.currentBalance')}</p>
                 {isLoading ? (
                   <Skeleton className="h-8 w-24 mt-1" />
                 ) : (
@@ -80,7 +82,7 @@ const BuyPointsPage = () => {
       <div className="flex justify-center">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 animate-pulse">
           <Sparkles className="w-5 h-5 text-amber-500 animate-bounce" />
-          <span className="text-amber-600 dark:text-amber-400 font-semibold">限時優惠</span>
+          <span className="text-amber-600 dark:text-amber-400 font-semibold">{t('buyPoints.limitedOffer')}</span>
           <Sparkles className="w-5 h-5 text-amber-500 animate-bounce" style={{ animationDelay: '0.2s' }} />
         </div>
       </div>
@@ -89,7 +91,7 @@ const BuyPointsPage = () => {
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-3 mb-4">
           <Coins className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-bold">購買點數套餐</h1>
+          <h1 className="text-3xl font-bold">{t('buyPoints.title')}</h1>
         </div>
         <p className="text-muted-foreground text-lg">
           選擇合適的點數套餐
