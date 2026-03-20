@@ -7,13 +7,16 @@ import PricingSection from '@/components/PricingSection';
 import FAQSection from '@/components/FAQSection';
 import Footer from '@/components/Footer';
 import ContactButton from '@/components/ContactButton';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const Index = () => {
+  const { t } = useLanguage();
+
   return (
     <>
       <Helmet>
-        <title>Clovers - 一站式營銷AI生成系統</title>
-        <meta name="description" content="Clovers 一站式營銷AI生成系統 - 省時、省人力、不中斷的內容產出系統。再也不需要在多個工具之間來回奔波。" />
+        <title>{t('seo.title')}</title>
+        <meta name="description" content={t('seo.description')} />
       </Helmet>
       
       <div className="min-h-screen bg-background">
