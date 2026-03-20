@@ -310,6 +310,28 @@ const Navigation = () => {
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-background/98 backdrop-blur-2xl border-b border-border/50 animate-slide-up shadow-2xl">
           <div className="px-4 py-6 space-y-2">
+            {/* Functions sections */}
+            <div className="mb-3">
+              <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-widest">功能/Functions</p>
+              {functionMenuSections.map((section) => (
+                <div key={section.label} className="mb-2">
+                  <p className="px-4 py-1.5 text-xs text-muted-foreground/70 uppercase tracking-wider">{section.label}</p>
+                  {section.items.map((item) => (
+                    <button
+                      key={item.path}
+                      onClick={() => { setMobileMenuOpen(false); navigate(item.path); }}
+                      className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300"
+                    >
+                      <item.icon className="w-4 h-4 text-primary" />
+                      <span>{item.title}</span>
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-border/50 pt-2" />
+
             <button
               onClick={() => scrollToSection('pricing')}
               className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm"
