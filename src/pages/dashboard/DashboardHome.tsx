@@ -291,29 +291,11 @@ const DashboardHome = () => {
 
       {/* Quick actions */}
       <div>
-        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">快速操作</h2>
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">{t('dash.quickActions')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          <QuickActionCard
-            title="創建提示詞"
-            description="新增自定義提示詞到您的庫中"
-            icon={FileText}
-            href="/dashboard/prompts"
-            color="blue"
-          />
-          <QuickActionCard
-            title="排程內容"
-            description="計劃並排程您的社交媒體內容"
-            icon={Calendar}
-            href="/dashboard/scheduler"
-            color="green"
-          />
-          <QuickActionCard
-            title="AI 生成"
-            description="使用 AI 生成創意內容"
-            icon={Sparkles}
-            href="/dashboard/ai-tools"
-            color="yellow"
-          />
+          <QuickActionCard title={t('dash.createPrompt')} description={t('dash.createPromptDesc')} icon={FileText} href="/dashboard/prompts" color="blue" />
+          <QuickActionCard title={t('dash.scheduleContent')} description={t('dash.scheduleContentDesc')} icon={Calendar} href="/dashboard/scheduler" color="green" />
+          <QuickActionCard title={t('dash.aiGenerate')} description={t('dash.aiGenerateDesc')} icon={Sparkles} href="/dashboard/ai-tools" color="yellow" />
         </div>
       </div>
 
