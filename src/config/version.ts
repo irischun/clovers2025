@@ -1,6 +1,6 @@
 // Application version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "35.0.0";
+export const APP_VERSION = "36.0.0";
 export const VERSION_NAME = "Version";
 export const VERSION_DATE = "2026-03-20";
