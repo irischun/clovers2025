@@ -254,7 +254,7 @@ const DashboardHome = () => {
             {!subscription && !subscriptionLoading && (
               <p className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2">
                 <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
-                訂閱後可獲得每月點數
+                {t('dash.subscribeForPoints')}
               </p>
             )}
           </div>
