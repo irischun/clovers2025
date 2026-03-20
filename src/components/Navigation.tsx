@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { LogIn, User, LogOut, Menu, X, Volume2, VolumeX } from 'lucide-react';
+import { LogIn, User, LogOut, Menu, X, Volume2, VolumeX, ChevronDown, LayoutDashboard, CreditCard, Coins, History, GalleryHorizontalEnd, FileText, Settings, Sparkles, ImagePlus, Sticker, Mic, AudioLines, Video, Tv, Youtube, BookOpen, Rss, Image, Send, FolderEdit, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import cloversLogo from '@/assets/clovers-logo-icon.jpeg';
