@@ -37,45 +37,47 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter basename="/clovers2025">
-          <Routes>
-            <Route path="/" element={<Navigate to="/main" replace />} />
-            <Route path="/main" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />}>
-              <Route index element={<DashboardHome />} />
-              <Route path="prompts" element={<PromptsPage />} />
-              <Route path="scheduler" element={<SchedulerPage />} />
-              <Route path="media" element={<MediaPage />} />
-              <Route path="ai-tools" element={<AIToolsPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="image-generation" element={<ImageGenerationPage />} />
-              <Route path="voice-generation" element={<VoiceGenerationPage />} />
-              <Route path="speech-to-text" element={<SpeechToTextPage />} />
-              <Route path="video-generation" element={<VideoGenerationPage />} />
-              <Route path="video-generation-2" element={<VideoGeneration2Page />} />
-              <Route path="lip-sync" element={<LipSyncPage />} />
-              <Route path="youtube-search" element={<YouTubeSearchPage />} />
-              <Route path="xiaohongshu-search" element={<XiaohongshuSearchPage />} />
-              <Route path="rss" element={<RSSPage />} />
-              <Route path="content-organize" element={<ContentOrganizePage />} />
-              <Route path="sticker-maker" element={<StickerMakerPage />} />
-              <Route path="smart-publish" element={<SmartPublishPage />} />
-              <Route path="gallery" element={<GalleryPage />} />
-              <Route path="subscription" element={<SubscriptionPage />} />
-              <Route path="change-subscription" element={<ChangeSubscriptionPage />} />
-              <Route path="buy-points" element={<BuyPointsPage />} />
-              <Route path="point-history" element={<PointHistoryPage />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <LanguageProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter basename="/clovers2025">
+            <Routes>
+              <Route path="/" element={<Navigate to="/main" replace />} />
+              <Route path="/main" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/dashboard" element={<Dashboard />}>
+                <Route index element={<DashboardHome />} />
+                <Route path="prompts" element={<PromptsPage />} />
+                <Route path="scheduler" element={<SchedulerPage />} />
+                <Route path="media" element={<MediaPage />} />
+                <Route path="ai-tools" element={<AIToolsPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="image-generation" element={<ImageGenerationPage />} />
+                <Route path="voice-generation" element={<VoiceGenerationPage />} />
+                <Route path="speech-to-text" element={<SpeechToTextPage />} />
+                <Route path="video-generation" element={<VideoGenerationPage />} />
+                <Route path="video-generation-2" element={<VideoGeneration2Page />} />
+                <Route path="lip-sync" element={<LipSyncPage />} />
+                <Route path="youtube-search" element={<YouTubeSearchPage />} />
+                <Route path="xiaohongshu-search" element={<XiaohongshuSearchPage />} />
+                <Route path="rss" element={<RSSPage />} />
+                <Route path="content-organize" element={<ContentOrganizePage />} />
+                <Route path="sticker-maker" element={<StickerMakerPage />} />
+                <Route path="smart-publish" element={<SmartPublishPage />} />
+                <Route path="gallery" element={<GalleryPage />} />
+                <Route path="subscription" element={<SubscriptionPage />} />
+                <Route path="change-subscription" element={<ChangeSubscriptionPage />} />
+                <Route path="buy-points" element={<BuyPointsPage />} />
+                <Route path="point-history" element={<PointHistoryPage />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </LanguageProvider>
   </HelmetProvider>
 );
 
