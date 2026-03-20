@@ -116,14 +116,10 @@ const DashboardHome = () => {
 
   const getActivityLabel = (type: RecentActivity['type']) => {
     switch (type) {
-      case 'prompt':
-        return '新增提示詞';
-      case 'post':
-        return '排程內容';
-      case 'media':
-        return '上傳媒體';
-      case 'ai':
-        return 'AI 生成';
+      case 'prompt': return t('dash.newPrompt');
+      case 'post': return t('dash.scheduledPost');
+      case 'media': return t('dash.uploadMedia');
+      case 'ai': return t('dash.aiGen');
     }
   };
 
