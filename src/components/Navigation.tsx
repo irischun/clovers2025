@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { LogIn, User, LogOut, Menu, X, Volume2, VolumeX } from 'lucide-react';
+import { LogIn, User, LogOut, Menu, X, Volume2, VolumeX, ChevronDown, LayoutDashboard, CreditCard, Coins, History, GalleryHorizontalEnd, FileText, Settings, Sparkles, ImagePlus, Sticker, Mic, AudioLines, Video, Tv, Youtube, BookOpen, Rss, Image, Send, FolderEdit, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -10,11 +10,57 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import cloversLogo from '@/assets/clovers-logo-icon.jpeg';
 
 const LANDING_AUDIO_VOLUME = 0.1;
+
+const functionMenuSections = [
+  {
+    label: '主選單',
+    items: [
+      { title: '儀表板', icon: LayoutDashboard, path: '/dashboard' },
+      { title: '訂閱方案', icon: CreditCard, path: '/dashboard/subscription' },
+      { title: '購買點數', icon: Coins, path: '/dashboard/buy-points' },
+      { title: '點數紀錄', icon: History, path: '/dashboard/point-history' },
+      { title: '作品畫廊', icon: GalleryHorizontalEnd, path: '/dashboard/gallery' },
+      { title: '提示詞管理', icon: FileText, path: '/dashboard/prompts' },
+      { title: '用戶資料', icon: Settings, path: '/dashboard/settings' },
+    ],
+  },
+  {
+    label: 'AI 內容工具',
+    items: [
+      { title: 'AI 文案創作', icon: Sparkles, path: '/dashboard/ai-tools' },
+      { title: '圖片生成', icon: ImagePlus, path: '/dashboard/image-generation' },
+      { title: '貼圖製作器', icon: Sticker, path: '/dashboard/sticker-maker' },
+      { title: '語音生成', icon: Mic, path: '/dashboard/voice-generation' },
+      { title: '語音轉字幕', icon: AudioLines, path: '/dashboard/speech-to-text' },
+      { title: '視頻生成', icon: Video, path: '/dashboard/video-generation' },
+      { title: '視頻生成 2.0', icon: Video, path: '/dashboard/video-generation-2' },
+      { title: 'LipSync 影片', icon: Tv, path: '/dashboard/lip-sync' },
+    ],
+  },
+  {
+    label: '自媒體工具',
+    items: [
+      { title: 'YouTube 搜尋', icon: Youtube, path: '/dashboard/youtube-search' },
+      { title: '小紅書搜尋', icon: BookOpen, path: '/dashboard/xiaohongshu-search' },
+      { title: 'RSS 訂閱', icon: Rss, path: '/dashboard/rss' },
+      { title: '媒體庫', icon: Image, path: '/dashboard/media' },
+    ],
+  },
+  {
+    label: '發佈工具',
+    items: [
+      { title: '自媒體發佈工具', icon: Send, path: '/dashboard/scheduler' },
+      { title: '內容整理', icon: FolderEdit, path: '/dashboard/content-organize' },
+      { title: '智能內容發布', icon: Rocket, path: '/dashboard/smart-publish' },
+    ],
+  },
+];
 
 const Navigation = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -154,6 +200,32 @@ const Navigation = () => {
 
         {/* Desktop Navigation Links */}
         <div className="hidden md:flex items-center gap-8">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest inline-flex items-center gap-1 outline-none">
+              功能/Functions
+              <ChevronDown className="w-3.5 h-3.5" />
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 rounded-full" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="w-64 max-h-[70vh] overflow-y-auto bg-card/95 backdrop-blur-xl border-border/50 rounded-xl shadow-xl">
+              {functionMenuSections.map((section, idx) => (
+                <div key={section.label}>
+                  {idx > 0 && <DropdownMenuSeparator className="bg-border/50" />}
+                  <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wider">{section.label}</DropdownMenuLabel>
+                  {section.items.map((item) => (
+                    <DropdownMenuItem
+                      key={item.path}
+                      onClick={() => navigate(item.path)}
+                      className="gap-3 rounded-lg cursor-pointer"
+                    >
+                      <item.icon className="w-4 h-4 text-primary" />
+                      <span>{item.title}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </div>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <button
             onClick={() => scrollToSection('pricing')}
             className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest"
@@ -238,6 +310,28 @@ const Navigation = () => {
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-background/98 backdrop-blur-2xl border-b border-border/50 animate-slide-up shadow-2xl">
           <div className="px-4 py-6 space-y-2">
+            {/* Functions sections */}
+            <div className="mb-3">
+              <p className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-widest">功能/Functions</p>
+              {functionMenuSections.map((section) => (
+                <div key={section.label} className="mb-2">
+                  <p className="px-4 py-1.5 text-xs text-muted-foreground/70 uppercase tracking-wider">{section.label}</p>
+                  {section.items.map((item) => (
+                    <button
+                      key={item.path}
+                      onClick={() => { setMobileMenuOpen(false); navigate(item.path); }}
+                      className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300"
+                    >
+                      <item.icon className="w-4 h-4 text-primary" />
+                      <span>{item.title}</span>
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-border/50 pt-2" />
+
             <button
               onClick={() => scrollToSection('pricing')}
               className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm"
