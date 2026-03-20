@@ -150,10 +150,8 @@ const DashboardHome = () => {
       {/* Page Header */}
       <div className="flex flex-col gap-3 sm:gap-4">
         <div>
-          <h1 className="heading-display text-2xl sm:text-3xl mb-1 sm:mb-2">儀表板</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            歡迎回來！這是您的 Clovers 儀表板，開始創建精彩內容吧。
-          </p>
+          <h1 className="heading-display text-2xl sm:text-3xl mb-1 sm:mb-2">{t('dash.title')}</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">{t('dash.welcome')}</p>
         </div>
       </div>
 
