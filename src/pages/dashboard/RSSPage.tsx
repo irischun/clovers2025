@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const RSSPage = () => {
+  const { t } = useLanguage();
   const [feedUrl, setFeedUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [feeds, setFeeds] = useState<any[]>([]);
