@@ -301,7 +301,7 @@ const DashboardHome = () => {
 
       {/* Recent activity */}
       <div>
-        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">最近活動</h2>
+        <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">{t('dash.recentActivity')}</h2>
         <div className="bg-card border border-border rounded-lg sm:rounded-xl overflow-hidden">
           {loading ? (
             <div className="p-6 space-y-4">
