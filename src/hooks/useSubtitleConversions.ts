@@ -21,6 +21,7 @@ export function useSubtitleConversions() {
   const [subtitles, setSubtitles] = useState<SubtitleConversion[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const fetchSubtitles = async () => {
     try {
