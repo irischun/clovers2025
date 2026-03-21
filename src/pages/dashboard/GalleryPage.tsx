@@ -557,6 +557,7 @@ const GalleryPage = () => {
       videos: { icon: <Video className="w-4 h-4" />, label: '視頻', cta: '前往視頻生成', path: '/dashboard/video-generation' },
       audio: { icon: <Music className="w-4 h-4" />, label: '音頻', cta: '前往語音生成', path: '/dashboard/voice-generation' },
       subtitles: { icon: <FileText className="w-4 h-4" />, label: '字幕', cta: '前往語音轉字幕', path: '/dashboard/speech-to-text' },
+      text: { icon: <Type className="w-4 h-4" />, label: '文字作品', cta: '前往 AI 文案', path: '/dashboard/ai-copy-writing' },
     };
     const c = config[activeTab];
     return (
