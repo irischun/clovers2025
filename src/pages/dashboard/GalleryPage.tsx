@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
   Calendar as CalendarIcon, Star, Grid3X3, ImageIcon, Video, Filter, Trash2,
-  Download, Copy, Check, ChevronDown, ChevronUp, Maximize2, Music, FileText, Play, Pause
+  Download, Copy, Check, ChevronDown, ChevronUp, Maximize2, Music, FileText, Play, Pause, Type
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,6 +17,7 @@ import { useVoiceGenerations, VoiceGeneration } from '@/hooks/useVoiceGeneration
 import { useSubtitleConversions, SubtitleConversion } from '@/hooks/useSubtitleConversions';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '—';
@@ -25,7 +26,16 @@ const formatFileSize = (bytes: number): string => {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 };
 
-type ActiveTab = 'images' | 'videos' | 'audio' | 'subtitles';
+type ActiveTab = 'images' | 'videos' | 'audio' | 'subtitles' | 'text';
+
+interface TextWork {
+  id: string;
+  type: 'ai_generation' | 'content_rewrite';
+  title: string;
+  content: string;
+  tool_type: string;
+  created_at: string;
+}
 
 const GalleryPage = () => {
   const { t } = useLanguage();
@@ -47,8 +57,52 @@ const GalleryPage = () => {
   const [subtitleFileSizes, setSubtitleFileSizes] = useState<Record<string, number>>({});
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const [audioElements, setAudioElements] = useState<Record<string, HTMLAudioElement>>({});
+  const [textWorks, setTextWorks] = useState<TextWork[]>([]);
+  const [textLoading, setTextLoading] = useState(true);
 
-  const loading = imgLoading || voiceLoading || subLoading;
+  const loading = imgLoading || voiceLoading || subLoading || textLoading;
+
+  // Fetch text works (ai_generations + content_rewrites)
+  useEffect(() => {
+    const fetchTextWorks = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setTextWorks([]); setTextLoading(false); return; }
+
+        const [aiRes, rewriteRes] = await Promise.all([
+          supabase.from('ai_generations').select('*').order('created_at', { ascending: false }),
+          supabase.from('content_rewrites').select('*').order('created_at', { ascending: false }),
+        ]);
+
+        const aiWorks: TextWork[] = (aiRes.data || []).map((d: any) => ({
+          id: d.id,
+          type: 'ai_generation' as const,
+          title: d.prompt?.substring(0, 60) || 'AI 生成',
+          content: d.result || '',
+          tool_type: d.tool_type || 'general',
+          created_at: d.created_at,
+        }));
+
+        const rewriteWorks: TextWork[] = (rewriteRes.data || []).map((d: any) => ({
+          id: d.id,
+          type: 'content_rewrite' as const,
+          title: d.source_url?.substring(0, 60) || '內容重整',
+          content: d.rewritten_content || d.original_content || '',
+          tool_type: d.style || 'rewrite',
+          created_at: d.created_at,
+        }));
+
+        setTextWorks([...aiWorks, ...rewriteWorks].sort((a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        ));
+      } catch (e) {
+        console.error('Error fetching text works:', e);
+      } finally {
+        setTextLoading(false);
+      }
+    };
+    fetchTextWorks();
+  }, []);
 
   const fetchRemoteFileSize = async (url: string): Promise<number> => {
     try {
@@ -177,6 +231,8 @@ const GalleryPage = () => {
 
   const filteredSubtitles = subtitles.filter(s => passesDateFilter(s.created_at));
 
+  const filteredTextWorks = textWorks.filter(tw => passesDateFilter(tw.created_at));
+
   const togglePromptExpand = (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     setExpandedPrompts(prev => {
@@ -268,11 +324,13 @@ const GalleryPage = () => {
 
   const currentCount = activeTab === 'images' ? filteredImages.length
     : activeTab === 'audio' ? filteredVoices.length
-    : activeTab === 'subtitles' ? filteredSubtitles.length : 0;
+    : activeTab === 'subtitles' ? filteredSubtitles.length
+    : activeTab === 'text' ? filteredTextWorks.length : 0;
 
   const countLabel = activeTab === 'images' ? '張圖片'
     : activeTab === 'audio' ? '個音頻'
-    : activeTab === 'subtitles' ? '個字幕' : '個視頻';
+    : activeTab === 'subtitles' ? '個字幕'
+    : activeTab === 'text' ? '篇文字作品' : '個視頻';
 
   // ─── Image Card ───
   const renderImageCard = (img: GeneratedImage, index: number) => {
@@ -493,12 +551,75 @@ const GalleryPage = () => {
     );
   };
 
+  // ─── Text Work Card ───
+  const renderTextCard = (tw: TextWork, index: number) => {
+    const isExpanded = expandedPrompts.has(tw.id);
+    const isCopied = copiedId === tw.id;
+    const shouldTruncate = tw.content.length > 120;
+    const typeLabel = tw.type === 'ai_generation' ? 'AI 文案' : '內容重整';
+
+    const handleDeleteTextWork = async () => {
+      try {
+        const table = tw.type === 'ai_generation' ? 'ai_generations' : 'content_rewrites';
+        const { error } = await supabase.from(table).delete().eq('id', tw.id);
+        if (error) throw error;
+        setTextWorks(prev => prev.filter(t => t.id !== tw.id));
+        toast({ title: '已刪除' });
+      } catch {
+        toast({ title: '刪除失敗', variant: 'destructive' });
+      }
+    };
+
+    return (
+      <div key={tw.id} className="group bg-card border border-border rounded-xl overflow-hidden hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 animate-slide-up" style={{ animationDelay: `${index * 30}ms` }}>
+        <div className="relative aspect-square overflow-hidden flex items-center justify-center bg-muted/30">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+              <Type className="w-10 h-10 text-primary" />
+            </div>
+            <Badge variant="secondary" className="text-xs">{typeLabel}</Badge>
+          </div>
+          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={handleDeleteTextWork} className="p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-destructive/80 transition-colors" title="刪除">
+              <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive-foreground" />
+            </button>
+          </div>
+          <div className="absolute bottom-2 right-2">
+            <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-xs font-mono">{tw.tool_type}</Badge>
+          </div>
+        </div>
+        <div className="p-3 space-y-2">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>{format(new Date(tw.created_at), 'yyyy-MM-dd HH:mm')}</span>
+          </div>
+          <p className="text-sm font-medium text-foreground line-clamp-1">{tw.title}</p>
+          {tw.content && (
+            <div className="space-y-1">
+              <p className={cn("text-xs text-muted-foreground leading-relaxed", !isExpanded && shouldTruncate && "line-clamp-3")}>{tw.content}</p>
+              <div className="flex items-center gap-1">
+                {shouldTruncate && (
+                  <button onClick={(e) => togglePromptExpand(tw.id, e)} className="text-xs text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors">
+                    {isExpanded ? <>收起 <ChevronUp className="w-3 h-3" /></> : <>展開 <ChevronDown className="w-3 h-3" /></>}
+                  </button>
+                )}
+                <button onClick={(e) => copyText(tw.content, tw.id, e)} className="text-xs text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors ml-auto">
+                  {isCopied ? <><Check className="w-3 h-3" /> 已複製</> : <><Copy className="w-3 h-3" /> 複製</>}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderEmptyState = () => {
     const config: Record<ActiveTab, { icon: React.ReactNode; label: string; cta: string; path: string }> = {
       images: { icon: <ImageIcon className="w-4 h-4" />, label: '圖像', cta: '前往圖像生成', path: '/dashboard/image-generation' },
       videos: { icon: <Video className="w-4 h-4" />, label: '視頻', cta: '前往視頻生成', path: '/dashboard/video-generation' },
       audio: { icon: <Music className="w-4 h-4" />, label: '音頻', cta: '前往語音生成', path: '/dashboard/voice-generation' },
       subtitles: { icon: <FileText className="w-4 h-4" />, label: '字幕', cta: '前往語音轉字幕', path: '/dashboard/speech-to-text' },
+      text: { icon: <Type className="w-4 h-4" />, label: '文字作品', cta: '前往 AI 文案', path: '/dashboard/ai-copy-writing' },
     };
     const c = config[activeTab];
     return (
@@ -523,7 +644,7 @@ const GalleryPage = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">我的畫廊</h1>
-        <p className="text-muted-foreground mt-1">瀏覽您生成的所有圖像、視頻、音頻和字幕</p>
+        <p className="text-muted-foreground mt-1">瀏覽您生成的所有圖像、視頻、音頻、字幕和文字作品</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)}>
@@ -532,6 +653,7 @@ const GalleryPage = () => {
           <TabsTrigger value="videos" className="gap-2 shrink-0"><Video className="w-4 h-4" />視頻畫廊</TabsTrigger>
           <TabsTrigger value="audio" className="gap-2 shrink-0"><Music className="w-4 h-4" />音頻收藏</TabsTrigger>
           <TabsTrigger value="subtitles" className="gap-2 shrink-0"><FileText className="w-4 h-4" />字幕收藏</TabsTrigger>
+          <TabsTrigger value="text" className="gap-2 shrink-0"><Type className="w-4 h-4" />文字作品</TabsTrigger>
         </TabsList>
 
         {/* Filters */}
@@ -559,7 +681,7 @@ const GalleryPage = () => {
               <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus className="pointer-events-auto" /></PopoverContent>
             </Popover>
           </div>
-          {activeTab !== 'subtitles' && (
+          {activeTab !== 'subtitles' && activeTab !== 'text' && (
             <Button variant={showFavoritesOnly ? "default" : "outline"} onClick={() => setShowFavoritesOnly(!showFavoritesOnly)} className="gap-2">
               <Star className={cn("w-4 h-4", showFavoritesOnly && "fill-current")} />只顯示收藏
             </Button>
@@ -593,6 +715,14 @@ const GalleryPage = () => {
           {filteredSubtitles.length === 0 ? renderEmptyState() : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredSubtitles.map((s, i) => renderSubtitleCard(s, i))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="text" className="mt-4">
+          {filteredTextWorks.length === 0 ? renderEmptyState() : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filteredTextWorks.map((tw, i) => renderTextCard(tw, i))}
             </div>
           )}
         </TabsContent>
