@@ -551,6 +551,68 @@ const GalleryPage = () => {
     );
   };
 
+  // ─── Text Work Card ───
+  const renderTextCard = (tw: TextWork, index: number) => {
+    const isExpanded = expandedPrompts.has(tw.id);
+    const isCopied = copiedId === tw.id;
+    const shouldTruncate = tw.content.length > 120;
+    const typeLabel = tw.type === 'ai_generation' ? 'AI 文案' : '內容重整';
+
+    const handleDeleteTextWork = async () => {
+      try {
+        const table = tw.type === 'ai_generation' ? 'ai_generations' : 'content_rewrites';
+        const { error } = await supabase.from(table).delete().eq('id', tw.id);
+        if (error) throw error;
+        setTextWorks(prev => prev.filter(t => t.id !== tw.id));
+        toast({ title: '已刪除' });
+      } catch {
+        toast({ title: '刪除失敗', variant: 'destructive' });
+      }
+    };
+
+    return (
+      <div key={tw.id} className="group bg-card border border-border rounded-xl overflow-hidden hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 animate-slide-up" style={{ animationDelay: `${index * 30}ms` }}>
+        <div className="relative aspect-square overflow-hidden flex items-center justify-center bg-muted/30">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+              <Type className="w-10 h-10 text-primary" />
+            </div>
+            <Badge variant="secondary" className="text-xs">{typeLabel}</Badge>
+          </div>
+          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={handleDeleteTextWork} className="p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-destructive/80 transition-colors" title="刪除">
+              <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive-foreground" />
+            </button>
+          </div>
+          <div className="absolute bottom-2 right-2">
+            <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm text-xs font-mono">{tw.tool_type}</Badge>
+          </div>
+        </div>
+        <div className="p-3 space-y-2">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>{format(new Date(tw.created_at), 'yyyy-MM-dd HH:mm')}</span>
+          </div>
+          <p className="text-sm font-medium text-foreground line-clamp-1">{tw.title}</p>
+          {tw.content && (
+            <div className="space-y-1">
+              <p className={cn("text-xs text-muted-foreground leading-relaxed", !isExpanded && shouldTruncate && "line-clamp-3")}>{tw.content}</p>
+              <div className="flex items-center gap-1">
+                {shouldTruncate && (
+                  <button onClick={(e) => togglePromptExpand(tw.id, e)} className="text-xs text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors">
+                    {isExpanded ? <>收起 <ChevronUp className="w-3 h-3" /></> : <>展開 <ChevronDown className="w-3 h-3" /></>}
+                  </button>
+                )}
+                <button onClick={(e) => copyText(tw.content, tw.id, e)} className="text-xs text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors ml-auto">
+                  {isCopied ? <><Check className="w-3 h-3" /> 已複製</> : <><Copy className="w-3 h-3" /> 複製</>}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderEmptyState = () => {
     const config: Record<ActiveTab, { icon: React.ReactNode; label: string; cta: string; path: string }> = {
       images: { icon: <ImageIcon className="w-4 h-4" />, label: '圖像', cta: '前往圖像生成', path: '/dashboard/image-generation' },
