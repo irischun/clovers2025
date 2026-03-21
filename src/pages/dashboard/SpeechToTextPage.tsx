@@ -192,6 +192,8 @@ const SpeechToTextPage = () => {
         .single();
 
       if (conversionError) throw conversionError;
+      queryClient.invalidateQueries({ queryKey: GALLERY_SUBTITLES_KEY });
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
 
       // Call edge function to process
       const { data, error } = await supabase.functions.invoke('audio-to-subtitle', {

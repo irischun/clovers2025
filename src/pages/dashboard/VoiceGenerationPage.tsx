@@ -315,6 +315,8 @@ const VoiceGenerationPage = () => {
             format,
             audio_url: url,
           });
+          queryClient.invalidateQueries({ queryKey: GALLERY_VOICES_KEY });
+          queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
           loadHistory();
         }
 

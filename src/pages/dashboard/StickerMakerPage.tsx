@@ -452,6 +452,8 @@ const StickerMakerPage = () => {
               style: textStyle,
               model: 'gemini-3.1-flash-image',
             });
+            queryClient.invalidateQueries({ queryKey: GALLERY_IMAGES_KEY });
+            queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
           }
         } catch (saveErr) {
           console.warn('Failed to save sticker to gallery:', saveErr);
