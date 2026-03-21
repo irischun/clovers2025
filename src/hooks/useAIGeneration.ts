@@ -9,6 +9,7 @@ export function useAIGeneration() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
   const { toast } = useToast();
+  const { consumePoints } = usePointConsumption();
 
   const generateContent = async (prompt: string, type: ContentType = 'social') => {
     setIsGenerating(true);
