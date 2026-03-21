@@ -43,7 +43,7 @@ const SubscriptionPage = () => {
   } = useUserSubscription();
   const navigate = useNavigate();
   
-  const plans = billingPeriod === 'monthly' ? monthlyPlans : yearlyPlans;
+  const plans = monthlyPlans;
 
   const handleSubscribe = (planName: string, pointsAmount: number, price: number) => {
     subscribe({
