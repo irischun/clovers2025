@@ -572,7 +572,8 @@ const GalleryPage = () => {
         const table = tw.type === 'ai_generation' ? 'ai_generations' : 'content_rewrites';
         const { error } = await supabase.from(table).delete().eq('id', tw.id);
         if (error) throw error;
-        setTextWorks(prev => prev.filter(t => t.id !== tw.id));
+        queryClient.invalidateQueries({ queryKey: GALLERY_TEXT_KEY });
+        queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
         toast({ title: '已刪除' });
       } catch {
         toast({ title: '刪除失敗', variant: 'destructive' });
