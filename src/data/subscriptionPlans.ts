@@ -122,7 +122,6 @@ export const landingPlans: LandingPlan[] = [
 ];
 
 // Helper to get plan by name
-export const getPlanByName = (name: string, billingPeriod: 'monthly' | 'yearly') => {
-  const plans = billingPeriod === 'monthly' ? monthlyPlans : yearlyPlans;
-  return plans.find(plan => plan.name === name);
+export const getPlanByName = (name: string) => {
+  return monthlyPlans.find(plan => plan.name === name);
 };
