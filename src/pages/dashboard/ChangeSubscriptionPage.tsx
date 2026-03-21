@@ -117,7 +117,7 @@ const ChangeSubscriptionPage = () => {
 
         {/* Change Plan Button */}
         <Button
-          onClick={() => handleChangePlan(plan.name, billingPeriod, plan.pointsPerMonth, plan.price)}
+          onClick={() => handleChangePlan(plan.name, plan.pointsPerMonth, plan.price)}
           disabled={isSubscribing || isCurrent}
           className={cn(
             "w-full",
