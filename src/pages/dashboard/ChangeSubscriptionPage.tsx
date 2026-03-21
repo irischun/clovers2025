@@ -154,19 +154,11 @@ const ChangeSubscriptionPage = () => {
         </div>
       </div>
 
-      {/* Monthly Plans Section */}
+      {/* Monthly Plans */}
       <div className="space-y-6">
-        <h2 className="text-2xl font-semibold">{t('changeSub.monthlyPlans')}</h2>
+        <h2 className="text-2xl font-semibold">{t('sub.choosePlan')}</h2>
         <div className="grid md:grid-cols-3 gap-6">
-          {monthlyPlans.map((plan) => renderPlanCard(plan, false))}
-        </div>
-      </div>
-
-      {/* Yearly Plans Section */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-semibold">{t('changeSub.yearlyPlans')}</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {yearlyPlans.map((plan) => renderPlanCard(plan, true))}
+          {monthlyPlans.map((plan) => renderPlanCard(plan))}
         </div>
       </div>
 
