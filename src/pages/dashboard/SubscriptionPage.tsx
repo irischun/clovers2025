@@ -184,42 +184,6 @@ const SubscriptionPage = () => {
         </p>
       </div>
 
-      {/* Billing Toggle */}
-      <div className="flex justify-center">
-        <div className="inline-flex items-center bg-secondary rounded-full p-1">
-          <button
-            onClick={() => setBillingPeriod('monthly')}
-            className={cn(
-              "px-6 py-2 rounded-full text-sm font-medium transition-all",
-              billingPeriod === 'monthly'
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {t('sub.monthly')}
-          </button>
-          <button
-            onClick={() => setBillingPeriod('yearly')}
-            className={cn(
-              "px-6 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2",
-              billingPeriod === 'yearly'
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {t('sub.yearly')}
-            <span className={cn(
-              "px-2 py-0.5 rounded-full text-xs",
-              billingPeriod === 'yearly'
-                ? "bg-accent text-accent-foreground"
-                : "bg-accent/50 text-accent-foreground"
-            )}>
-              {t('sub.savingsLabel')}
-            </span>
-          </button>
-        </div>
-      </div>
-
       {/* Pricing Cards */}
       <div className="grid md:grid-cols-3 gap-6">
         {plans.map((plan) => {
