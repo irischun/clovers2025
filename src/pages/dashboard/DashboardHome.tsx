@@ -8,7 +8,7 @@ import { useUserPoints } from '@/hooks/useUserPoints';
 import { useUserSubscription } from '@/hooks/useUserSubscription';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { monthlyPlans, yearlyPlans } from '@/data/subscriptionPlans';
+import { monthlyPlans } from '@/data/subscriptionPlans';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 interface Stats {
