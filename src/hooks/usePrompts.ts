@@ -52,6 +52,7 @@ export function usePrompts() {
 
       if (error) throw error;
       setPrompts(prev => [data, ...prev]);
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '提示詞已創建' });
       return data;
     } catch (error) {
