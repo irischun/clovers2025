@@ -51,6 +51,7 @@ export function usePublishingHistory() {
 
       if (error) throw error;
       setRecords(prev => [data as PublishingRecord, ...prev]);
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       return data as PublishingRecord;
     } catch (error) {
       console.error('Error adding publishing record:', error);
