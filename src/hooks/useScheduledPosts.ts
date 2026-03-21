@@ -23,6 +23,7 @@ export function useScheduledPosts() {
   const [posts, setPosts] = useState<ScheduledPost[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const fetchPosts = async () => {
     try {
