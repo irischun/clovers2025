@@ -60,7 +60,49 @@ const GalleryPage = () => {
   const [textWorks, setTextWorks] = useState<TextWork[]>([]);
   const [textLoading, setTextLoading] = useState(true);
 
-  const loading = imgLoading || voiceLoading || subLoading;
+  const loading = imgLoading || voiceLoading || subLoading || textLoading;
+
+  // Fetch text works (ai_generations + content_rewrites)
+  useEffect(() => {
+    const fetchTextWorks = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setTextWorks([]); setTextLoading(false); return; }
+
+        const [aiRes, rewriteRes] = await Promise.all([
+          supabase.from('ai_generations').select('*').order('created_at', { ascending: false }),
+          supabase.from('content_rewrites').select('*').order('created_at', { ascending: false }),
+        ]);
+
+        const aiWorks: TextWork[] = (aiRes.data || []).map((d: any) => ({
+          id: d.id,
+          type: 'ai_generation' as const,
+          title: d.prompt?.substring(0, 60) || 'AI 生成',
+          content: d.result || '',
+          tool_type: d.tool_type || 'general',
+          created_at: d.created_at,
+        }));
+
+        const rewriteWorks: TextWork[] = (rewriteRes.data || []).map((d: any) => ({
+          id: d.id,
+          type: 'content_rewrite' as const,
+          title: d.source_url?.substring(0, 60) || '內容重整',
+          content: d.rewritten_content || d.original_content || '',
+          tool_type: d.style || 'rewrite',
+          created_at: d.created_at,
+        }));
+
+        setTextWorks([...aiWorks, ...rewriteWorks].sort((a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        ));
+      } catch (e) {
+        console.error('Error fetching text works:', e);
+      } finally {
+        setTextLoading(false);
+      }
+    };
+    fetchTextWorks();
+  }, []);
 
   const fetchRemoteFileSize = async (url: string): Promise<number> => {
     try {
