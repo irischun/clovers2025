@@ -12,6 +12,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { usePointConsumption } from '@/hooks/usePointConsumption';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { GALLERY_IMAGES_KEY } from '@/hooks/useGalleryData';
+import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
 
 interface ImageFrame {
   id: string;
