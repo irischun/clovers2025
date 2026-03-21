@@ -18,7 +18,7 @@ const ChangeSubscriptionPage = () => {
   const handleChangePlan = (planName: string, pointsPerMonth: number, price: number) => {
     subscribe({
       plan_name: planName,
-      billing_period: billingPeriod,
+      billing_period: 'monthly',
       points_per_month: pointsPerMonth,
       price: price,
     }, {
