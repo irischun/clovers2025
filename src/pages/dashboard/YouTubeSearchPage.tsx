@@ -50,8 +50,9 @@ const YouTubeSearchPage = () => {
   
   const { toast } = useToast();
 
-  // Points calculation
-  const userPoints = 100;
+  const { points: userPoints } = useUserPoints();
+  const { consumePoints } = usePointConsumption();
+  const pointsRequired = Math.ceil(parseInt(videoCount) / 10);
   const pointsRequired = Math.ceil(parseInt(videoCount) / 10);
 
   const handleAddKeyword = () => {

@@ -53,7 +53,8 @@ const XiaohongshuSearchPage = () => {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [activeTab, setActiveTab] = useState('search');
-  const [userPoints] = useState(100); // Mock user points
+  const { points: userPoints } = useUserPoints();
+  const { consumePoints } = usePointConsumption();
   const { toast } = useToast();
 
   const getPointsCost = () => {

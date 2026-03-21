@@ -57,6 +57,7 @@ const ContentOrganizePage = () => {
   const [activeTab, setActiveTab] = useState<'rewrite' | 'history'>('rewrite');
   const [mode, setMode] = useState<'single' | 'batch'>('single');
   const { toast } = useToast();
+  const { consumePoints } = usePointConsumption();
 
   // Single link state
   const [url, setUrl] = useState('');
