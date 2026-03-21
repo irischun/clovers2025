@@ -171,6 +171,7 @@ const textStyles: StyleOption[] = [
 
 const StickerMakerPage = () => {
   const { t } = useLanguage();
+  const { consumePoints } = usePointConsumption();
   const [frames, setFrames] = useState<ImageFrame[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
