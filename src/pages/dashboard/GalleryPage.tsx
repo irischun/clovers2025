@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
   Calendar as CalendarIcon, Star, Grid3X3, ImageIcon, Video, Filter, Trash2,
-  Download, Copy, Check, ChevronDown, ChevronUp, Maximize2, Music, FileText, Play, Pause
+  Download, Copy, Check, ChevronDown, ChevronUp, Maximize2, Music, FileText, Play, Pause, Type
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,6 +17,7 @@ import { useVoiceGenerations, VoiceGeneration } from '@/hooks/useVoiceGeneration
 import { useSubtitleConversions, SubtitleConversion } from '@/hooks/useSubtitleConversions';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '—';
