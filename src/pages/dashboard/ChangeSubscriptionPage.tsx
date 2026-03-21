@@ -25,7 +25,7 @@ const ChangeSubscriptionPage = () => {
       onSuccess: () => {
         addPoints(pointsPerMonth);
         toast.success(t('sub.planChanged'), {
-          description: t('sub.planChangedDesc', { plan: translatePlanName(planName), period: billingPeriod === 'monthly' ? t('sub.monthly') : t('sub.yearly') }),
+          description: t('sub.planChangedDesc', { plan: translatePlanName(planName), period: t('sub.monthly') }),
         });
         navigate('/dashboard/subscription');
       },
