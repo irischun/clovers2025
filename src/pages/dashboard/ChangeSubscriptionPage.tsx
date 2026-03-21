@@ -37,9 +37,9 @@ const ChangeSubscriptionPage = () => {
     });
   };
 
-  const isCurrentPlan = (planName: string, billingPeriod: 'monthly' | 'yearly') => {
+  const isCurrentPlan = (planName: string) => {
     if (!subscription) return false;
-    return subscription.plan_name === planName && subscription.billing_period === billingPeriod;
+    return subscription.plan_name === planName;
   };
 
   const renderPlanCard = (plan: typeof monthlyPlans[0] | typeof yearlyPlans[0], isYearly: boolean) => {
