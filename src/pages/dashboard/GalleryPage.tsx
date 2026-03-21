@@ -26,7 +26,16 @@ const formatFileSize = (bytes: number): string => {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 };
 
-type ActiveTab = 'images' | 'videos' | 'audio' | 'subtitles';
+type ActiveTab = 'images' | 'videos' | 'audio' | 'subtitles' | 'text';
+
+interface TextWork {
+  id: string;
+  type: 'ai_generation' | 'content_rewrite';
+  title: string;
+  content: string;
+  tool_type: string;
+  created_at: string;
+}
 
 const GalleryPage = () => {
   const { t } = useLanguage();
