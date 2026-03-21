@@ -80,6 +80,7 @@ export function useGeneratedImages() {
 
       setImages(prev => [(data as GeneratedImage), ...prev]);
       queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
+      queryClient.invalidateQueries({ queryKey: GALLERY_IMAGES_KEY });
       return data as GeneratedImage;
     } catch (error) {
       console.error('Error saving generated image:', error);
