@@ -12,6 +12,7 @@ export function useAIGeneration() {
   const [generatedContent, setGeneratedContent] = useState('');
   const { toast } = useToast();
   const { consumePoints } = usePointConsumption();
+  const queryClient = useQueryClient();
 
   const generateContent = async (prompt: string, type: ContentType = 'social') => {
     setIsGenerating(true);
