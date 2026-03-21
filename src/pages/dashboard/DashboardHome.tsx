@@ -30,7 +30,6 @@ const DashboardHome = () => {
     prompts: 0,
     scheduledPosts: 0,
     mediaFiles: 0,
-    aiGenerations: 0,
   });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
