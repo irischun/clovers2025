@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { useUserPoints } from '@/hooks/useUserPoints';
+import { usePointConsumption } from '@/hooks/usePointConsumption';
 import { useGeneratedImages } from '@/hooks/useGeneratedImages';
 import { Image, Loader2, Download, Wand2, Camera, Film, Palette, ShoppingBag, Share2, ChevronDown, ChevronUp, Sparkles, Upload, X, Languages, Shirt, Zap, ImagePlus, Type, Grid3X3, User, Star, FolderOpen, ScanFace } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -318,6 +319,7 @@ const ImageGenerationPage = () => {
   const { t } = useLanguage();
   // Get user points and generated images
   const { points: userPoints } = useUserPoints();
+  const { consumePoints } = usePointConsumption();
   const { images: savedImages, saveImage, toggleFavorite } = useGeneratedImages();
   
   // Generation mode
@@ -771,6 +773,11 @@ const ImageGenerationPage = () => {
           setHistory(prev => [{ prompt, imageUrl, isAvatar: isAvatarImage }, ...prev.slice(0, 49)]);
         }
         
+        // Deduct points after successful generation
+        await consumePoints({
+          amount: totalPoints,
+          description: `Image generation: ${images.length} image(s) at ${pointsPerImage} pts each`,
+        });
         toast({ title: `成功生成 ${images.length} 張圖片！` });
         
         // Auto-refresh the page after successful generation

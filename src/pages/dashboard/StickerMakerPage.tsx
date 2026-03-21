@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useMediaFiles } from '@/hooks/useMediaFiles';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
+import { usePointConsumption } from '@/hooks/usePointConsumption';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 interface ImageFrame {
@@ -170,6 +171,7 @@ const textStyles: StyleOption[] = [
 
 const StickerMakerPage = () => {
   const { t } = useLanguage();
+  const { consumePoints } = usePointConsumption();
   const [frames, setFrames] = useState<ImageFrame[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -449,6 +451,8 @@ const StickerMakerPage = () => {
           console.warn('Failed to save sticker to gallery:', saveErr);
         }
       }
+      // Deduct 1 point for sticker generation
+      await consumePoints({ amount: 1, description: 'Sticker generation' });
       toast({ title: '貼圖生成成功！' });
     } catch (error: any) {
       console.error('Text sticker generation error:', error);

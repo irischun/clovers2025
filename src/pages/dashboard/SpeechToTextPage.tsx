@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { usePointConsumption } from '@/hooks/usePointConsumption';
 import { format } from 'date-fns';
 import { useLanguage } from '@/i18n/LanguageContext';
 
@@ -43,6 +44,7 @@ const ACCEPTED_FORMATS = [...AUDIO_FORMATS, ...VIDEO_FORMATS].join(',');
 
 const SpeechToTextPage = () => {
   const { t } = useLanguage();
+  const { consumePoints } = usePointConsumption();
   const [activeTab, setActiveTab] = useState('convert');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
@@ -198,6 +200,8 @@ const SpeechToTextPage = () => {
 
       if (error) throw error;
 
+      // Deduct points: 1 per language
+      await consumePoints({ amount: selectedLanguages.length, description: `Speech-to-text: ${selectedLanguages.length} language(s)` });
       toast({ title: '轉換成功', description: '字幕檔案已生成' });
       
       // Reset form

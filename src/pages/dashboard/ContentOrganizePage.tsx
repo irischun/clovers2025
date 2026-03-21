@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { usePointConsumption } from '@/hooks/usePointConsumption';
 import { format } from 'date-fns';
 import { useLanguage } from '@/i18n/LanguageContext';
 
@@ -56,6 +57,7 @@ const ContentOrganizePage = () => {
   const [activeTab, setActiveTab] = useState<'rewrite' | 'history'>('rewrite');
   const [mode, setMode] = useState<'single' | 'batch'>('single');
   const { toast } = useToast();
+  const { consumePoints } = usePointConsumption();
 
   // Single link state
   const [url, setUrl] = useState('');
@@ -178,6 +180,8 @@ const ContentOrganizePage = () => {
       if (data?.success && data?.results?.content) {
         setResult(data.results.content);
         await saveToHistory(url, data.results.content);
+        // Deduct 1 point for content rewrite
+        await consumePoints({ amount: 1, description: 'Content rewrite' });
         toast({ title: '改寫完成！' });
       } else if (data?.results?.status === 'rate_limited') {
         toast({ title: '請求過於頻繁，請稍後再試', variant: 'destructive' });
@@ -229,7 +233,12 @@ const ContentOrganizePage = () => {
             await saveToHistory(r.url, r.content, true);
           }
         }
-        toast({ title: `批量處理完成！成功 ${data.results.filter((r: any) => r.status === 'success').length}/${urls.length}` });
+        const successCount = data.results.filter((r: any) => r.status === 'success').length;
+        // Deduct 1 point per successful rewrite
+        if (successCount > 0) {
+          await consumePoints({ amount: successCount, description: `Batch content rewrite: ${successCount} article(s)` });
+        }
+        toast({ title: `批量處理完成！成功 ${successCount}/${urls.length}` });
       }
     } catch (error) {
       console.error('Batch rewrite error:', error);

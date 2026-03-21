@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { usePointConsumption } from '@/hooks/usePointConsumption';
 
 type ContentType = 'social' | 'video' | 'blog' | 'email';
 
@@ -8,6 +9,7 @@ export function useAIGeneration() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
   const { toast } = useToast();
+  const { consumePoints } = usePointConsumption();
 
   const generateContent = async (prompt: string, type: ContentType = 'social') => {
     setIsGenerating(true);
@@ -86,6 +88,15 @@ export function useAIGeneration() {
           result: fullContent,
           tool_type: type,
         });
+      }
+
+      // Deduct 1 point for AI content generation
+      if (fullContent) {
+        try {
+          await consumePoints({ amount: 1, description: `AI content generation (${type})` });
+        } catch (e) {
+          console.warn('Point deduction failed:', e);
+        }
       }
 
       return fullContent;

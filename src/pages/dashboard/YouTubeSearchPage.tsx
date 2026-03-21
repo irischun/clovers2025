@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserPoints } from '@/hooks/useUserPoints';
+import { usePointConsumption } from '@/hooks/usePointConsumption';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -48,8 +50,8 @@ const YouTubeSearchPage = () => {
   
   const { toast } = useToast();
 
-  // Points calculation
-  const userPoints = 100;
+  const { points: userPoints } = useUserPoints();
+  const { consumePoints } = usePointConsumption();
   const pointsRequired = Math.ceil(parseInt(videoCount) / 10);
 
   const handleAddKeyword = () => {
@@ -109,6 +111,8 @@ const YouTubeSearchPage = () => {
       };
       setSearchHistory(prev => [historyItem, ...prev.slice(0, 9)]);
       
+      // Deduct points after successful search
+      await consumePoints({ amount: pointsRequired, description: `YouTube search: ${data.results?.length || 0} videos` });
       toast({ title: t('ytSearch.searchComplete'), description: `找到 ${data.results?.length || 0} 部影片，消耗 ${pointsRequired} 點` });
     } catch (error) {
       toast({ title: t('ytSearch.searchFailed'), variant: 'destructive' });

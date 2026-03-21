@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { useUserPoints } from '@/hooks/useUserPoints';
+import { usePointConsumption } from '@/hooks/usePointConsumption';
 import { Volume2, Loader2, Play, Pause, Download, Star, Trash2, RotateCcw, Upload, Mic, Settings, RefreshCw, Square, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -160,6 +161,7 @@ const VoiceGenerationPage = () => {
   const { t } = useLanguage();
   // Get user points
   const { points: userPoints } = useUserPoints();
+  const { consumePoints } = usePointConsumption();
   
   // Main tab state
   const [mainTab, setMainTab] = useState<'generate' | 'clone'>('generate');
@@ -313,6 +315,8 @@ const VoiceGenerationPage = () => {
           loadHistory();
         }
 
+        // Deduct 1 point for voice generation
+        await consumePoints({ amount: 1, description: 'Voice generation' });
         toast({ title: '語音生成成功！' });
       }
     } catch (error: any) {

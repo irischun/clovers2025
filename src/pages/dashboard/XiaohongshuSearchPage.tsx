@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserPoints } from '@/hooks/useUserPoints';
+import { usePointConsumption } from '@/hooks/usePointConsumption';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 interface SearchHistoryItem {
@@ -51,7 +53,8 @@ const XiaohongshuSearchPage = () => {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
   const [activeTab, setActiveTab] = useState('search');
-  const [userPoints] = useState(100); // Mock user points
+  const { points: userPoints } = useUserPoints();
+  const { consumePoints } = usePointConsumption();
   const { toast } = useToast();
 
   const getPointsCost = () => {
@@ -96,6 +99,9 @@ const XiaohongshuSearchPage = () => {
       };
       setSearchHistory(prev => [historyItem, ...prev.slice(0, 19)]);
 
+      // Deduct points after successful search
+      const cost = getPointsCost();
+      await consumePoints({ amount: cost, description: `Xiaohongshu search: ${searchResults.length} results` });
       toast({ title: t('xhsSearch.searchComplete'), description: t('xhsSearch.foundResults', { count: searchResults.length }) });
     } catch (error) {
       toast({ title: t('xhsSearch.searchFailed'), variant: 'destructive' });
