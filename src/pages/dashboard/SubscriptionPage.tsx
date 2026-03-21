@@ -235,26 +235,8 @@ const SubscriptionPage = () => {
                   "text-sm ml-1",
                   plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
                 )}>
-                  {billingPeriod === 'monthly' ? t('plan.period.month') : t('plan.period.year')}
+                  {t('plan.period.month')}
                 </span>
-                
-                {/* Yearly savings */}
-                {billingPeriod === 'yearly' && 'savings' in plan && (
-                  <div className="mt-2 space-y-1">
-                    <p className={cn(
-                      "text-sm",
-                      plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
-                    )}>
-                      {t('plan.monthlyAvgPrice', { price: String((plan as typeof yearlyPlans[0]).monthlyPrice) })}
-                    </p>
-                    <p className={cn(
-                      "text-sm font-medium",
-                      plan.popular ? "text-primary-foreground" : "text-primary"
-                    )}>
-                      {t('plan.annualSave', { amount: String((plan as typeof yearlyPlans[0]).savings) })}
-                    </p>
-                  </div>
-                )}
               </div>
 
               {/* Features */}
