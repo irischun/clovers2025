@@ -22,6 +22,7 @@ export function useGeneratedImages() {
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const fetchImages = async () => {
     try {
