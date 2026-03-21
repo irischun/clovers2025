@@ -127,7 +127,7 @@ const SubscriptionPage = () => {
                   <div className="flex items-center gap-2">
                     <p className="text-xl font-bold">{translatePlanName(subscription.plan_name)}</p>
                     <Badge variant="secondary">
-                      {subscription.billing_period === 'monthly' ? t('sub.monthly') : t('sub.yearly')}
+                      {t('sub.monthly')}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
