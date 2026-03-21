@@ -231,6 +231,8 @@ const GalleryPage = () => {
 
   const filteredSubtitles = subtitles.filter(s => passesDateFilter(s.created_at));
 
+  const filteredTextWorks = textWorks.filter(tw => passesDateFilter(tw.created_at));
+
   const togglePromptExpand = (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     setExpandedPrompts(prev => {
