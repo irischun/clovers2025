@@ -656,6 +656,14 @@ const GalleryPage = () => {
             </div>
           )}
         </TabsContent>
+
+        <TabsContent value="text" className="mt-4">
+          {filteredTextWorks.length === 0 ? renderEmptyState() : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filteredTextWorks.map((tw, i) => renderTextCard(tw, i))}
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
 
       {/* Image Lightbox */}
