@@ -91,6 +91,7 @@ export function usePrompts() {
 
       if (error) throw error;
       setPrompts(prev => prev.filter(p => p.id !== id));
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '提示詞已刪除' });
     } catch (error) {
       console.error('Error deleting prompt:', error);

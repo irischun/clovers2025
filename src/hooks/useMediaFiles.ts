@@ -93,6 +93,7 @@ export function useMediaFiles() {
       if (dbError) throw dbError;
 
       setFiles(prev => prev.filter(f => f.id !== id));
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '檔案已刪除' });
     } catch (error) {
       console.error('Error deleting file:', error);

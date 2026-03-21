@@ -71,6 +71,7 @@ export function useVoiceGenerations() {
         .eq('id', id);
       if (error) throw error;
       setVoices(prev => prev.filter(v => v.id !== id));
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '音頻已刪除' });
     } catch {
       toast({ title: '刪除失敗', variant: 'destructive' });

@@ -64,6 +64,7 @@ export const usePointConsumption = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-points"] });
       queryClient.invalidateQueries({ queryKey: ["point-transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
     },
     onError: (error) => {
       if (error.message === "INSUFFICIENT_POINTS") {

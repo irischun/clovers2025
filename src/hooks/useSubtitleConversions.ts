@@ -50,6 +50,7 @@ export function useSubtitleConversions() {
         .eq('id', id);
       if (error) throw error;
       setSubtitles(prev => prev.filter(s => s.id !== id));
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '字幕已刪除' });
     } catch {
       toast({ title: '刪除失敗', variant: 'destructive' });

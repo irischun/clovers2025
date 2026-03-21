@@ -98,6 +98,7 @@ export function useScheduledPosts() {
 
       if (error) throw error;
       setPosts(prev => prev.filter(p => p.id !== id));
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '排程已刪除' });
     } catch (error) {
       console.error('Error deleting post:', error);

@@ -68,6 +68,7 @@ export function usePublishingHistory() {
 
       if (error) throw error;
       setRecords(prev => prev.filter(r => r.id !== id));
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '記錄已刪除' });
     } catch (error) {
       console.error('Error deleting publishing record:', error);
