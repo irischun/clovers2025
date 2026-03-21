@@ -61,6 +61,7 @@ const ContentOrganizePage = () => {
   const [mode, setMode] = useState<'single' | 'batch'>('single');
   const { toast } = useToast();
   const { consumePoints } = usePointConsumption();
+  const queryClient = useQueryClient();
 
   // Single link state
   const [url, setUrl] = useState('');
