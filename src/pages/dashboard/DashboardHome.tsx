@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FileText, Calendar, Image, Sparkles, ArrowRight, Coins, Crown, Loader2, Clock, TrendingUp, Zap } from 'lucide-react';
+import { FileText, Calendar, Image, ArrowRight, Coins, Crown, Loader2, Clock, TrendingUp, Zap, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { format, differenceInDays } from 'date-fns';
@@ -15,7 +15,6 @@ interface Stats {
   prompts: number;
   scheduledPosts: number;
   mediaFiles: number;
-  aiGenerations: number;
 }
 
 interface RecentActivity {
@@ -31,7 +30,6 @@ const DashboardHome = () => {
     prompts: 0,
     scheduledPosts: 0,
     mediaFiles: 0,
-    aiGenerations: 0,
   });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +48,6 @@ const DashboardHome = () => {
           prompts: promptsRes.count || 0,
           scheduledPosts: postsRes.count || 0,
           mediaFiles: mediaRes.count || 0,
-          aiGenerations: aiRes.count || 0,
         });
 
         // Combine and sort recent activity
@@ -98,7 +95,6 @@ const DashboardHome = () => {
     { title: t('dash.totalPrompts'), value: stats.prompts, icon: FileText, color: 'text-blue-500', bgColor: 'bg-blue-500/10', gradient: 'from-blue-500/20 to-blue-600/5' },
     { title: t('dash.scheduledContent'), value: stats.scheduledPosts, icon: Calendar, color: 'text-green-500', bgColor: 'bg-green-500/10', gradient: 'from-green-500/20 to-green-600/5' },
     { title: t('dash.mediaFiles'), value: stats.mediaFiles, icon: Image, color: 'text-purple-500', bgColor: 'bg-purple-500/10', gradient: 'from-purple-500/20 to-purple-600/5' },
-    { title: t('dash.aiUsage'), value: stats.aiGenerations, icon: Sparkles, color: 'text-yellow-500', bgColor: 'bg-yellow-500/10', gradient: 'from-yellow-500/20 to-yellow-600/5' },
   ];
 
   const getActivityIcon = (type: RecentActivity['type']) => {
@@ -262,7 +258,7 @@ const DashboardHome = () => {
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
         {statCards.map((stat) => (
           <div
             key={stat.title}
