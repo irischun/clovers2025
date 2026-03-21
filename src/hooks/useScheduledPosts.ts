@@ -58,6 +58,7 @@ export function useScheduledPosts() {
       setPosts(prev => [...prev, typedData].sort((a, b) => 
         new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime()
       ));
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '排程已創建' });
       return typedData;
     } catch (error) {
