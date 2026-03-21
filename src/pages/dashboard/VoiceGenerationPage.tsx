@@ -315,6 +315,8 @@ const VoiceGenerationPage = () => {
           loadHistory();
         }
 
+        // Deduct 1 point for voice generation
+        await consumePoints({ amount: 1, description: 'Voice generation' });
         toast({ title: '語音生成成功！' });
       }
     } catch (error: any) {

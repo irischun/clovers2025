@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useMediaFiles } from '@/hooks/useMediaFiles';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
+import { usePointConsumption } from '@/hooks/usePointConsumption';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 interface ImageFrame {

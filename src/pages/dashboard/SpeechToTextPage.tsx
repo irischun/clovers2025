@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { usePointConsumption } from '@/hooks/usePointConsumption';
 import { format } from 'date-fns';
 import { useLanguage } from '@/i18n/LanguageContext';
 

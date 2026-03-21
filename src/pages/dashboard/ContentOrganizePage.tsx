@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { usePointConsumption } from '@/hooks/usePointConsumption';
 import { format } from 'date-fns';
 import { useLanguage } from '@/i18n/LanguageContext';
 
