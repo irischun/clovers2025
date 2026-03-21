@@ -85,8 +85,7 @@ const SubscriptionPage = () => {
 
   const isCurrentPlan = (planName: string) => {
     if (!subscription) return false;
-    return subscription.plan_name === planName && 
-           subscription.billing_period === billingPeriod;
+    return subscription.plan_name === planName;
   };
 
   return (
