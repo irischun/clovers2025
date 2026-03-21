@@ -37,17 +37,33 @@ const DashboardHome = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [promptsRes, postsRes, mediaRes, aiRes] = await Promise.all([
+        // Fetch all output counts across the platform in parallel
+        const [
+          promptsRes, postsRes, mediaRes, aiRes,
+          imagesRes, voiceRes, subtitleRes, rewritesRes, publishRes
+        ] = await Promise.all([
           supabase.from('prompts').select('id, title, created_at', { count: 'exact' }).order('created_at', { ascending: false }).limit(5),
           supabase.from('scheduled_posts').select('id, title, created_at', { count: 'exact' }).order('created_at', { ascending: false }).limit(5),
           supabase.from('media_files').select('id, name, created_at', { count: 'exact' }).order('created_at', { ascending: false }).limit(5),
           supabase.from('ai_generations').select('id, prompt, created_at', { count: 'exact' }).order('created_at', { ascending: false }).limit(5),
+          supabase.from('generated_images').select('id', { count: 'exact' }),
+          supabase.from('voice_generations').select('id', { count: 'exact' }),
+          supabase.from('subtitle_conversions').select('id', { count: 'exact' }),
+          supabase.from('content_rewrites').select('id', { count: 'exact' }),
+          supabase.from('publishing_history').select('id', { count: 'exact' }),
         ]);
 
+        // 總提示詞: prompts + ai_generations + content_rewrites
+        const totalPrompts = (promptsRes.count || 0) + (aiRes.count || 0) + (rewritesRes.count || 0);
+        // 已排程內容: scheduled_posts + publishing_history
+        const totalScheduled = (postsRes.count || 0) + (publishRes.count || 0);
+        // 媒體檔案: media_files + generated_images + voice_generations + subtitle_conversions
+        const totalMedia = (mediaRes.count || 0) + (imagesRes.count || 0) + (voiceRes.count || 0) + (subtitleRes.count || 0);
+
         setStats({
-          prompts: promptsRes.count || 0,
-          scheduledPosts: postsRes.count || 0,
-          mediaFiles: mediaRes.count || 0,
+          prompts: totalPrompts,
+          scheduledPosts: totalScheduled,
+          mediaFiles: totalMedia,
         });
 
         // Combine and sort recent activity
