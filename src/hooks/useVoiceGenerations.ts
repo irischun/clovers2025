@@ -28,6 +28,7 @@ export function useVoiceGenerations() {
   const [voices, setVoices] = useState<VoiceGeneration[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const fetchVoices = async () => {
     try {
