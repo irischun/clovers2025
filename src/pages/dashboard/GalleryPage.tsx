@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
@@ -12,12 +12,19 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { useGeneratedImages, GeneratedImage } from '@/hooks/useGeneratedImages';
-import { useVoiceGenerations, VoiceGeneration } from '@/hooks/useVoiceGenerations';
-import { useSubtitleConversions, SubtitleConversion } from '@/hooks/useSubtitleConversions';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
+import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
+import {
+  useGalleryImages, useGalleryVoices, useGallerySubtitles, useGalleryTextWorks,
+  GALLERY_IMAGES_KEY, GALLERY_VOICES_KEY, GALLERY_SUBTITLES_KEY, GALLERY_TEXT_KEY,
+  type TextWork,
+} from '@/hooks/useGalleryData';
+import type { GeneratedImage } from '@/hooks/useGeneratedImages';
+import type { VoiceGeneration } from '@/hooks/useVoiceGenerations';
+import type { SubtitleConversion } from '@/hooks/useSubtitleConversions';
 
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '—';
@@ -28,22 +35,17 @@ const formatFileSize = (bytes: number): string => {
 
 type ActiveTab = 'images' | 'videos' | 'audio' | 'subtitles' | 'text';
 
-interface TextWork {
-  id: string;
-  type: 'ai_generation' | 'content_rewrite';
-  title: string;
-  content: string;
-  tool_type: string;
-  created_at: string;
-}
-
 const GalleryPage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { images: generatedImages, loading: imgLoading, toggleFavorite, deleteImage } = useGeneratedImages();
-  const { voices, loading: voiceLoading, toggleFavorite: toggleVoiceFav, deleteVoice } = useVoiceGenerations();
-  const { subtitles, loading: subLoading, deleteSubtitle } = useSubtitleConversions();
+  const queryClient = useQueryClient();
+
+  // React Query cached data — instant on revisit
+  const { data: generatedImages = [], isLoading: imgLoading } = useGalleryImages();
+  const { data: voices = [], isLoading: voiceLoading } = useGalleryVoices();
+  const { data: subtitles = [], isLoading: subLoading } = useGallerySubtitles();
+  const { data: textWorks = [], isLoading: textLoading } = useGalleryTextWorks();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('images');
   const [startDate, setStartDate] = useState<Date | undefined>();
@@ -57,52 +59,59 @@ const GalleryPage = () => {
   const [subtitleFileSizes, setSubtitleFileSizes] = useState<Record<string, number>>({});
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const [audioElements, setAudioElements] = useState<Record<string, HTMLAudioElement>>({});
-  const [textWorks, setTextWorks] = useState<TextWork[]>([]);
-  const [textLoading, setTextLoading] = useState(true);
 
   const loading = imgLoading || voiceLoading || subLoading || textLoading;
 
-  // Fetch text works (ai_generations + content_rewrites)
-  useEffect(() => {
-    const fetchTextWorks = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { setTextWorks([]); setTextLoading(false); return; }
+  // Mutation helpers that update cache + DB
+  const toggleFavorite = async (id: string, isFavorite: boolean) => {
+    // Optimistic update
+    queryClient.setQueryData(GALLERY_IMAGES_KEY, (old: GeneratedImage[] | undefined) =>
+      (old || []).map(img => img.id === id ? { ...img, is_favorite: !isFavorite } : img)
+    );
+    const { error } = await supabase.from('generated_images').update({ is_favorite: !isFavorite }).eq('id', id);
+    if (error) {
+      queryClient.invalidateQueries({ queryKey: GALLERY_IMAGES_KEY });
+      toast({ title: '操作失敗', variant: 'destructive' });
+    } else {
+      toast({ title: !isFavorite ? '已添加到收藏' : '已取消收藏' });
+    }
+  };
 
-        const [aiRes, rewriteRes] = await Promise.all([
-          supabase.from('ai_generations').select('*').order('created_at', { ascending: false }),
-          supabase.from('content_rewrites').select('*').order('created_at', { ascending: false }),
-        ]);
+  const deleteImage = async (id: string) => {
+    queryClient.setQueryData(GALLERY_IMAGES_KEY, (old: GeneratedImage[] | undefined) =>
+      (old || []).filter(img => img.id !== id)
+    );
+    const { error } = await supabase.from('generated_images').delete().eq('id', id);
+    if (error) queryClient.invalidateQueries({ queryKey: GALLERY_IMAGES_KEY });
+    else { queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY }); toast({ title: '圖片已刪除' }); }
+  };
 
-        const aiWorks: TextWork[] = (aiRes.data || []).map((d: any) => ({
-          id: d.id,
-          type: 'ai_generation' as const,
-          title: d.prompt?.substring(0, 60) || 'AI 生成',
-          content: d.result || '',
-          tool_type: d.tool_type || 'general',
-          created_at: d.created_at,
-        }));
+  const toggleVoiceFav = async (id: string, isFavorite: boolean) => {
+    queryClient.setQueryData(GALLERY_VOICES_KEY, (old: VoiceGeneration[] | undefined) =>
+      (old || []).map(v => v.id === id ? { ...v, is_favorite: !isFavorite } : v)
+    );
+    const { error } = await supabase.from('voice_generations').update({ is_favorite: !isFavorite }).eq('id', id);
+    if (error) queryClient.invalidateQueries({ queryKey: GALLERY_VOICES_KEY });
+    else toast({ title: !isFavorite ? '已添加到收藏' : '已取消收藏' });
+  };
 
-        const rewriteWorks: TextWork[] = (rewriteRes.data || []).map((d: any) => ({
-          id: d.id,
-          type: 'content_rewrite' as const,
-          title: d.source_url?.substring(0, 60) || '內容重整',
-          content: d.rewritten_content || d.original_content || '',
-          tool_type: d.style || 'rewrite',
-          created_at: d.created_at,
-        }));
+  const deleteVoice = async (id: string) => {
+    queryClient.setQueryData(GALLERY_VOICES_KEY, (old: VoiceGeneration[] | undefined) =>
+      (old || []).filter(v => v.id !== id)
+    );
+    const { error } = await supabase.from('voice_generations').delete().eq('id', id);
+    if (error) queryClient.invalidateQueries({ queryKey: GALLERY_VOICES_KEY });
+    else { queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY }); toast({ title: '音頻已刪除' }); }
+  };
 
-        setTextWorks([...aiWorks, ...rewriteWorks].sort((a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        ));
-      } catch (e) {
-        console.error('Error fetching text works:', e);
-      } finally {
-        setTextLoading(false);
-      }
-    };
-    fetchTextWorks();
-  }, []);
+  const deleteSubtitle = async (id: string) => {
+    queryClient.setQueryData(GALLERY_SUBTITLES_KEY, (old: SubtitleConversion[] | undefined) =>
+      (old || []).filter(s => s.id !== id)
+    );
+    const { error } = await supabase.from('subtitle_conversions').delete().eq('id', id);
+    if (error) queryClient.invalidateQueries({ queryKey: GALLERY_SUBTITLES_KEY });
+    else { queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY }); toast({ title: '字幕已刪除' }); }
+  };
 
   const fetchRemoteFileSize = async (url: string): Promise<number> => {
     try {
