@@ -67,6 +67,7 @@ export function useMediaFiles() {
       if (insertError) throw insertError;
 
       setFiles(prev => [data, ...prev]);
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '檔案已上傳' });
       return data;
     } catch (error) {
