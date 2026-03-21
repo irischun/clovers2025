@@ -23,12 +23,11 @@ import { useUserPoints } from '@/hooks/useUserPoints';
 import { useUserSubscription } from '@/hooks/useUserSubscription';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { monthlyPlans, yearlyPlans, type YearlyPlan } from '@/data/subscriptionPlans';
+import { monthlyPlans } from '@/data/subscriptionPlans';
 import { useTranslatedPlans } from '@/data/useTranslatedPlans';
 
 const SubscriptionPage = () => {
   const { translatePlanName, translateFeature, translatePeriod, t } = useTranslatedPlans();
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const { points, isLoading: isLoadingPoints, addPoints } = useUserPoints();
   const { 
     subscription, 
