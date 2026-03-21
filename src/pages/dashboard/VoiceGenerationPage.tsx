@@ -161,6 +161,7 @@ const VoiceGenerationPage = () => {
   const { t } = useLanguage();
   // Get user points
   const { points: userPoints } = useUserPoints();
+  const { consumePoints } = usePointConsumption();
   
   // Main tab state
   const [mainTab, setMainTab] = useState<'generate' | 'clone'>('generate');
