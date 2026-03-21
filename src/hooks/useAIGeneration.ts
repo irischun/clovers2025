@@ -90,6 +90,15 @@ export function useAIGeneration() {
         });
       }
 
+      // Deduct 1 point for AI content generation
+      if (fullContent) {
+        try {
+          await consumePoints({ amount: 1, description: `AI content generation (${type})` });
+        } catch (e) {
+          console.warn('Point deduction failed:', e);
+        }
+      }
+
       return fullContent;
     } catch (error) {
       console.error('AI generation error:', error);
