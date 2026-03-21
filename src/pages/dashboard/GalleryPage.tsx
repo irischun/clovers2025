@@ -681,7 +681,7 @@ const GalleryPage = () => {
               <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus className="pointer-events-auto" /></PopoverContent>
             </Popover>
           </div>
-          {activeTab !== 'subtitles' && (
+          {activeTab !== 'subtitles' && activeTab !== 'text' && (
             <Button variant={showFavoritesOnly ? "default" : "outline"} onClick={() => setShowFavoritesOnly(!showFavoritesOnly)} className="gap-2">
               <Star className={cn("w-4 h-4", showFavoritesOnly && "fill-current")} />只顯示收藏
             </Button>
