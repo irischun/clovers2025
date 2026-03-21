@@ -324,11 +324,13 @@ const GalleryPage = () => {
 
   const currentCount = activeTab === 'images' ? filteredImages.length
     : activeTab === 'audio' ? filteredVoices.length
-    : activeTab === 'subtitles' ? filteredSubtitles.length : 0;
+    : activeTab === 'subtitles' ? filteredSubtitles.length
+    : activeTab === 'text' ? filteredTextWorks.length : 0;
 
   const countLabel = activeTab === 'images' ? '張圖片'
     : activeTab === 'audio' ? '個音頻'
-    : activeTab === 'subtitles' ? '個字幕' : '個視頻';
+    : activeTab === 'subtitles' ? '個字幕'
+    : activeTab === 'text' ? '篇文字作品' : '個視頻';
 
   // ─── Image Card ───
   const renderImageCard = (img: GeneratedImage, index: number) => {
