@@ -20,6 +20,7 @@ export function usePublishingHistory() {
   const [records, setRecords] = useState<PublishingRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const fetchRecords = async () => {
     try {
