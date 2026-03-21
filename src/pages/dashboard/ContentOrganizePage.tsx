@@ -151,6 +151,8 @@ const ContentOrganizePage = () => {
         is_batch: isBatch,
         status: 'completed'
       });
+      queryClient.invalidateQueries({ queryKey: GALLERY_TEXT_KEY });
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
     } catch (error) {
       console.error('Error saving to history:', error);
     }
