@@ -319,6 +319,7 @@ const ImageGenerationPage = () => {
   const { t } = useLanguage();
   // Get user points and generated images
   const { points: userPoints } = useUserPoints();
+  const { consumePoints } = usePointConsumption();
   const { images: savedImages, saveImage, toggleFavorite } = useGeneratedImages();
   
   // Generation mode
