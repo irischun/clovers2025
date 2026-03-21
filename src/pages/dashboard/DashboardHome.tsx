@@ -306,7 +306,7 @@ const DashboardHome = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           <QuickActionCard title={t('dash.createPrompt')} description={t('dash.createPromptDesc')} icon={FileText} href="/dashboard/prompts" color="blue" />
           <QuickActionCard title={t('dash.scheduleContent')} description={t('dash.scheduleContentDesc')} icon={Calendar} href="/dashboard/scheduler" color="green" />
-          <QuickActionCard title={t('dash.aiGenerate')} description={t('dash.aiGenerateDesc')} icon={Sparkles} href="/dashboard/ai-tools" color="yellow" />
+          <QuickActionCard title={t('dash.aiGenerate')} description={t('dash.aiGenerateDesc')} icon={Sparkles} href="/dashboard/ai-copy-writing" color="yellow" />
         </div>
       </div>
 
