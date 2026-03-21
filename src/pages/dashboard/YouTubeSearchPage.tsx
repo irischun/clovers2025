@@ -111,6 +111,8 @@ const YouTubeSearchPage = () => {
       };
       setSearchHistory(prev => [historyItem, ...prev.slice(0, 9)]);
       
+      // Deduct points after successful search
+      await consumePoints({ amount: pointsRequired, description: `YouTube search: ${data.results?.length || 0} videos` });
       toast({ title: t('ytSearch.searchComplete'), description: `找到 ${data.results?.length || 0} 部影片，消耗 ${pointsRequired} 點` });
     } catch (error) {
       toast({ title: t('ytSearch.searchFailed'), variant: 'destructive' });

@@ -451,6 +451,8 @@ const StickerMakerPage = () => {
           console.warn('Failed to save sticker to gallery:', saveErr);
         }
       }
+      // Deduct 1 point for sticker generation
+      await consumePoints({ amount: 1, description: 'Sticker generation' });
       toast({ title: '貼圖生成成功！' });
     } catch (error: any) {
       console.error('Text sticker generation error:', error);

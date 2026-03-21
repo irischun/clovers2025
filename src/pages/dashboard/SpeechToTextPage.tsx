@@ -200,6 +200,8 @@ const SpeechToTextPage = () => {
 
       if (error) throw error;
 
+      // Deduct points: 1 per language
+      await consumePoints({ amount: selectedLanguages.length, description: `Speech-to-text: ${selectedLanguages.length} language(s)` });
       toast({ title: '轉換成功', description: '字幕檔案已生成' });
       
       // Reset form

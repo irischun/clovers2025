@@ -99,6 +99,9 @@ const XiaohongshuSearchPage = () => {
       };
       setSearchHistory(prev => [historyItem, ...prev.slice(0, 19)]);
 
+      // Deduct points after successful search
+      const cost = getPointsCost();
+      await consumePoints({ amount: cost, description: `Xiaohongshu search: ${searchResults.length} results` });
       toast({ title: t('xhsSearch.searchComplete'), description: t('xhsSearch.foundResults', { count: searchResults.length }) });
     } catch (error) {
       toast({ title: t('xhsSearch.searchFailed'), variant: 'destructive' });

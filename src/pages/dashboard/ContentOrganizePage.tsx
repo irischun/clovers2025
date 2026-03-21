@@ -180,6 +180,8 @@ const ContentOrganizePage = () => {
       if (data?.success && data?.results?.content) {
         setResult(data.results.content);
         await saveToHistory(url, data.results.content);
+        // Deduct 1 point for content rewrite
+        await consumePoints({ amount: 1, description: 'Content rewrite' });
         toast({ title: '改寫完成！' });
       } else if (data?.results?.status === 'rate_limited') {
         toast({ title: '請求過於頻繁，請稍後再試', variant: 'destructive' });
