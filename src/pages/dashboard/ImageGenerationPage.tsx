@@ -773,6 +773,11 @@ const ImageGenerationPage = () => {
           setHistory(prev => [{ prompt, imageUrl, isAvatar: isAvatarImage }, ...prev.slice(0, 49)]);
         }
         
+        // Deduct points after successful generation
+        await consumePoints({
+          amount: totalPoints,
+          description: `Image generation: ${images.length} image(s) at ${pointsPerImage} pts each`,
+        });
         toast({ title: `成功生成 ${images.length} 張圖片！` });
         
         // Auto-refresh the page after successful generation
