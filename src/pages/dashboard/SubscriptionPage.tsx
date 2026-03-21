@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Check, Zap, AlertCircle, Sparkles, Wallet, Crown, Calendar, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -23,12 +22,11 @@ import { useUserPoints } from '@/hooks/useUserPoints';
 import { useUserSubscription } from '@/hooks/useUserSubscription';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { monthlyPlans, yearlyPlans, type YearlyPlan } from '@/data/subscriptionPlans';
+import { monthlyPlans } from '@/data/subscriptionPlans';
 import { useTranslatedPlans } from '@/data/useTranslatedPlans';
 
 const SubscriptionPage = () => {
   const { translatePlanName, translateFeature, translatePeriod, t } = useTranslatedPlans();
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const { points, isLoading: isLoadingPoints, addPoints } = useUserPoints();
   const { 
     subscription, 
@@ -44,12 +42,12 @@ const SubscriptionPage = () => {
   } = useUserSubscription();
   const navigate = useNavigate();
   
-  const plans = billingPeriod === 'monthly' ? monthlyPlans : yearlyPlans;
+  const plans = monthlyPlans;
 
   const handleSubscribe = (planName: string, pointsAmount: number, price: number) => {
     subscribe({
       plan_name: planName,
-      billing_period: billingPeriod,
+      billing_period: 'monthly',
       points_per_month: pointsAmount,
       price: price,
     }, {
@@ -86,8 +84,7 @@ const SubscriptionPage = () => {
 
   const isCurrentPlan = (planName: string) => {
     if (!subscription) return false;
-    return subscription.plan_name === planName && 
-           subscription.billing_period === billingPeriod;
+    return subscription.plan_name === planName;
   };
 
   return (
@@ -130,7 +127,7 @@ const SubscriptionPage = () => {
                   <div className="flex items-center gap-2">
                     <p className="text-xl font-bold">{translatePlanName(subscription.plan_name)}</p>
                     <Badge variant="secondary">
-                      {subscription.billing_period === 'monthly' ? t('sub.monthly') : t('sub.yearly')}
+                      {t('sub.monthly')}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
@@ -186,42 +183,6 @@ const SubscriptionPage = () => {
         </p>
       </div>
 
-      {/* Billing Toggle */}
-      <div className="flex justify-center">
-        <div className="inline-flex items-center bg-secondary rounded-full p-1">
-          <button
-            onClick={() => setBillingPeriod('monthly')}
-            className={cn(
-              "px-6 py-2 rounded-full text-sm font-medium transition-all",
-              billingPeriod === 'monthly'
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {t('sub.monthly')}
-          </button>
-          <button
-            onClick={() => setBillingPeriod('yearly')}
-            className={cn(
-              "px-6 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2",
-              billingPeriod === 'yearly'
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {t('sub.yearly')}
-            <span className={cn(
-              "px-2 py-0.5 rounded-full text-xs",
-              billingPeriod === 'yearly'
-                ? "bg-accent text-accent-foreground"
-                : "bg-accent/50 text-accent-foreground"
-            )}>
-              {t('sub.savingsLabel')}
-            </span>
-          </button>
-        </div>
-      </div>
-
       {/* Pricing Cards */}
       <div className="grid md:grid-cols-3 gap-6">
         {plans.map((plan) => {
@@ -273,26 +234,8 @@ const SubscriptionPage = () => {
                   "text-sm ml-1",
                   plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
                 )}>
-                  {billingPeriod === 'monthly' ? t('plan.period.month') : t('plan.period.year')}
+                  {t('plan.period.month')}
                 </span>
-                
-                {/* Yearly savings */}
-                {billingPeriod === 'yearly' && 'savings' in plan && (
-                  <div className="mt-2 space-y-1">
-                    <p className={cn(
-                      "text-sm",
-                      plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
-                    )}>
-                      {t('plan.monthlyAvgPrice', { price: String((plan as typeof yearlyPlans[0]).monthlyPrice) })}
-                    </p>
-                    <p className={cn(
-                      "text-sm font-medium",
-                      plan.popular ? "text-primary-foreground" : "text-primary"
-                    )}>
-                      {t('plan.annualSave', { amount: String((plan as typeof yearlyPlans[0]).savings) })}
-                    </p>
-                  </div>
-                )}
               </div>
 
               {/* Features */}

@@ -8,7 +8,7 @@ import { useUserPoints } from '@/hooks/useUserPoints';
 import { useUserSubscription } from '@/hooks/useUserSubscription';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { monthlyPlans, yearlyPlans } from '@/data/subscriptionPlans';
+import { monthlyPlans } from '@/data/subscriptionPlans';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 interface Stats {
@@ -129,8 +129,7 @@ const DashboardHome = () => {
   // Get monthly points from subscription plan
   const getMonthlyPoints = () => {
     if (!subscription) return 0;
-    const plans = subscription.billing_period === 'monthly' ? monthlyPlans : yearlyPlans;
-    const plan = plans.find(p => p.name === subscription.plan_name);
+    const plan = monthlyPlans.find(p => p.name === subscription.plan_name);
     return plan?.pointsPerMonth || subscription.points_per_month || 0;
   };
 

@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useUserSubscription } from '@/hooks/useUserSubscription';
 import { useUserPoints } from '@/hooks/useUserPoints';
-import { monthlyPlans, yearlyPlans, type YearlyPlan } from '@/data/subscriptionPlans';
+import { monthlyPlans } from '@/data/subscriptionPlans';
 import { useTranslatedPlans } from '@/data/useTranslatedPlans';
 
 const ChangeSubscriptionPage = () => {
@@ -15,17 +15,17 @@ const ChangeSubscriptionPage = () => {
   const { subscription, subscribe, isSubscribing } = useUserSubscription();
   const { addPoints } = useUserPoints();
 
-  const handleChangePlan = (planName: string, billingPeriod: 'monthly' | 'yearly', pointsPerMonth: number, price: number) => {
+  const handleChangePlan = (planName: string, pointsPerMonth: number, price: number) => {
     subscribe({
       plan_name: planName,
-      billing_period: billingPeriod,
+      billing_period: 'monthly',
       points_per_month: pointsPerMonth,
       price: price,
     }, {
       onSuccess: () => {
         addPoints(pointsPerMonth);
         toast.success(t('sub.planChanged'), {
-          description: t('sub.planChangedDesc', { plan: translatePlanName(planName), period: billingPeriod === 'monthly' ? t('sub.monthly') : t('sub.yearly') }),
+          description: t('sub.planChangedDesc', { plan: translatePlanName(planName), period: t('sub.monthly') }),
         });
         navigate('/dashboard/subscription');
       },
@@ -37,14 +37,13 @@ const ChangeSubscriptionPage = () => {
     });
   };
 
-  const isCurrentPlan = (planName: string, billingPeriod: 'monthly' | 'yearly') => {
+  const isCurrentPlan = (planName: string) => {
     if (!subscription) return false;
-    return subscription.plan_name === planName && subscription.billing_period === billingPeriod;
+    return subscription.plan_name === planName;
   };
 
-  const renderPlanCard = (plan: typeof monthlyPlans[0] | typeof yearlyPlans[0], isYearly: boolean) => {
-    const billingPeriod = isYearly ? 'yearly' : 'monthly';
-    const isCurrent = isCurrentPlan(plan.name, billingPeriod);
+  const renderPlanCard = (plan: typeof monthlyPlans[0]) => {
+    const isCurrent = isCurrentPlan(plan.name);
 
     return (
       <div
@@ -94,26 +93,8 @@ const ChangeSubscriptionPage = () => {
             "text-sm ml-1",
             plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
           )}>
-            {isYearly ? t('plan.period.year') : t('plan.period.month')}
+            {t('plan.period.month')}
           </span>
-          
-          {/* Yearly savings */}
-          {isYearly && 'savings' in plan && (
-            <div className="mt-2 space-y-1">
-              <p className={cn(
-                "text-sm",
-                plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"
-              )}>
-                {t('plan.monthlyAvgPrice', { price: String((plan as typeof yearlyPlans[0]).monthlyPrice) })}
-              </p>
-              <p className={cn(
-                "text-sm font-medium",
-                plan.popular ? "text-primary-foreground" : "text-primary"
-              )}>
-                {t('plan.annualSave', { amount: String((plan as typeof yearlyPlans[0]).savings) })}
-              </p>
-            </div>
-          )}
         </div>
 
         {/* Features */}
@@ -136,7 +117,7 @@ const ChangeSubscriptionPage = () => {
 
         {/* Change Plan Button */}
         <Button
-          onClick={() => handleChangePlan(plan.name, billingPeriod, plan.pointsPerMonth, plan.price)}
+          onClick={() => handleChangePlan(plan.name, plan.pointsPerMonth, plan.price)}
           disabled={isSubscribing || isCurrent}
           className={cn(
             "w-full",
@@ -167,25 +148,17 @@ const ChangeSubscriptionPage = () => {
           <h1 className="text-3xl md:text-4xl font-bold">{t('changeSub.title')}</h1>
           {subscription && (
             <p className="text-muted-foreground mt-1">
-              {t('changeSub.currentPlan')} <Badge variant="secondary">{translatePlanName(subscription.plan_name)} ({subscription.billing_period === 'monthly' ? t('sub.monthly') : t('sub.yearly')})</Badge>
+              {t('changeSub.currentPlan')} <Badge variant="secondary">{translatePlanName(subscription.plan_name)}</Badge>
             </p>
           )}
         </div>
       </div>
 
-      {/* Monthly Plans Section */}
+      {/* Monthly Plans */}
       <div className="space-y-6">
-        <h2 className="text-2xl font-semibold">{t('changeSub.monthlyPlans')}</h2>
+        <h2 className="text-2xl font-semibold">{t('sub.choosePlan')}</h2>
         <div className="grid md:grid-cols-3 gap-6">
-          {monthlyPlans.map((plan) => renderPlanCard(plan, false))}
-        </div>
-      </div>
-
-      {/* Yearly Plans Section */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-semibold">{t('changeSub.yearlyPlans')}</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {yearlyPlans.map((plan) => renderPlanCard(plan, true))}
+          {monthlyPlans.map((plan) => renderPlanCard(plan))}
         </div>
       </div>
 

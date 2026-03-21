@@ -10,19 +10,6 @@ export interface MonthlyPlan {
   popular: boolean;
 }
 
-export interface YearlyPlan {
-  name: string;
-  pointsPerMonth: number;
-  price: number;
-  period: '年';
-  monthlyPrice: number;
-  originalMonthlyPrice: number;
-  savings: number;
-  pricePerPoint: number;
-  features: string[];
-  popular: boolean;
-}
-
 export const monthlyPlans: MonthlyPlan[] = [
   {
     name: '輕量版',
@@ -62,64 +49,6 @@ export const monthlyPlans: MonthlyPlan[] = [
     features: [
       '每月1200點數',
       '平均每點 $0.33',
-      '適合高級使用',
-      '所有功能無限制',
-      '專屬客服支援',
-      'API 訪問權限',
-    ],
-    popular: false,
-  },
-];
-
-export const yearlyPlans: YearlyPlan[] = [
-  {
-    name: '輕量版',
-    pointsPerMonth: 150,
-    price: 900,
-    period: '年',
-    monthlyPrice: 75,
-    originalMonthlyPrice: 90,
-    savings: 180,
-    pricePerPoint: 0.5,
-    features: [
-      '每月150點數',
-      '平均每點 $0.5',
-      '適合輕度使用',
-      '基本功能支援',
-    ],
-    popular: false,
-  },
-  {
-    name: '標準版',
-    pointsPerMonth: 450,
-    price: 1800,
-    period: '年',
-    monthlyPrice: 150,
-    originalMonthlyPrice: 200,
-    savings: 600,
-    pricePerPoint: 0.33,
-    features: [
-      '每月450點數',
-      '平均每點 $0.33',
-      '年費慳 $600',
-      '適合標準使用',
-      '完整功能支援',
-      '優先客服',
-    ],
-    popular: true,
-  },
-  {
-    name: '高級版',
-    pointsPerMonth: 1200,
-    price: 4000,
-    period: '年',
-    monthlyPrice: 333.3,
-    originalMonthlyPrice: 400,
-    savings: 800,
-    pricePerPoint: 0.28,
-    features: [
-      '每月1200點數',
-      '平均每點 $0.28',
       '適合高級使用',
       '所有功能無限制',
       '專屬客服支援',
@@ -193,7 +122,6 @@ export const landingPlans: LandingPlan[] = [
 ];
 
 // Helper to get plan by name
-export const getPlanByName = (name: string, billingPeriod: 'monthly' | 'yearly') => {
-  const plans = billingPeriod === 'monthly' ? monthlyPlans : yearlyPlans;
-  return plans.find(plan => plan.name === name);
+export const getPlanByName = (name: string) => {
+  return monthlyPlans.find(plan => plan.name === name);
 };
