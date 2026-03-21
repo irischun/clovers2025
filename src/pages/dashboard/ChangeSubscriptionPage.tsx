@@ -148,7 +148,7 @@ const ChangeSubscriptionPage = () => {
           <h1 className="text-3xl md:text-4xl font-bold">{t('changeSub.title')}</h1>
           {subscription && (
             <p className="text-muted-foreground mt-1">
-              {t('changeSub.currentPlan')} <Badge variant="secondary">{translatePlanName(subscription.plan_name)} ({subscription.billing_period === 'monthly' ? t('sub.monthly') : t('sub.yearly')})</Badge>
+              {t('changeSub.currentPlan')} <Badge variant="secondary">{translatePlanName(subscription.plan_name)}</Badge>
             </p>
           )}
         </div>
