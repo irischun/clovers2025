@@ -18,6 +18,7 @@ export function useMediaFiles() {
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const fetchFiles = async () => {
     try {
