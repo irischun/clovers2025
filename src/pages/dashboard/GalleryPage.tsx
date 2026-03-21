@@ -57,6 +57,8 @@ const GalleryPage = () => {
   const [subtitleFileSizes, setSubtitleFileSizes] = useState<Record<string, number>>({});
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const [audioElements, setAudioElements] = useState<Record<string, HTMLAudioElement>>({});
+  const [textWorks, setTextWorks] = useState<TextWork[]>([]);
+  const [textLoading, setTextLoading] = useState(true);
 
   const loading = imgLoading || voiceLoading || subLoading;
 
