@@ -48,6 +48,7 @@ const ACCEPTED_FORMATS = [...AUDIO_FORMATS, ...VIDEO_FORMATS].join(',');
 const SpeechToTextPage = () => {
   const { t } = useLanguage();
   const { consumePoints } = usePointConsumption();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('convert');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);

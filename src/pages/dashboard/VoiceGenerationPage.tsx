@@ -162,9 +162,9 @@ const validateVoiceId = (id: string): boolean => {
 
 const VoiceGenerationPage = () => {
   const { t } = useLanguage();
-  // Get user points
   const { points: userPoints } = useUserPoints();
   const { consumePoints } = usePointConsumption();
+  const queryClient = useQueryClient();
   
   // Main tab state
   const [mainTab, setMainTab] = useState<'generate' | 'clone'>('generate');
