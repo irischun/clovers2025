@@ -15,7 +15,7 @@ const ChangeSubscriptionPage = () => {
   const { subscription, subscribe, isSubscribing } = useUserSubscription();
   const { addPoints } = useUserPoints();
 
-  const handleChangePlan = (planName: string, billingPeriod: 'monthly' | 'yearly', pointsPerMonth: number, price: number) => {
+  const handleChangePlan = (planName: string, pointsPerMonth: number, price: number) => {
     subscribe({
       plan_name: planName,
       billing_period: billingPeriod,
