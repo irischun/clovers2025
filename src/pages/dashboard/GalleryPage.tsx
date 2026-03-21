@@ -591,6 +591,7 @@ const GalleryPage = () => {
           <TabsTrigger value="videos" className="gap-2 shrink-0"><Video className="w-4 h-4" />視頻畫廊</TabsTrigger>
           <TabsTrigger value="audio" className="gap-2 shrink-0"><Music className="w-4 h-4" />音頻收藏</TabsTrigger>
           <TabsTrigger value="subtitles" className="gap-2 shrink-0"><FileText className="w-4 h-4" />字幕收藏</TabsTrigger>
+          <TabsTrigger value="text" className="gap-2 shrink-0"><Type className="w-4 h-4" />文字作品</TabsTrigger>
         </TabsList>
 
         {/* Filters */}
