@@ -52,7 +52,7 @@ const App = () => (
                 <Route path="prompts" element={<PromptsPage />} />
                 <Route path="scheduler" element={<SchedulerPage />} />
                 <Route path="media" element={<MediaPage />} />
-                <Route path="ai-tools" element={<AIToolsPage />} />
+                <Route path="ai-copy-writing" element={<AIToolsPage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="image-generation" element={<ImageGenerationPage />} />
                 <Route path="voice-generation" element={<VoiceGenerationPage />} />

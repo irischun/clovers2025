@@ -334,7 +334,7 @@ const DashboardHome = () => {
               <p className="text-muted-foreground font-medium">{t('dash.noActivity')}</p>
               <p className="text-sm text-muted-foreground mt-1 mb-4">{t('dash.noActivityDesc')}</p>
               <Link 
-                to="/dashboard/ai-tools" 
+                to="/dashboard/ai-copy-writing" 
                 className="inline-flex items-center gap-2 text-primary hover:text-primary/80 text-sm font-medium"
               >
                 {t('dash.startAI')}
