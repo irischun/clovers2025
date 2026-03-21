@@ -48,7 +48,6 @@ const DashboardHome = () => {
           prompts: promptsRes.count || 0,
           scheduledPosts: postsRes.count || 0,
           mediaFiles: mediaRes.count || 0,
-          aiGenerations: aiRes.count || 0,
         });
 
         // Combine and sort recent activity
