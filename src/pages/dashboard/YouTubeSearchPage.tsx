@@ -53,7 +53,6 @@ const YouTubeSearchPage = () => {
   const { points: userPoints } = useUserPoints();
   const { consumePoints } = usePointConsumption();
   const pointsRequired = Math.ceil(parseInt(videoCount) / 10);
-  const pointsRequired = Math.ceil(parseInt(videoCount) / 10);
 
   const handleAddKeyword = () => {
     const trimmed = keywordInput.trim();
