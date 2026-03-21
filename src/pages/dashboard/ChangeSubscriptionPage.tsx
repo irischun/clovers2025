@@ -42,9 +42,8 @@ const ChangeSubscriptionPage = () => {
     return subscription.plan_name === planName;
   };
 
-  const renderPlanCard = (plan: typeof monthlyPlans[0] | typeof yearlyPlans[0], isYearly: boolean) => {
-    const billingPeriod = isYearly ? 'yearly' : 'monthly';
-    const isCurrent = isCurrentPlan(plan.name, billingPeriod);
+  const renderPlanCard = (plan: typeof monthlyPlans[0]) => {
+    const isCurrent = isCurrentPlan(plan.name);
 
     return (
       <div
