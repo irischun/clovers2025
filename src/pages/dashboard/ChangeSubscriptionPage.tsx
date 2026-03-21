@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useUserSubscription } from '@/hooks/useUserSubscription';
 import { useUserPoints } from '@/hooks/useUserPoints';
-import { monthlyPlans, yearlyPlans, type YearlyPlan } from '@/data/subscriptionPlans';
+import { monthlyPlans } from '@/data/subscriptionPlans';
 import { useTranslatedPlans } from '@/data/useTranslatedPlans';
 
 const ChangeSubscriptionPage = () => {
