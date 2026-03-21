@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FileText, Calendar, Image, Sparkles, ArrowRight, Coins, Crown, Loader2, Clock, TrendingUp, Zap } from 'lucide-react';
+import { FileText, Calendar, Image, ArrowRight, Coins, Crown, Loader2, Clock, TrendingUp, Zap, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { format, differenceInDays } from 'date-fns';
