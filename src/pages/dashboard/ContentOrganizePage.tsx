@@ -233,7 +233,12 @@ const ContentOrganizePage = () => {
             await saveToHistory(r.url, r.content, true);
           }
         }
-        toast({ title: `批量處理完成！成功 ${data.results.filter((r: any) => r.status === 'success').length}/${urls.length}` });
+        const successCount = data.results.filter((r: any) => r.status === 'success').length;
+        // Deduct 1 point per successful rewrite
+        if (successCount > 0) {
+          await consumePoints({ amount: successCount, description: `Batch content rewrite: ${successCount} article(s)` });
+        }
+        toast({ title: `批量處理完成！成功 ${successCount}/${urls.length}` });
       }
     } catch (error) {
       console.error('Batch rewrite error:', error);
