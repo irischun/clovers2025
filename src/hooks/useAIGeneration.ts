@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { usePointConsumption } from '@/hooks/usePointConsumption';
+import { useQueryClient } from '@tanstack/react-query';
+import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
 
 type ContentType = 'social' | 'video' | 'blog' | 'email';
 
@@ -10,6 +12,7 @@ export function useAIGeneration() {
   const [generatedContent, setGeneratedContent] = useState('');
   const { toast } = useToast();
   const { consumePoints } = usePointConsumption();
+  const queryClient = useQueryClient();
 
   const generateContent = async (prompt: string, type: ContentType = 'social') => {
     setIsGenerating(true);
@@ -88,6 +91,7 @@ export function useAIGeneration() {
           result: fullContent,
           tool_type: type,
         });
+        queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       }
 
       // Deduct 1 point for AI content generation

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
 
 export interface MediaFile {
   id: string;
@@ -16,6 +18,7 @@ export function useMediaFiles() {
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const fetchFiles = async () => {
     try {
@@ -64,6 +67,7 @@ export function useMediaFiles() {
       if (insertError) throw insertError;
 
       setFiles(prev => [data, ...prev]);
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '檔案已上傳' });
       return data;
     } catch (error) {
@@ -89,6 +93,7 @@ export function useMediaFiles() {
       if (dbError) throw dbError;
 
       setFiles(prev => prev.filter(f => f.id !== id));
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '檔案已刪除' });
     } catch (error) {
       console.error('Error deleting file:', error);

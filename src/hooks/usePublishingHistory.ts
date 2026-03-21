@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
 
 export interface PublishingRecord {
   id: string;
@@ -18,6 +20,7 @@ export function usePublishingHistory() {
   const [records, setRecords] = useState<PublishingRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const fetchRecords = async () => {
     try {
@@ -48,6 +51,7 @@ export function usePublishingHistory() {
 
       if (error) throw error;
       setRecords(prev => [data as PublishingRecord, ...prev]);
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       return data as PublishingRecord;
     } catch (error) {
       console.error('Error adding publishing record:', error);
@@ -64,6 +68,7 @@ export function usePublishingHistory() {
 
       if (error) throw error;
       setRecords(prev => prev.filter(r => r.id !== id));
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '記錄已刪除' });
     } catch (error) {
       console.error('Error deleting publishing record:', error);

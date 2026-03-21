@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
 
 export interface SubtitleConversion {
   id: string;
@@ -19,6 +21,7 @@ export function useSubtitleConversions() {
   const [subtitles, setSubtitles] = useState<SubtitleConversion[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const fetchSubtitles = async () => {
     try {
@@ -47,6 +50,7 @@ export function useSubtitleConversions() {
         .eq('id', id);
       if (error) throw error;
       setSubtitles(prev => prev.filter(s => s.id !== id));
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '字幕已刪除' });
     } catch {
       toast({ title: '刪除失敗', variant: 'destructive' });

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
 
 export interface Prompt {
   id: string;
@@ -18,6 +20,7 @@ export function usePrompts() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const fetchPrompts = async () => {
     try {
@@ -49,6 +52,7 @@ export function usePrompts() {
 
       if (error) throw error;
       setPrompts(prev => [data, ...prev]);
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '提示詞已創建' });
       return data;
     } catch (error) {
@@ -87,6 +91,7 @@ export function usePrompts() {
 
       if (error) throw error;
       setPrompts(prev => prev.filter(p => p.id !== id));
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '提示詞已刪除' });
     } catch (error) {
       console.error('Error deleting prompt:', error);

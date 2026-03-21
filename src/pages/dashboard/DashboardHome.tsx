@@ -6,16 +6,11 @@ import { format, differenceInDays } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import { useUserPoints } from '@/hooks/useUserPoints';
 import { useUserSubscription } from '@/hooks/useUserSubscription';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { monthlyPlans } from '@/data/subscriptionPlans';
 import { useLanguage } from '@/i18n/LanguageContext';
-
-interface Stats {
-  prompts: number;
-  scheduledPosts: number;
-  mediaFiles: number;
-}
 
 interface RecentActivity {
   id: string;
@@ -26,91 +21,45 @@ interface RecentActivity {
 
 const DashboardHome = () => {
   const { t } = useLanguage();
-  const [stats, setStats] = useState<Stats>({
-    prompts: 0,
-    scheduledPosts: 0,
-    mediaFiles: 0,
-  });
+  const { data: stats, isLoading: statsLoading } = useDashboardStats();
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [activityLoading, setActivityLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchActivity = async () => {
       try {
-        // Fetch all output counts across the platform in parallel
-        const [
-          promptsRes, postsRes, mediaRes, aiRes,
-          imagesRes, voiceRes, subtitleRes, rewritesRes, publishRes
-        ] = await Promise.all([
-          supabase.from('prompts').select('id, title, created_at', { count: 'exact' }).order('created_at', { ascending: false }).limit(5),
-          supabase.from('scheduled_posts').select('id, title, created_at', { count: 'exact' }).order('created_at', { ascending: false }).limit(5),
-          supabase.from('media_files').select('id, name, created_at', { count: 'exact' }).order('created_at', { ascending: false }).limit(5),
-          supabase.from('ai_generations').select('id, prompt, created_at', { count: 'exact' }).order('created_at', { ascending: false }).limit(5),
-          supabase.from('generated_images').select('id', { count: 'exact' }),
-          supabase.from('voice_generations').select('id', { count: 'exact' }),
-          supabase.from('subtitle_conversions').select('id', { count: 'exact' }),
-          supabase.from('content_rewrites').select('id', { count: 'exact' }),
-          supabase.from('publishing_history').select('id', { count: 'exact' }),
+        const [promptsRes, postsRes, mediaRes, aiRes] = await Promise.all([
+          supabase.from('prompts').select('id, title, created_at').order('created_at', { ascending: false }).limit(5),
+          supabase.from('scheduled_posts').select('id, title, created_at').order('created_at', { ascending: false }).limit(5),
+          supabase.from('media_files').select('id, name, created_at').order('created_at', { ascending: false }).limit(5),
+          supabase.from('ai_generations').select('id, prompt, created_at').order('created_at', { ascending: false }).limit(5),
         ]);
 
-        // 總提示詞: prompts + ai_generations + content_rewrites
-        const totalPrompts = (promptsRes.count || 0) + (aiRes.count || 0) + (rewritesRes.count || 0);
-        // 已排程內容: scheduled_posts + publishing_history
-        const totalScheduled = (postsRes.count || 0) + (publishRes.count || 0);
-        // 媒體檔案: media_files + generated_images + voice_generations + subtitle_conversions
-        const totalMedia = (mediaRes.count || 0) + (imagesRes.count || 0) + (voiceRes.count || 0) + (subtitleRes.count || 0);
-
-        setStats({
-          prompts: totalPrompts,
-          scheduledPosts: totalScheduled,
-          mediaFiles: totalMedia,
-        });
-
-        // Combine and sort recent activity
         const activities: RecentActivity[] = [
-          ...(promptsRes.data || []).map((p) => ({
-            id: p.id,
-            type: 'prompt' as const,
-            title: p.title,
-            timestamp: p.created_at,
-          })),
-          ...(postsRes.data || []).map((p) => ({
-            id: p.id,
-            type: 'post' as const,
-            title: p.title,
-            timestamp: p.created_at,
-          })),
-          ...(mediaRes.data || []).map((m) => ({
-            id: m.id,
-            type: 'media' as const,
-            title: m.name,
-            timestamp: m.created_at,
-          })),
-          ...(aiRes.data || []).map((a) => ({
-            id: a.id,
-            type: 'ai' as const,
-            title: a.prompt.slice(0, 50) + (a.prompt.length > 50 ? '...' : ''),
-            timestamp: a.created_at,
-          })),
+          ...(promptsRes.data || []).map((p) => ({ id: p.id, type: 'prompt' as const, title: p.title, timestamp: p.created_at })),
+          ...(postsRes.data || []).map((p) => ({ id: p.id, type: 'post' as const, title: p.title, timestamp: p.created_at })),
+          ...(mediaRes.data || []).map((m) => ({ id: m.id, type: 'media' as const, title: m.name, timestamp: m.created_at })),
+          ...(aiRes.data || []).map((a) => ({ id: a.id, type: 'ai' as const, title: a.prompt.slice(0, 50) + (a.prompt.length > 50 ? '...' : ''), timestamp: a.created_at })),
         ]
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
           .slice(0, 5);
 
         setRecentActivity(activities);
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        console.error('Error fetching activity:', error);
       } finally {
-        setLoading(false);
+        setActivityLoading(false);
       }
     };
-
-    fetchData();
+    fetchActivity();
   }, []);
 
+  const loading = statsLoading || activityLoading;
+
   const statCards = [
-    { title: t('dash.totalPrompts'), value: stats.prompts, icon: FileText, color: 'text-blue-500', bgColor: 'bg-blue-500/10', gradient: 'from-blue-500/20 to-blue-600/5' },
-    { title: t('dash.scheduledContent'), value: stats.scheduledPosts, icon: Calendar, color: 'text-green-500', bgColor: 'bg-green-500/10', gradient: 'from-green-500/20 to-green-600/5' },
-    { title: t('dash.mediaFiles'), value: stats.mediaFiles, icon: Image, color: 'text-purple-500', bgColor: 'bg-purple-500/10', gradient: 'from-purple-500/20 to-purple-600/5' },
+    { title: t('dash.totalPrompts'), value: stats?.prompts ?? 0, icon: FileText, color: 'text-blue-500', bgColor: 'bg-blue-500/10', gradient: 'from-blue-500/20 to-blue-600/5' },
+    { title: t('dash.scheduledContent'), value: stats?.scheduledPosts ?? 0, icon: Calendar, color: 'text-green-500', bgColor: 'bg-green-500/10', gradient: 'from-green-500/20 to-green-600/5' },
+    { title: t('dash.mediaFiles'), value: stats?.mediaFiles ?? 0, icon: Image, color: 'text-purple-500', bgColor: 'bg-purple-500/10', gradient: 'from-purple-500/20 to-purple-600/5' },
   ];
 
   const getActivityIcon = (type: RecentActivity['type']) => {

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
 
 type PostStatus = 'scheduled' | 'published' | 'draft' | 'failed';
 
@@ -21,6 +23,7 @@ export function useScheduledPosts() {
   const [posts, setPosts] = useState<ScheduledPost[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const fetchPosts = async () => {
     try {
@@ -55,6 +58,7 @@ export function useScheduledPosts() {
       setPosts(prev => [...prev, typedData].sort((a, b) => 
         new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime()
       ));
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '排程已創建' });
       return typedData;
     } catch (error) {
@@ -94,6 +98,7 @@ export function useScheduledPosts() {
 
       if (error) throw error;
       setPosts(prev => prev.filter(p => p.id !== id));
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
       toast({ title: '排程已刪除' });
     } catch (error) {
       console.error('Error deleting post:', error);
