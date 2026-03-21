@@ -15,6 +15,9 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { GALLERY_VOICES_KEY } from '@/hooks/useGalleryData';
+import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
 
 const languages = [
   { id: 'yue', label: '粵語 (廣東話)' },
@@ -159,9 +162,9 @@ const validateVoiceId = (id: string): boolean => {
 
 const VoiceGenerationPage = () => {
   const { t } = useLanguage();
-  // Get user points
   const { points: userPoints } = useUserPoints();
   const { consumePoints } = usePointConsumption();
+  const queryClient = useQueryClient();
   
   // Main tab state
   const [mainTab, setMainTab] = useState<'generate' | 'clone'>('generate');
@@ -312,6 +315,8 @@ const VoiceGenerationPage = () => {
             format,
             audio_url: url,
           });
+          queryClient.invalidateQueries({ queryKey: GALLERY_VOICES_KEY });
+          queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
           loadHistory();
         }
 

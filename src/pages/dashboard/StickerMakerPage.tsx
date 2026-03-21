@@ -12,6 +12,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { usePointConsumption } from '@/hooks/usePointConsumption';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { GALLERY_IMAGES_KEY } from '@/hooks/useGalleryData';
+import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
 
 interface ImageFrame {
   id: string;
@@ -172,6 +175,7 @@ const textStyles: StyleOption[] = [
 const StickerMakerPage = () => {
   const { t } = useLanguage();
   const { consumePoints } = usePointConsumption();
+  const queryClient = useQueryClient();
   const [frames, setFrames] = useState<ImageFrame[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -318,6 +322,8 @@ const StickerMakerPage = () => {
             style: 'whatsapp_sticker',
             model: 'canvas_animation',
           });
+          queryClient.invalidateQueries({ queryKey: GALLERY_IMAGES_KEY });
+          queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
         }
       } catch (saveErr) {
         console.warn('Failed to save sticker to gallery:', saveErr);
@@ -446,6 +452,8 @@ const StickerMakerPage = () => {
               style: textStyle,
               model: 'gemini-3.1-flash-image',
             });
+            queryClient.invalidateQueries({ queryKey: GALLERY_IMAGES_KEY });
+            queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
           }
         } catch (saveErr) {
           console.warn('Failed to save sticker to gallery:', saveErr);

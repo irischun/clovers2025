@@ -11,6 +11,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { usePointConsumption } from '@/hooks/usePointConsumption';
 import { format } from 'date-fns';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { GALLERY_SUBTITLES_KEY } from '@/hooks/useGalleryData';
+import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
 
 interface VoiceGeneration {
   id: string;
@@ -45,6 +48,7 @@ const ACCEPTED_FORMATS = [...AUDIO_FORMATS, ...VIDEO_FORMATS].join(',');
 const SpeechToTextPage = () => {
   const { t } = useLanguage();
   const { consumePoints } = usePointConsumption();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('convert');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
@@ -188,6 +192,8 @@ const SpeechToTextPage = () => {
         .single();
 
       if (conversionError) throw conversionError;
+      queryClient.invalidateQueries({ queryKey: GALLERY_SUBTITLES_KEY });
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
 
       // Call edge function to process
       const { data, error } = await supabase.functions.invoke('audio-to-subtitle', {

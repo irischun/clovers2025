@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
+import { GALLERY_SUBTITLES_KEY } from '@/hooks/useGalleryData';
 
 export interface SubtitleConversion {
   id: string;
@@ -51,6 +52,7 @@ export function useSubtitleConversions() {
       if (error) throw error;
       setSubtitles(prev => prev.filter(s => s.id !== id));
       queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
+      queryClient.invalidateQueries({ queryKey: GALLERY_SUBTITLES_KEY });
       toast({ title: '字幕已刪除' });
     } catch {
       toast({ title: '刪除失敗', variant: 'destructive' });

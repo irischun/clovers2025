@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { usePointConsumption } from '@/hooks/usePointConsumption';
 import { useQueryClient } from '@tanstack/react-query';
 import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
+import { GALLERY_TEXT_KEY } from '@/hooks/useGalleryData';
 
 type ContentType = 'social' | 'video' | 'blog' | 'email';
 
@@ -92,6 +93,7 @@ export function useAIGeneration() {
           tool_type: type,
         });
         queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
+        queryClient.invalidateQueries({ queryKey: GALLERY_TEXT_KEY });
       }
 
       // Deduct 1 point for AI content generation

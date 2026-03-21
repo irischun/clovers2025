@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
+import { GALLERY_IMAGES_KEY } from '@/hooks/useGalleryData';
 
 export interface GeneratedImage {
   id: string;
@@ -79,6 +80,7 @@ export function useGeneratedImages() {
 
       setImages(prev => [(data as GeneratedImage), ...prev]);
       queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
+      queryClient.invalidateQueries({ queryKey: GALLERY_IMAGES_KEY });
       return data as GeneratedImage;
     } catch (error) {
       console.error('Error saving generated image:', error);
@@ -117,6 +119,7 @@ export function useGeneratedImages() {
 
       setImages(prev => prev.filter(img => img.id !== id));
       queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
+      queryClient.invalidateQueries({ queryKey: GALLERY_IMAGES_KEY });
       toast({ title: '圖片已刪除' });
     } catch (error) {
       console.error('Error deleting image:', error);

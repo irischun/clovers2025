@@ -19,6 +19,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { usePointConsumption } from '@/hooks/usePointConsumption';
 import { format } from 'date-fns';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { GALLERY_TEXT_KEY } from '@/hooks/useGalleryData';
+import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
 
 const outputLanguages = [
   { value: 'zh-TW', label: '繁體中文' },
@@ -58,6 +61,7 @@ const ContentOrganizePage = () => {
   const [mode, setMode] = useState<'single' | 'batch'>('single');
   const { toast } = useToast();
   const { consumePoints } = usePointConsumption();
+  const queryClient = useQueryClient();
 
   // Single link state
   const [url, setUrl] = useState('');
@@ -147,6 +151,8 @@ const ContentOrganizePage = () => {
         is_batch: isBatch,
         status: 'completed'
       });
+      queryClient.invalidateQueries({ queryKey: GALLERY_TEXT_KEY });
+      queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
     } catch (error) {
       console.error('Error saving to history:', error);
     }
