@@ -119,6 +119,7 @@ export function useGeneratedImages() {
 
       setImages(prev => prev.filter(img => img.id !== id));
       queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
+      queryClient.invalidateQueries({ queryKey: GALLERY_IMAGES_KEY });
       toast({ title: '圖片已刪除' });
     } catch (error) {
       console.error('Error deleting image:', error);

@@ -93,6 +93,7 @@ export function useAIGeneration() {
           tool_type: type,
         });
         queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
+        queryClient.invalidateQueries({ queryKey: GALLERY_TEXT_KEY });
       }
 
       // Deduct 1 point for AI content generation
