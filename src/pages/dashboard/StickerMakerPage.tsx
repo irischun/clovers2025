@@ -322,6 +322,8 @@ const StickerMakerPage = () => {
             style: 'whatsapp_sticker',
             model: 'canvas_animation',
           });
+          queryClient.invalidateQueries({ queryKey: GALLERY_IMAGES_KEY });
+          queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY });
         }
       } catch (saveErr) {
         console.warn('Failed to save sticker to gallery:', saveErr);
