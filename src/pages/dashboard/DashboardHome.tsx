@@ -15,7 +15,6 @@ interface Stats {
   prompts: number;
   scheduledPosts: number;
   mediaFiles: number;
-  aiGenerations: number;
 }
 
 interface RecentActivity {
