@@ -709,7 +709,7 @@ const GalleryPage = () => {
         <div className="text-sm text-muted-foreground mt-4">共 {currentCount} {countLabel}</div>
 
         <TabsContent value="images" className="mt-4">
-          {filteredImages.length === 0 ? renderEmptyState() : (
+          {tabLoading.images ? renderTabLoading() : filteredImages.length === 0 ? renderEmptyState() : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredImages.map((img, i) => renderImageCard(img, i))}
             </div>
@@ -719,7 +719,7 @@ const GalleryPage = () => {
         <TabsContent value="videos" className="mt-4">{renderEmptyState()}</TabsContent>
 
         <TabsContent value="audio" className="mt-4">
-          {filteredVoices.length === 0 ? renderEmptyState() : (
+          {tabLoading.audio ? renderTabLoading() : filteredVoices.length === 0 ? renderEmptyState() : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredVoices.map((v, i) => renderAudioCard(v, i))}
             </div>
@@ -727,7 +727,7 @@ const GalleryPage = () => {
         </TabsContent>
 
         <TabsContent value="subtitles" className="mt-4">
-          {filteredSubtitles.length === 0 ? renderEmptyState() : (
+          {tabLoading.subtitles ? renderTabLoading() : filteredSubtitles.length === 0 ? renderEmptyState() : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredSubtitles.map((s, i) => renderSubtitleCard(s, i))}
             </div>
@@ -735,7 +735,7 @@ const GalleryPage = () => {
         </TabsContent>
 
         <TabsContent value="text" className="mt-4">
-          {filteredTextWorks.length === 0 ? renderEmptyState() : (
+          {tabLoading.text ? renderTabLoading() : filteredTextWorks.length === 0 ? renderEmptyState() : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredTextWorks.map((tw, i) => renderTextCard(tw, i))}
             </div>
