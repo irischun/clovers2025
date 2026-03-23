@@ -33,6 +33,12 @@ const formatFileSize = (bytes: number): string => {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 };
 
+const formatDateSafe = (value?: string): string => {
+  if (!value) return '—';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '—' : format(date, 'yyyy-MM-dd HH:mm');
+};
+
 type ActiveTab = 'images' | 'videos' | 'audio' | 'subtitles' | 'text';
 
 const GalleryPage = () => {
@@ -372,7 +378,7 @@ const GalleryPage = () => {
         </div>
         <div className="p-3 space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{format(new Date(img.created_at), 'yyyy-MM-dd HH:mm')}</span>
+            <span>{formatDateSafe(img.created_at)}</span>
             {img.model && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{img.model}</Badge>}
           </div>
           <div className="text-xs text-muted-foreground">
@@ -439,7 +445,7 @@ const GalleryPage = () => {
         {/* Metadata */}
         <div className="p-3 space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{format(new Date(v.created_at), 'yyyy-MM-dd HH:mm')}</span>
+            <span>{formatDateSafe(v.created_at)}</span>
             <Badge variant="outline" className="text-[10px] px-1.5 py-0">{v.model}</Badge>
           </div>
 
@@ -517,7 +523,7 @@ const GalleryPage = () => {
         {/* Metadata */}
         <div className="p-3 space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{format(new Date(s.created_at), 'yyyy-MM-dd HH:mm')}</span>
+            <span>{formatDateSafe(s.created_at)}</span>
             <Badge variant="outline" className="text-[10px] px-1.5 py-0">{s.source_type}</Badge>
           </div>
 
@@ -607,7 +613,7 @@ const GalleryPage = () => {
         </div>
         <div className="p-3 space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{format(new Date(tw.created_at), 'yyyy-MM-dd HH:mm')}</span>
+            <span>{formatDateSafe(tw.created_at)}</span>
           </div>
           <p className="text-sm font-medium text-foreground line-clamp-1">{tw.title}</p>
           {tw.content && (
@@ -761,7 +767,7 @@ const GalleryPage = () => {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="secondary" className="text-xs">{format(new Date(selectedItem.created_at), 'yyyy-MM-dd HH:mm')}</Badge>
+                  <Badge variant="secondary" className="text-xs">{formatDateSafe(selectedItem.created_at)}</Badge>
                   {selectedItem.aspect_ratio && <Badge variant="outline" className="text-xs font-mono">AR: {selectedItem.aspect_ratio}</Badge>}
                   <Badge variant="outline" className="text-xs font-mono">{getFileFormat(selectedItem.image_url).toUpperCase()}</Badge>
                   <Badge variant="outline" className="text-xs font-mono">{fileSizes[selectedItem.id] && fileSizes[selectedItem.id] > 0 ? formatFileSize(fileSizes[selectedItem.id]) : '計算中...'}</Badge>

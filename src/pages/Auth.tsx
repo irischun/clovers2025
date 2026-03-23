@@ -10,6 +10,8 @@ import cloversLogo from '@/assets/clovers-logo-icon.jpeg';
 import { useLanguage } from '@/i18n/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
+const AUTH_REDIRECT_STORAGE_KEY = 'post-auth-redirect';
+
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -23,7 +25,10 @@ const Auth = () => {
   const { t } = useLanguage();
 
   const redirectPath = useMemo(() => {
-    const target = searchParams.get('redirect') || '/dashboard';
+    const target =
+      searchParams.get('redirect') ||
+      sessionStorage.getItem(AUTH_REDIRECT_STORAGE_KEY) ||
+      '/dashboard';
     return target.startsWith('/dashboard') ? target : '/dashboard';
   }, [searchParams]);
 
@@ -33,11 +38,24 @@ const Auth = () => {
   }, [redirectPath]);
 
   useEffect(() => {
+    const target = searchParams.get('redirect');
+    if (target?.startsWith('/dashboard')) {
+      sessionStorage.setItem(AUTH_REDIRECT_STORAGE_KEY, target);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) navigate(redirectPath, { replace: true });
+      if (session) {
+        sessionStorage.removeItem(AUTH_REDIRECT_STORAGE_KEY);
+        navigate(redirectPath, { replace: true });
+      }
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate(redirectPath, { replace: true });
+      if (session) {
+        sessionStorage.removeItem(AUTH_REDIRECT_STORAGE_KEY);
+        navigate(redirectPath, { replace: true });
+      }
     });
     return () => subscription.unsubscribe();
   }, [navigate, redirectPath]);
