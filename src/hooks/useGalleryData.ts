@@ -86,7 +86,7 @@ async function fetchTextWorks(): Promise<TextWork[]> {
 }
 
 // ── Shared query options: cache for 30s, show stale data instantly ──
-const QUERY_OPTS = { staleTime: 30_000, refetchOnWindowFocus: true } as const;
+const QUERY_OPTS = { staleTime: 30_000, refetchOnWindowFocus: true, retry: 1, retryDelay: 1000 } as const;
 
 // ── Hooks ──
 export function useGalleryImages() {

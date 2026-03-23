@@ -60,7 +60,14 @@ const GalleryPage = () => {
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const [audioElements, setAudioElements] = useState<Record<string, HTMLAudioElement>>({});
 
-  const loading = imgLoading || voiceLoading || subLoading || textLoading;
+  // Per-tab loading — don't block the whole page
+  const tabLoading: Record<ActiveTab, boolean> = {
+    images: imgLoading,
+    videos: false,
+    audio: voiceLoading,
+    subtitles: subLoading,
+    text: textLoading,
+  };
 
   // Mutation helpers that update cache + DB
   const toggleFavorite = async (id: string, isFavorite: boolean) => {
