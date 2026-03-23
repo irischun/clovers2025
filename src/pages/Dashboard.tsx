@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Outlet } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
@@ -36,12 +36,16 @@ const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
+    const redirectTarget = `${location.pathname}${location.search}${location.hash}`;
+    const authRedirectUrl = `/auth?redirect=${encodeURIComponent(redirectTarget)}`;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       if (!session) {
-        navigate('/auth');
+        navigate(authRedirectUrl, { replace: true });
       }
       setLoading(false);
     });
@@ -49,13 +53,13 @@ const Dashboard = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (!session) {
-        navigate('/auth');
+        navigate(authRedirectUrl, { replace: true });
       }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, location.pathname, location.search, location.hash]);
 
   if (loading) {
     return (
