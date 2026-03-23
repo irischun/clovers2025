@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,18 +18,29 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { t } = useLanguage();
 
+  const redirectPath = useMemo(() => {
+    const target = searchParams.get('redirect') || '/dashboard';
+    return target.startsWith('/dashboard') ? target : '/dashboard';
+  }, [searchParams]);
+
+  const emailRedirectTo = useMemo(() => {
+    const basePath = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+    return `${window.location.origin}${basePath}/auth?redirect=${encodeURIComponent(redirectPath)}`;
+  }, [redirectPath]);
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) navigate('/dashboard');
+      if (session) navigate(redirectPath, { replace: true });
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate('/dashboard');
+      if (session) navigate(redirectPath, { replace: true });
     });
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, redirectPath]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +61,7 @@ const Auth = () => {
       } else {
         const { error } = await supabase.auth.signUp({
           email, password,
-          options: { emailRedirectTo: `${window.location.origin}/dashboard`, data: { full_name: fullName } },
+          options: { emailRedirectTo, data: { full_name: fullName } },
         });
         if (error) {
           if (error.message.includes('already registered')) {
