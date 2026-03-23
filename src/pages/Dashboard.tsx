@@ -7,6 +7,8 @@ import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { Loader2 } from 'lucide-react';
 
+const AUTH_REDIRECT_STORAGE_KEY = 'post-auth-redirect';
+
 const DashboardContent = ({ user }: { user: User }) => {
   const { open, openMobile, isMobile } = useSidebar();
   
@@ -41,10 +43,16 @@ const Dashboard = () => {
   useEffect(() => {
     const redirectTarget = `${location.pathname}${location.search}${location.hash}`;
     const authRedirectUrl = `/auth?redirect=${encodeURIComponent(redirectTarget)}`;
+    const rememberRedirect = () => {
+      if (redirectTarget.startsWith('/dashboard')) {
+        sessionStorage.setItem(AUTH_REDIRECT_STORAGE_KEY, redirectTarget);
+      }
+    };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       if (!session) {
+        rememberRedirect();
         navigate(authRedirectUrl, { replace: true });
       }
       setLoading(false);
@@ -53,6 +61,7 @@ const Dashboard = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (!session) {
+        rememberRedirect();
         navigate(authRedirectUrl, { replace: true });
       }
       setLoading(false);
