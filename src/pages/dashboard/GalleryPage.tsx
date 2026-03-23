@@ -60,7 +60,14 @@ const GalleryPage = () => {
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const [audioElements, setAudioElements] = useState<Record<string, HTMLAudioElement>>({});
 
-  const loading = imgLoading || voiceLoading || subLoading || textLoading;
+  // Per-tab loading — don't block the whole page
+  const tabLoading: Record<ActiveTab, boolean> = {
+    images: imgLoading,
+    videos: false,
+    audio: voiceLoading,
+    subtitles: subLoading,
+    text: textLoading,
+  };
 
   // Mutation helpers that update cache + DB
   const toggleFavorite = async (id: string, isFavorite: boolean) => {
@@ -642,13 +649,11 @@ const GalleryPage = () => {
     );
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  const renderTabLoading = () => (
+    <div className="flex items-center justify-center py-24">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -704,7 +709,7 @@ const GalleryPage = () => {
         <div className="text-sm text-muted-foreground mt-4">共 {currentCount} {countLabel}</div>
 
         <TabsContent value="images" className="mt-4">
-          {filteredImages.length === 0 ? renderEmptyState() : (
+          {tabLoading.images ? renderTabLoading() : filteredImages.length === 0 ? renderEmptyState() : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredImages.map((img, i) => renderImageCard(img, i))}
             </div>
@@ -714,7 +719,7 @@ const GalleryPage = () => {
         <TabsContent value="videos" className="mt-4">{renderEmptyState()}</TabsContent>
 
         <TabsContent value="audio" className="mt-4">
-          {filteredVoices.length === 0 ? renderEmptyState() : (
+          {tabLoading.audio ? renderTabLoading() : filteredVoices.length === 0 ? renderEmptyState() : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredVoices.map((v, i) => renderAudioCard(v, i))}
             </div>
@@ -722,7 +727,7 @@ const GalleryPage = () => {
         </TabsContent>
 
         <TabsContent value="subtitles" className="mt-4">
-          {filteredSubtitles.length === 0 ? renderEmptyState() : (
+          {tabLoading.subtitles ? renderTabLoading() : filteredSubtitles.length === 0 ? renderEmptyState() : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredSubtitles.map((s, i) => renderSubtitleCard(s, i))}
             </div>
@@ -730,7 +735,7 @@ const GalleryPage = () => {
         </TabsContent>
 
         <TabsContent value="text" className="mt-4">
-          {filteredTextWorks.length === 0 ? renderEmptyState() : (
+          {tabLoading.text ? renderTabLoading() : filteredTextWorks.length === 0 ? renderEmptyState() : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredTextWorks.map((tw, i) => renderTextCard(tw, i))}
             </div>
