@@ -1334,10 +1334,10 @@ const ImageGenerationPage = () => {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <Wand2 className="w-5 h-5 text-primary" />
-                提示詞
+                <Wand2 className="w-5 h-5 text-primary animate-pulse" />
+                <span className="text-gradient-nature animate-pulse-glow inline-block">提示詞</span>
               </CardTitle>
-              <CardDescription>描述您想要生成的圖像風格和內容</CardDescription>
+              <CardDescription className="text-gradient-clover animate-fade-in">描述您想要生成的圖像風格和內容</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Optional Title with Generated Content Selection */}
