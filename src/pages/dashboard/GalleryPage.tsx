@@ -6,6 +6,7 @@ import {
   Download, Copy, Check, ChevronDown, ChevronUp, Maximize2, Music, FileText, Play, Pause, Type, RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -18,7 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
 import {
-  useGalleryImages, useGalleryVoices, useGallerySubtitles, useGalleryTextWorks,
+  useGalleryImages, useGalleryImageCount, useGalleryVoices, useGallerySubtitles, useGalleryTextWorks,
   GALLERY_IMAGES_KEY, GALLERY_VOICES_KEY, GALLERY_SUBTITLES_KEY, GALLERY_TEXT_KEY,
   type TextWork,
 } from '@/hooks/useGalleryData';
@@ -47,6 +48,9 @@ const GalleryPage = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Pagination for images (base64 data is huge — ~1.6MB per image)
+  const [imagePage, setImagePage] = useState(0);
+
   // React Query cached data — instant on revisit
   const {
     data: generatedImages = [],
@@ -54,7 +58,10 @@ const GalleryPage = () => {
     isError: imgError,
     error: imgErrorObj,
     refetch: refetchImages,
-  } = useGalleryImages();
+  } = useGalleryImages(imagePage);
+  const {
+    data: totalImageCount = 0,
+  } = useGalleryImageCount();
   const {
     data: voices = [],
     isLoading: voiceLoading,
@@ -379,7 +386,10 @@ const GalleryPage = () => {
     setPlayingAudioId(id);
   };
 
-  const currentCount = activeTab === 'images' ? filteredImages.length
+  const IMAGES_PAGE_SIZE = 12;
+  const totalImagePages = Math.max(1, Math.ceil(totalImageCount / IMAGES_PAGE_SIZE));
+
+  const currentCount = activeTab === 'images' ? totalImageCount
     : activeTab === 'audio' ? filteredVoices.length
     : activeTab === 'subtitles' ? filteredSubtitles.length
     : activeTab === 'text' ? filteredTextWorks.length : 0;
@@ -762,9 +772,24 @@ const GalleryPage = () => {
         <TabsContent value="images" className="mt-4">
           {tabErrors.images ? renderTabError(tabErrors.images, () => { void refetchImages(); })
             : tabLoading.images ? renderTabLoading() : filteredImages.length === 0 ? renderEmptyState() : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredImages.map((img, i) => renderImageCard(img, i))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {filteredImages.map((img, i) => renderImageCard(img, i))}
+              </div>
+              {totalImagePages > 1 && (
+                <div className="flex items-center justify-center gap-4 mt-6">
+                  <Button variant="outline" size="sm" disabled={imagePage === 0} onClick={() => setImagePage(p => p - 1)} className="gap-1">
+                    <ChevronLeft className="w-4 h-4" /> 上一頁
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    第 {imagePage + 1} / {totalImagePages} 頁
+                  </span>
+                  <Button variant="outline" size="sm" disabled={imagePage >= totalImagePages - 1} onClick={() => setImagePage(p => p + 1)} className="gap-1">
+                    下一頁 <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
 
