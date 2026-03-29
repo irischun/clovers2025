@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
   Calendar as CalendarIcon, Star, Grid3X3, ImageIcon, Video, Filter, Trash2,
-  Download, Copy, Check, ChevronDown, ChevronUp, Maximize2, Music, FileText, Play, Pause, Type
+  Download, Copy, Check, ChevronDown, ChevronUp, Maximize2, Music, FileText, Play, Pause, Type, RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -48,10 +48,34 @@ const GalleryPage = () => {
   const queryClient = useQueryClient();
 
   // React Query cached data — instant on revisit
-  const { data: generatedImages = [], isLoading: imgLoading } = useGalleryImages();
-  const { data: voices = [], isLoading: voiceLoading } = useGalleryVoices();
-  const { data: subtitles = [], isLoading: subLoading } = useGallerySubtitles();
-  const { data: textWorks = [], isLoading: textLoading } = useGalleryTextWorks();
+  const {
+    data: generatedImages = [],
+    isLoading: imgLoading,
+    isError: imgError,
+    error: imgErrorObj,
+    refetch: refetchImages,
+  } = useGalleryImages();
+  const {
+    data: voices = [],
+    isLoading: voiceLoading,
+    isError: voiceError,
+    error: voiceErrorObj,
+    refetch: refetchVoices,
+  } = useGalleryVoices();
+  const {
+    data: subtitles = [],
+    isLoading: subLoading,
+    isError: subError,
+    error: subErrorObj,
+    refetch: refetchSubtitles,
+  } = useGallerySubtitles();
+  const {
+    data: textWorks = [],
+    isLoading: textLoading,
+    isError: textError,
+    error: textErrorObj,
+    refetch: refetchText,
+  } = useGalleryTextWorks();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('images');
   const [startDate, setStartDate] = useState<Date | undefined>();
@@ -73,6 +97,17 @@ const GalleryPage = () => {
     audio: voiceLoading,
     subtitles: subLoading,
     text: textLoading,
+  };
+
+  const resolveErrorMessage = (error: unknown) =>
+    error instanceof Error && error.message ? error.message : '載入失敗，請稍後重試';
+
+  const tabErrors: Record<ActiveTab, string | null> = {
+    images: imgError ? resolveErrorMessage(imgErrorObj) : null,
+    videos: null,
+    audio: voiceError ? resolveErrorMessage(voiceErrorObj) : null,
+    subtitles: subError ? resolveErrorMessage(subErrorObj) : null,
+    text: textError ? resolveErrorMessage(textErrorObj) : null,
   };
 
   // Mutation helpers that update cache + DB
@@ -661,6 +696,16 @@ const GalleryPage = () => {
     </div>
   );
 
+  const renderTabError = (message: string, onRetry: () => void) => (
+    <div className="flex flex-col items-center justify-center py-24 text-center">
+      <p className="text-base font-medium text-foreground">此分頁暫時無法載入</p>
+      <p className="text-sm text-muted-foreground mt-2 max-w-md">{message}</p>
+      <Button variant="outline" className="mt-4 gap-2" onClick={onRetry}>
+        <RefreshCw className="w-4 h-4" /> 重試
+      </Button>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       <div>
@@ -715,7 +760,8 @@ const GalleryPage = () => {
         <div className="text-sm text-muted-foreground mt-4">共 {currentCount} {countLabel}</div>
 
         <TabsContent value="images" className="mt-4">
-          {tabLoading.images ? renderTabLoading() : filteredImages.length === 0 ? renderEmptyState() : (
+          {tabErrors.images ? renderTabError(tabErrors.images, () => { void refetchImages(); })
+            : tabLoading.images ? renderTabLoading() : filteredImages.length === 0 ? renderEmptyState() : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredImages.map((img, i) => renderImageCard(img, i))}
             </div>
@@ -725,7 +771,8 @@ const GalleryPage = () => {
         <TabsContent value="videos" className="mt-4">{renderEmptyState()}</TabsContent>
 
         <TabsContent value="audio" className="mt-4">
-          {tabLoading.audio ? renderTabLoading() : filteredVoices.length === 0 ? renderEmptyState() : (
+          {tabErrors.audio ? renderTabError(tabErrors.audio, () => { void refetchVoices(); })
+            : tabLoading.audio ? renderTabLoading() : filteredVoices.length === 0 ? renderEmptyState() : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredVoices.map((v, i) => renderAudioCard(v, i))}
             </div>
@@ -733,7 +780,8 @@ const GalleryPage = () => {
         </TabsContent>
 
         <TabsContent value="subtitles" className="mt-4">
-          {tabLoading.subtitles ? renderTabLoading() : filteredSubtitles.length === 0 ? renderEmptyState() : (
+          {tabErrors.subtitles ? renderTabError(tabErrors.subtitles, () => { void refetchSubtitles(); })
+            : tabLoading.subtitles ? renderTabLoading() : filteredSubtitles.length === 0 ? renderEmptyState() : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredSubtitles.map((s, i) => renderSubtitleCard(s, i))}
             </div>
@@ -741,7 +789,8 @@ const GalleryPage = () => {
         </TabsContent>
 
         <TabsContent value="text" className="mt-4">
-          {tabLoading.text ? renderTabLoading() : filteredTextWorks.length === 0 ? renderEmptyState() : (
+          {tabErrors.text ? renderTabError(tabErrors.text, () => { void refetchText(); })
+            : tabLoading.text ? renderTabLoading() : filteredTextWorks.length === 0 ? renderEmptyState() : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredTextWorks.map((tw, i) => renderTextCard(tw, i))}
             </div>
