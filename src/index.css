@@ -382,6 +382,28 @@
   100% { background-position: 200% 0; }
 }
 
+@keyframes prompt-glow-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px hsl(160, 70%, 42%, 0.4));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 16px hsl(160, 70%, 42%, 0.8)) drop-shadow(0 0 30px hsl(175, 60%, 45%, 0.4));
+    transform: scale(1.03);
+  }
+}
+
+@keyframes prompt-desc-shimmer {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px hsl(160, 70%, 42%, 0.3));
+    opacity: 0.85;
+  }
+  50% {
+    filter: drop-shadow(0 0 10px hsl(160, 70%, 42%, 0.6));
+    opacity: 1;
+  }
+}
+
 /* Premium Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
