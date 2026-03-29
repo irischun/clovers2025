@@ -3,10 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
   Calendar as CalendarIcon, Star, Grid3X3, ImageIcon, Video, Filter, Trash2,
-  Download, Copy, Check, ChevronDown, ChevronUp, Maximize2, Music, FileText, Play, Pause, Type, RefreshCw
+  Download, Copy, Check, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Maximize2, Music, FileText, Play, Pause, Type, RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
