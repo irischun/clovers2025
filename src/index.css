@@ -245,6 +245,25 @@
     color: hsl(160, 60%, 55%);
   }
 
+  /* Prompt Title Glow Animation */
+  .prompt-title-glow {
+    background: linear-gradient(135deg, hsl(160, 70%, 50%), hsl(175, 60%, 50%), hsl(145, 65%, 55%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: prompt-glow-pulse 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px hsl(160, 70%, 42%, 0.6));
+  }
+
+  .prompt-desc-glow {
+    background: linear-gradient(135deg, hsl(160, 70%, 42%), hsl(175, 60%, 45%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: prompt-desc-shimmer 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 6px hsl(160, 70%, 42%, 0.4));
+  }
+
   /* Organic Divider */
   .divider-organic {
     @apply w-full h-px;
@@ -361,6 +380,28 @@
 @keyframes shimmer-luxury {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+@keyframes prompt-glow-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px hsl(160, 70%, 42%, 0.4));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 16px hsl(160, 70%, 42%, 0.8)) drop-shadow(0 0 30px hsl(175, 60%, 45%, 0.4));
+    transform: scale(1.03);
+  }
+}
+
+@keyframes prompt-desc-shimmer {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px hsl(160, 70%, 42%, 0.3));
+    opacity: 0.85;
+  }
+  50% {
+    filter: drop-shadow(0 0 10px hsl(160, 70%, 42%, 0.6));
+    opacity: 1;
+  }
 }
 
 /* Premium Scrollbar */
