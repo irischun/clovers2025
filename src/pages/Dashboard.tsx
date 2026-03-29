@@ -85,9 +85,12 @@ const Dashboard = () => {
   }
 
   return (
-    <SidebarProvider>
-      <DashboardContent user={user} />
-    </SidebarProvider>
+    <ImageGenerationProvider>
+      <SidebarProvider>
+        <DashboardContent user={user} />
+        <GenerationFloatingIndicator />
+      </SidebarProvider>
+    </ImageGenerationProvider>
   );
 };
 
