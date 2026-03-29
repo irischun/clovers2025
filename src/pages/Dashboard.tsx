@@ -6,6 +6,8 @@ import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { Loader2 } from 'lucide-react';
+import { ImageGenerationProvider } from '@/contexts/ImageGenerationContext';
+import GenerationFloatingIndicator from '@/components/dashboard/GenerationFloatingIndicator';
 
 const AUTH_REDIRECT_STORAGE_KEY = 'post-auth-redirect';
 
@@ -83,9 +85,12 @@ const Dashboard = () => {
   }
 
   return (
-    <SidebarProvider>
-      <DashboardContent user={user} />
-    </SidebarProvider>
+    <ImageGenerationProvider>
+      <SidebarProvider>
+        <DashboardContent user={user} />
+        <GenerationFloatingIndicator />
+      </SidebarProvider>
+    </ImageGenerationProvider>
   );
 };
 

@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { useImageGenerationContext } from '@/contexts/ImageGenerationContext';
 import { Link } from 'react-router-dom';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
 import { useUserPoints } from '@/hooks/useUserPoints';
@@ -317,6 +318,7 @@ const aspectRatios = [
 
 const ImageGenerationPage = () => {
   const { t } = useLanguage();
+  const { currentJob, startJob, clearCurrentJob } = useImageGenerationContext();
   // Get user points and generated images
   const { points: userPoints } = useUserPoints();
   const { consumePoints } = usePointConsumption();
@@ -688,6 +690,24 @@ const ImageGenerationPage = () => {
     return null;
   };
 
+  // Sync results from background job back into local state
+  useEffect(() => {
+    if (currentJob?.status === 'completed' && currentJob.images.length > 0) {
+      setGeneratedImages(currentJob.images);
+      setSelectedImage(currentJob.images[0]);
+      setIsGenerating(false);
+    } else if (currentJob?.status === 'failed') {
+      setIsGenerating(false);
+      toast({
+        title: '生成失敗',
+        description: currentJob.error || '請稍後重試',
+        variant: 'destructive',
+      });
+    } else if (currentJob?.status === 'generating') {
+      setIsGenerating(true);
+    }
+  }, [currentJob?.status, currentJob?.id]);
+
   const handleGenerate = async () => {
     if (!prompt.trim() && generationMode === 'text-to-image') {
       toast({ title: '請輸入圖片描述', variant: 'destructive' });
@@ -707,94 +727,107 @@ const ImageGenerationPage = () => {
     setIsGenerating(true);
     setGeneratedImages([]);
     
-    try {
-      const fullPrompt = buildFullPrompt();
-      const model = models.find(m => m.id === selectedModel)?.model || 'google/gemini-2.5-flash-image-preview';
-      
-      // Get reference image for image-to-image mode
-      let referenceImage: string | null = null;
-      if (generationMode === 'image-to-image') {
-        referenceImage = await getReferenceImage();
-        if (!referenceImage) {
-          toast({ title: '無法讀取參考圖片', variant: 'destructive' });
-          setIsGenerating(false);
-          return;
-        }
+    // Capture all config values for the background job
+    const fullPrompt = buildFullPrompt();
+    const model = models.find(m => m.id === selectedModel)?.model || 'google/gemini-2.5-flash-image-preview';
+    const capturedAspectRatio = aspectRatio ? { id: aspectRatio.id, width: aspectRatio.width, height: aspectRatio.height } : { id: '1:1', width: 1024, height: 1024 };
+    const capturedQuantity = quantity;
+    const capturedPosterStyle = selectedPosterStyle;
+    const capturedStyleTags = [...selectedStyleTags];
+    const capturedPreserveFace = preserveFace;
+    const capturedMode = generationMode;
+    const capturedAvatarGeneration = avatarGeneration;
+    const capturedTotalPoints = totalPoints;
+    const capturedPointsPerImage = pointsPerImage;
+    const capturedPrompt = prompt;
+    const capturedTitle = title;
+    const capturedSelectedModel = selectedModel;
+    const capturedSelectedAspectRatio = selectedAspectRatio;
+
+    // Get reference image before starting background job
+    let referenceImage: string | null = null;
+    if (capturedMode === 'image-to-image') {
+      referenceImage = await getReferenceImage();
+      if (!referenceImage) {
+        toast({ title: '無法讀取參考圖片', variant: 'destructive' });
+        setIsGenerating(false);
+        return;
       }
-      
-      const images: string[] = [];
-      
-      for (let i = 0; i < quantity; i++) {
-        const { data, error } = await supabase.functions.invoke('generate-image', {
-          body: { 
-            prompt: fullPrompt, 
-            style: selectedPosterStyle || selectedStyleTags[0] || 'default',
-            model,
-            width: aspectRatio?.width,
-            height: aspectRatio?.height,
-            // Pass reference image for image-to-image mode
-            referenceImage: referenceImage,
-            // Pass mode so edge function knows the user's intent
-            mode: generationMode,
-            // Pass face preservation flag
-            preserveFace: preserveFace,
+    }
+
+    startJob({
+      prompt: capturedPrompt,
+      title: capturedTitle,
+      config: {
+        model,
+        modelId: capturedSelectedModel,
+        quantity: capturedQuantity,
+        totalPoints: capturedTotalPoints,
+        pointsPerImage: capturedPointsPerImage,
+        aspectRatio: capturedAspectRatio,
+        style: capturedPosterStyle || capturedStyleTags[0] || 'default',
+        preserveFace: capturedPreserveFace,
+        generationMode: capturedMode,
+        avatarGeneration: capturedAvatarGeneration,
+        referenceImage,
+        selectedStyleTags: capturedStyleTags,
+        selectedPosterStyle: capturedPosterStyle,
+      },
+      generateFn: async () => {
+        const images: string[] = [];
+        try {
+          for (let i = 0; i < capturedQuantity; i++) {
+            const { data, error } = await supabase.functions.invoke('generate-image', {
+              body: { 
+                prompt: fullPrompt, 
+                style: capturedPosterStyle || capturedStyleTags[0] || 'default',
+                model,
+                width: capturedAspectRatio.width,
+                height: capturedAspectRatio.height,
+                referenceImage,
+                mode: capturedMode,
+                preserveFace: capturedPreserveFace,
+              }
+            });
+            if (error) throw error;
+            if (data.imageUrl) {
+              images.push(data.imageUrl);
+            } else if (data.error) {
+              throw new Error(data.error);
+            }
           }
-        });
-
-        if (error) throw error;
-
-        if (data.imageUrl) {
-          images.push(data.imageUrl);
-          setGeneratedImages([...images]);
-        } else if (data.error) {
-          throw new Error(data.error);
+          return { images };
+        } catch (err) {
+          return { images, error: err instanceof Error ? err.message : '生成失敗' };
         }
-      }
-      
-      if (images.length > 0) {
-        setSelectedImage(images[0]);
-        const isAvatarImage = avatarGeneration && generationMode === 'text-to-image';
-        
-        // Save to database and local history
+      },
+      onComplete: async (images) => {
+        const isAvatarImage = capturedAvatarGeneration && capturedMode === 'text-to-image';
+        // Save to database
         for (const imageUrl of images) {
           try {
             await saveImage({
-              prompt,
+              prompt: capturedPrompt,
               image_url: imageUrl,
-              title: title || undefined,
+              title: capturedTitle || undefined,
               is_avatar: isAvatarImage,
-              style: selectedPosterStyle || selectedStyleTags[0] || undefined,
-              model: selectedModel,
-              aspect_ratio: selectedAspectRatio,
+              style: capturedPosterStyle || capturedStyleTags[0] || undefined,
+              model: capturedSelectedModel,
+              aspect_ratio: capturedSelectedAspectRatio,
             });
           } catch (saveError) {
             console.error('Failed to save image to database:', saveError);
           }
-          setHistory(prev => [{ prompt, imageUrl, isAvatar: isAvatarImage }, ...prev.slice(0, 49)]);
         }
-        
-        // Deduct points after successful generation
+        // Deduct points
         await consumePoints({
-          amount: totalPoints,
-          description: `Image generation: ${images.length} image(s) at ${pointsPerImage} pts each`,
+          amount: capturedTotalPoints,
+          description: `Image generation: ${images.length} image(s) at ${capturedPointsPerImage} pts each`,
         });
-        toast({ title: `成功生成 ${images.length} 張圖片！` });
-        
-        // Auto-refresh the page after successful generation
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      }
-    } catch (error) {
-      console.error('Image generation error:', error);
-      toast({ 
-        title: '生成失敗', 
-        description: error instanceof Error ? error.message : '請稍後重試',
-        variant: 'destructive' 
-      });
-    } finally {
-      setIsGenerating(false);
-    }
+      },
+    });
+
+    toast({ title: '圖片生成已開始，您可以瀏覽其他頁面！' });
   };
 
   const handleDownload = async (imageUrl?: string) => {
@@ -1776,7 +1809,7 @@ const ImageGenerationPage = () => {
                 <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
                   <Loader2 className="w-16 h-16 mb-4 animate-spin text-primary" />
                   <p>正在生成圖片...</p>
-                  <p className="text-sm mt-1">請稍候</p>
+                  <p className="text-sm mt-1">您可以瀏覽其他頁面，生成完成後會通知您</p>
                 </div>
               ) : (
                 <div className="space-y-4">
