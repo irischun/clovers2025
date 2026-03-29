@@ -245,6 +245,25 @@
     color: hsl(160, 60%, 55%);
   }
 
+  /* Prompt Title Glow Animation */
+  .prompt-title-glow {
+    background: linear-gradient(135deg, hsl(160, 70%, 50%), hsl(175, 60%, 50%), hsl(145, 65%, 55%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: prompt-glow-pulse 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px hsl(160, 70%, 42%, 0.6));
+  }
+
+  .prompt-desc-glow {
+    background: linear-gradient(135deg, hsl(160, 70%, 42%), hsl(175, 60%, 45%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: prompt-desc-shimmer 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 6px hsl(160, 70%, 42%, 0.4));
+  }
+
   /* Organic Divider */
   .divider-organic {
     @apply w-full h-px;
