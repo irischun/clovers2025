@@ -6,13 +6,13 @@ import type { SubtitleConversion } from '@/hooks/useSubtitleConversions';
 
 const QUERY_TIMEOUT_MS = 15_000;
 
-function withTimeout<T>(promise: Promise<T>, timeoutMs: number, timeoutMessage: string): Promise<T> {
+function withTimeout<T>(operation: () => Promise<T>, timeoutMs: number, timeoutMessage: string): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timeoutId = window.setTimeout(() => {
       reject(new Error(timeoutMessage));
     }, timeoutMs);
 
-    promise
+    operation()
       .then((value) => {
         window.clearTimeout(timeoutId);
         resolve(value);
@@ -42,13 +42,13 @@ export interface TextWork {
 // ── Fetchers ──
 async function fetchImages(): Promise<GeneratedImage[]> {
   const { data: { user } } = await withTimeout(
-    supabase.auth.getUser(),
+    async () => supabase.auth.getUser(),
     QUERY_TIMEOUT_MS,
     '使用者驗證逾時，請稍後重試'
   );
   if (!user) return [];
   const { data, error } = await withTimeout(
-    supabase
+    async () => await supabase
       .from('generated_images')
       .select('*')
       .order('created_at', { ascending: false }),
@@ -61,13 +61,13 @@ async function fetchImages(): Promise<GeneratedImage[]> {
 
 async function fetchVoices(): Promise<VoiceGeneration[]> {
   const { data: { user } } = await withTimeout(
-    supabase.auth.getUser(),
+    async () => supabase.auth.getUser(),
     QUERY_TIMEOUT_MS,
     '使用者驗證逾時，請稍後重試'
   );
   if (!user) return [];
   const { data, error } = await withTimeout(
-    supabase
+    async () => await supabase
       .from('voice_generations')
       .select('*')
       .order('created_at', { ascending: false }),
@@ -80,13 +80,13 @@ async function fetchVoices(): Promise<VoiceGeneration[]> {
 
 async function fetchSubtitles(): Promise<SubtitleConversion[]> {
   const { data: { user } } = await withTimeout(
-    supabase.auth.getUser(),
+    async () => supabase.auth.getUser(),
     QUERY_TIMEOUT_MS,
     '使用者驗證逾時，請稍後重試'
   );
   if (!user) return [];
   const { data, error } = await withTimeout(
-    supabase
+    async () => await supabase
       .from('subtitle_conversions')
       .select('*')
       .order('created_at', { ascending: false }),
@@ -99,7 +99,7 @@ async function fetchSubtitles(): Promise<SubtitleConversion[]> {
 
 async function fetchTextWorks(): Promise<TextWork[]> {
   const { data: { user } } = await withTimeout(
-    supabase.auth.getUser(),
+    async () => supabase.auth.getUser(),
     QUERY_TIMEOUT_MS,
     '使用者驗證逾時，請稍後重試'
   );
@@ -107,12 +107,12 @@ async function fetchTextWorks(): Promise<TextWork[]> {
 
   const [aiRes, rewriteRes] = await Promise.all([
     withTimeout(
-      supabase.from('ai_generations').select('*').order('created_at', { ascending: false }),
+      async () => await supabase.from('ai_generations').select('*').order('created_at', { ascending: false }),
       QUERY_TIMEOUT_MS,
       '文字作品載入逾時，請稍後重試'
     ),
     withTimeout(
-      supabase.from('content_rewrites').select('*').order('created_at', { ascending: false }),
+      async () => await supabase.from('content_rewrites').select('*').order('created_at', { ascending: false }),
       QUERY_TIMEOUT_MS,
       '內容重整載入逾時，請稍後重試'
     ),
