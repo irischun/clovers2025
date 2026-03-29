@@ -1809,7 +1809,7 @@ const ImageGenerationPage = () => {
                 <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
                   <Loader2 className="w-16 h-16 mb-4 animate-spin text-primary" />
                   <p>正在生成圖片...</p>
-                  <p className="text-sm mt-1">請稍候</p>
+                  <p className="text-sm mt-1">您可以瀏覽其他頁面，生成完成後會通知您</p>
                 </div>
               ) : (
                 <div className="space-y-4">
