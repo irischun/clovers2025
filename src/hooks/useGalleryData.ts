@@ -25,10 +25,13 @@ function withTimeout<T>(operation: () => Promise<T>, timeoutMs: number, timeoutM
 }
 
 // ── Query keys (exported so generators can invalidate them) ──
-export const GALLERY_IMAGES_KEY = ['gallery-images'];
+export const GALLERY_IMAGES_KEY = ['gallery-images'] as const;
+export const GALLERY_IMAGES_COUNT_KEY = ['gallery-images-count'];
 export const GALLERY_VOICES_KEY = ['gallery-voices'];
 export const GALLERY_SUBTITLES_KEY = ['gallery-subtitles'];
 export const GALLERY_TEXT_KEY = ['gallery-text'];
+
+const IMAGES_PAGE_SIZE = 12;
 
 export interface TextWork {
   id: string;
@@ -40,18 +43,39 @@ export interface TextWork {
 }
 
 // ── Fetchers ──
-async function fetchImages(): Promise<GeneratedImage[]> {
+async function fetchImageCount(): Promise<number> {
+  const { data: { user } } = await withTimeout(
+    async () => supabase.auth.getUser(),
+    QUERY_TIMEOUT_MS,
+    '使用者驗證逾時，請稍後重試'
+  );
+  if (!user) return 0;
+  const { count, error } = await withTimeout(
+    async () => await supabase
+      .from('generated_images')
+      .select('*', { count: 'exact', head: true }),
+    QUERY_TIMEOUT_MS,
+    '圖片計數逾時，請稍後重試'
+  );
+  if (error) throw error;
+  return count ?? 0;
+}
+
+async function fetchImages(page: number): Promise<GeneratedImage[]> {
   const { data: { user } } = await withTimeout(
     async () => supabase.auth.getUser(),
     QUERY_TIMEOUT_MS,
     '使用者驗證逾時，請稍後重試'
   );
   if (!user) return [];
+  const from = page * IMAGES_PAGE_SIZE;
+  const to = from + IMAGES_PAGE_SIZE - 1;
   const { data, error } = await withTimeout(
     async () => await supabase
       .from('generated_images')
       .select('*')
-      .order('created_at', { ascending: false }),
+      .order('created_at', { ascending: false })
+      .range(from, to),
     QUERY_TIMEOUT_MS,
     '圖片畫廊載入逾時，請稍後重試'
   );
@@ -153,8 +177,12 @@ const QUERY_OPTS = {
 } as const;
 
 // ── Hooks ──
-export function useGalleryImages() {
-  return useQuery({ queryKey: GALLERY_IMAGES_KEY, queryFn: fetchImages, ...QUERY_OPTS });
+export function useGalleryImages(page: number = 0) {
+  return useQuery({ queryKey: [...GALLERY_IMAGES_KEY, page], queryFn: () => fetchImages(page), ...QUERY_OPTS });
+}
+
+export function useGalleryImageCount() {
+  return useQuery({ queryKey: GALLERY_IMAGES_COUNT_KEY, queryFn: fetchImageCount, ...QUERY_OPTS });
 }
 
 export function useGalleryVoices() {
@@ -174,6 +202,7 @@ export function useInvalidateGallery() {
   const qc = useQueryClient();
   return () => {
     qc.invalidateQueries({ queryKey: GALLERY_IMAGES_KEY });
+    qc.invalidateQueries({ queryKey: GALLERY_IMAGES_COUNT_KEY });
     qc.invalidateQueries({ queryKey: GALLERY_VOICES_KEY });
     qc.invalidateQueries({ queryKey: GALLERY_SUBTITLES_KEY });
     qc.invalidateQueries({ queryKey: GALLERY_TEXT_KEY });
