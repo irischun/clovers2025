@@ -318,6 +318,7 @@ const aspectRatios = [
 
 const ImageGenerationPage = () => {
   const { t } = useLanguage();
+  const { currentJob, startJob, clearCurrentJob } = useImageGenerationContext();
   // Get user points and generated images
   const { points: userPoints } = useUserPoints();
   const { consumePoints } = usePointConsumption();
