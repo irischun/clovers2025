@@ -42,15 +42,9 @@ export interface TextWork {
   created_at: string;
 }
 
-// ── Fetchers ──
-async function getSessionUser() {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.user ?? null;
-}
+// ── Fetchers (no longer check auth — that's handled by `enabled`) ──
 
 async function fetchImageCount(): Promise<number> {
-  const user = await getSessionUser();
-  if (!user) return 0;
   const { count, error } = await withTimeout(
     async () => await supabase
       .from('generated_images')
@@ -63,8 +57,6 @@ async function fetchImageCount(): Promise<number> {
 }
 
 async function fetchImages(page: number): Promise<GeneratedImage[]> {
-  const user = await getSessionUser();
-  if (!user) return [];
   const from = page * IMAGES_PAGE_SIZE;
   const to = from + IMAGES_PAGE_SIZE - 1;
   const { data, error } = await withTimeout(
@@ -81,8 +73,6 @@ async function fetchImages(page: number): Promise<GeneratedImage[]> {
 }
 
 async function fetchVoices(): Promise<VoiceGeneration[]> {
-  const user = await getSessionUser();
-  if (!user) return [];
   const { data, error } = await withTimeout(
     async () => await supabase
       .from('voice_generations')
@@ -96,8 +86,6 @@ async function fetchVoices(): Promise<VoiceGeneration[]> {
 }
 
 async function fetchSubtitles(): Promise<SubtitleConversion[]> {
-  const user = await getSessionUser();
-  if (!user) return [];
   const { data, error } = await withTimeout(
     async () => await supabase
       .from('subtitle_conversions')
@@ -111,9 +99,6 @@ async function fetchSubtitles(): Promise<SubtitleConversion[]> {
 }
 
 async function fetchTextWorks(): Promise<TextWork[]> {
-  const user = await getSessionUser();
-  if (!user) return [];
-
   const [aiRes, rewriteRes] = await Promise.all([
     withTimeout(
       async () => await supabase.from('ai_generations').select('*').order('created_at', { ascending: false }),
@@ -153,33 +138,58 @@ async function fetchTextWorks(): Promise<TextWork[]> {
   );
 }
 
-// ── Shared query options: cache for 30s, show stale data instantly ──
+// ── Shared query options ──
 const QUERY_OPTS = {
   staleTime: 30_000,
   refetchOnWindowFocus: true,
-  retry: 1,
+  retry: 2,
   retryDelay: 1000,
 } as const;
 
-// ── Hooks ──
-export function useGalleryImages(page: number = 0) {
-  return useQuery({ queryKey: [...GALLERY_IMAGES_KEY, page], queryFn: () => fetchImages(page), ...QUERY_OPTS });
+// ── Hooks — all accept `enabled` to gate on auth readiness ──
+export function useGalleryImages(page: number = 0, enabled: boolean = true) {
+  return useQuery({
+    queryKey: [...GALLERY_IMAGES_KEY, page],
+    queryFn: () => fetchImages(page),
+    enabled,
+    ...QUERY_OPTS,
+  });
 }
 
-export function useGalleryImageCount() {
-  return useQuery({ queryKey: GALLERY_IMAGES_COUNT_KEY, queryFn: fetchImageCount, ...QUERY_OPTS });
+export function useGalleryImageCount(enabled: boolean = true) {
+  return useQuery({
+    queryKey: GALLERY_IMAGES_COUNT_KEY,
+    queryFn: fetchImageCount,
+    enabled,
+    ...QUERY_OPTS,
+  });
 }
 
-export function useGalleryVoices() {
-  return useQuery({ queryKey: GALLERY_VOICES_KEY, queryFn: fetchVoices, ...QUERY_OPTS });
+export function useGalleryVoices(enabled: boolean = true) {
+  return useQuery({
+    queryKey: GALLERY_VOICES_KEY,
+    queryFn: fetchVoices,
+    enabled,
+    ...QUERY_OPTS,
+  });
 }
 
-export function useGallerySubtitles() {
-  return useQuery({ queryKey: GALLERY_SUBTITLES_KEY, queryFn: fetchSubtitles, ...QUERY_OPTS });
+export function useGallerySubtitles(enabled: boolean = true) {
+  return useQuery({
+    queryKey: GALLERY_SUBTITLES_KEY,
+    queryFn: fetchSubtitles,
+    enabled,
+    ...QUERY_OPTS,
+  });
 }
 
-export function useGalleryTextWorks() {
-  return useQuery({ queryKey: GALLERY_TEXT_KEY, queryFn: fetchTextWorks, ...QUERY_OPTS });
+export function useGalleryTextWorks(enabled: boolean = true) {
+  return useQuery({
+    queryKey: GALLERY_TEXT_KEY,
+    queryFn: fetchTextWorks,
+    enabled,
+    ...QUERY_OPTS,
+  });
 }
 
 /** Invalidate all gallery caches — call after any generation saves */
