@@ -43,12 +43,13 @@ export interface TextWork {
 }
 
 // ── Fetchers ──
+async function getSessionUser() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user ?? null;
+}
+
 async function fetchImageCount(): Promise<number> {
-  const { data: { user } } = await withTimeout(
-    async () => supabase.auth.getUser(),
-    QUERY_TIMEOUT_MS,
-    '使用者驗證逾時，請稍後重試'
-  );
+  const user = await getSessionUser();
   if (!user) return 0;
   const { count, error } = await withTimeout(
     async () => await supabase
