@@ -101,13 +101,13 @@ const GalleryPage = () => {
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const [audioElements, setAudioElements] = useState<Record<string, HTMLAudioElement>>({});
 
-  // Per-tab loading — don't block the whole page
+  // Per-tab loading — includes auth-not-ready state
   const tabLoading: Record<ActiveTab, boolean> = {
-    images: imgLoading,
+    images: !queriesEnabled || imgLoading,
     videos: false,
-    audio: voiceLoading,
-    subtitles: subLoading,
-    text: textLoading,
+    audio: !queriesEnabled || voiceLoading,
+    subtitles: !queriesEnabled || subLoading,
+    text: !queriesEnabled || textLoading,
   };
 
   const resolveErrorMessage = (error: unknown) =>
