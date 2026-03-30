@@ -96,11 +96,7 @@ async function fetchVoices(): Promise<VoiceGeneration[]> {
 }
 
 async function fetchSubtitles(): Promise<SubtitleConversion[]> {
-  const { data: { user } } = await withTimeout(
-    async () => supabase.auth.getUser(),
-    QUERY_TIMEOUT_MS,
-    '使用者驗證逾時，請稍後重試'
-  );
+  const user = await getSessionUser();
   if (!user) return [];
   const { data, error } = await withTimeout(
     async () => await supabase
