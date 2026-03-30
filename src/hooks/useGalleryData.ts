@@ -63,11 +63,7 @@ async function fetchImageCount(): Promise<number> {
 }
 
 async function fetchImages(page: number): Promise<GeneratedImage[]> {
-  const { data: { user } } = await withTimeout(
-    async () => supabase.auth.getUser(),
-    QUERY_TIMEOUT_MS,
-    '使用者驗證逾時，請稍後重試'
-  );
+  const user = await getSessionUser();
   if (!user) return [];
   const from = page * IMAGES_PAGE_SIZE;
   const to = from + IMAGES_PAGE_SIZE - 1;
