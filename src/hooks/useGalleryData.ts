@@ -43,12 +43,13 @@ export interface TextWork {
 }
 
 // ── Fetchers ──
+async function getSessionUser() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user ?? null;
+}
+
 async function fetchImageCount(): Promise<number> {
-  const { data: { user } } = await withTimeout(
-    async () => supabase.auth.getUser(),
-    QUERY_TIMEOUT_MS,
-    '使用者驗證逾時，請稍後重試'
-  );
+  const user = await getSessionUser();
   if (!user) return 0;
   const { count, error } = await withTimeout(
     async () => await supabase
@@ -62,11 +63,7 @@ async function fetchImageCount(): Promise<number> {
 }
 
 async function fetchImages(page: number): Promise<GeneratedImage[]> {
-  const { data: { user } } = await withTimeout(
-    async () => supabase.auth.getUser(),
-    QUERY_TIMEOUT_MS,
-    '使用者驗證逾時，請稍後重試'
-  );
+  const user = await getSessionUser();
   if (!user) return [];
   const from = page * IMAGES_PAGE_SIZE;
   const to = from + IMAGES_PAGE_SIZE - 1;
@@ -84,11 +81,7 @@ async function fetchImages(page: number): Promise<GeneratedImage[]> {
 }
 
 async function fetchVoices(): Promise<VoiceGeneration[]> {
-  const { data: { user } } = await withTimeout(
-    async () => supabase.auth.getUser(),
-    QUERY_TIMEOUT_MS,
-    '使用者驗證逾時，請稍後重試'
-  );
+  const user = await getSessionUser();
   if (!user) return [];
   const { data, error } = await withTimeout(
     async () => await supabase
@@ -103,11 +96,7 @@ async function fetchVoices(): Promise<VoiceGeneration[]> {
 }
 
 async function fetchSubtitles(): Promise<SubtitleConversion[]> {
-  const { data: { user } } = await withTimeout(
-    async () => supabase.auth.getUser(),
-    QUERY_TIMEOUT_MS,
-    '使用者驗證逾時，請稍後重試'
-  );
+  const user = await getSessionUser();
   if (!user) return [];
   const { data, error } = await withTimeout(
     async () => await supabase
@@ -122,11 +111,7 @@ async function fetchSubtitles(): Promise<SubtitleConversion[]> {
 }
 
 async function fetchTextWorks(): Promise<TextWork[]> {
-  const { data: { user } } = await withTimeout(
-    async () => supabase.auth.getUser(),
-    QUERY_TIMEOUT_MS,
-    '使用者驗證逾時，請稍後重試'
-  );
+  const user = await getSessionUser();
   if (!user) return [];
 
   const [aiRes, rewriteRes] = await Promise.all([
