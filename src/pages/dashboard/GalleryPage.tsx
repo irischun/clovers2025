@@ -706,14 +706,18 @@ const GalleryPage = () => {
 
   const renderTabLoading = () => (
     <div className="flex items-center justify-center py-24">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex flex-col items-center gap-3">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <p className="text-sm text-muted-foreground">正在連線資料庫，請稍候…</p>
+      </div>
     </div>
   );
 
   const renderTabError = (message: string, onRetry: () => void) => (
     <div className="flex flex-col items-center justify-center py-24 text-center">
-      <p className="text-base font-medium text-foreground">此分頁暫時無法載入</p>
+      <p className="text-base font-medium text-foreground">連線暫時中斷</p>
       <p className="text-sm text-muted-foreground mt-2 max-w-md">{message}</p>
+      <p className="text-xs text-muted-foreground mt-1">系統將自動重試，或您可以手動重試</p>
       <Button variant="outline" className="mt-4 gap-2" onClick={onRetry}>
         <RefreshCw className="w-4 h-4" /> 重試
       </Button>
