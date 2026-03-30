@@ -17,6 +17,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
+import { useAuthReady } from '@/hooks/useAuthReady';
 import {
   useGalleryImages, useGalleryImageCount, useGalleryVoices, useGallerySubtitles, useGalleryTextWorks,
   GALLERY_IMAGES_KEY, GALLERY_VOICES_KEY, GALLERY_SUBTITLES_KEY, GALLERY_TEXT_KEY,
@@ -47,41 +48,45 @@ const GalleryPage = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Wait for auth to be fully restored before firing any queries
+  const { user, isReady: authReady } = useAuthReady();
+  const queriesEnabled = authReady && !!user;
+
   // Pagination for images (base64 data is huge — ~1.6MB per image)
   const [imagePage, setImagePage] = useState(0);
 
-  // React Query cached data — instant on revisit
+  // React Query cached data — gated on auth readiness
   const {
     data: generatedImages = [],
     isLoading: imgLoading,
     isError: imgError,
     error: imgErrorObj,
     refetch: refetchImages,
-  } = useGalleryImages(imagePage);
+  } = useGalleryImages(imagePage, queriesEnabled);
   const {
     data: totalImageCount = 0,
-  } = useGalleryImageCount();
+  } = useGalleryImageCount(queriesEnabled);
   const {
     data: voices = [],
     isLoading: voiceLoading,
     isError: voiceError,
     error: voiceErrorObj,
     refetch: refetchVoices,
-  } = useGalleryVoices();
+  } = useGalleryVoices(queriesEnabled);
   const {
     data: subtitles = [],
     isLoading: subLoading,
     isError: subError,
     error: subErrorObj,
     refetch: refetchSubtitles,
-  } = useGallerySubtitles();
+  } = useGallerySubtitles(queriesEnabled);
   const {
     data: textWorks = [],
     isLoading: textLoading,
     isError: textError,
     error: textErrorObj,
     refetch: refetchText,
-  } = useGalleryTextWorks();
+  } = useGalleryTextWorks(queriesEnabled);
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('images');
   const [startDate, setStartDate] = useState<Date | undefined>();
@@ -96,13 +101,13 @@ const GalleryPage = () => {
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const [audioElements, setAudioElements] = useState<Record<string, HTMLAudioElement>>({});
 
-  // Per-tab loading — don't block the whole page
+  // Per-tab loading — includes auth-not-ready state
   const tabLoading: Record<ActiveTab, boolean> = {
-    images: imgLoading,
+    images: !queriesEnabled || imgLoading,
     videos: false,
-    audio: voiceLoading,
-    subtitles: subLoading,
-    text: textLoading,
+    audio: !queriesEnabled || voiceLoading,
+    subtitles: !queriesEnabled || subLoading,
+    text: !queriesEnabled || textLoading,
   };
 
   const resolveErrorMessage = (error: unknown) =>
