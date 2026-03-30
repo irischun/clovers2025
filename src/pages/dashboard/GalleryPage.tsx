@@ -17,6 +17,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { DASHBOARD_STATS_KEY } from '@/hooks/useDashboardStats';
+import { useAuthReady } from '@/hooks/useAuthReady';
 import {
   useGalleryImages, useGalleryImageCount, useGalleryVoices, useGallerySubtitles, useGalleryTextWorks,
   GALLERY_IMAGES_KEY, GALLERY_VOICES_KEY, GALLERY_SUBTITLES_KEY, GALLERY_TEXT_KEY,
