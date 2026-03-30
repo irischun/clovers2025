@@ -48,41 +48,45 @@ const GalleryPage = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Wait for auth to be fully restored before firing any queries
+  const { user, isReady: authReady } = useAuthReady();
+  const queriesEnabled = authReady && !!user;
+
   // Pagination for images (base64 data is huge — ~1.6MB per image)
   const [imagePage, setImagePage] = useState(0);
 
-  // React Query cached data — instant on revisit
+  // React Query cached data — gated on auth readiness
   const {
     data: generatedImages = [],
     isLoading: imgLoading,
     isError: imgError,
     error: imgErrorObj,
     refetch: refetchImages,
-  } = useGalleryImages(imagePage);
+  } = useGalleryImages(imagePage, queriesEnabled);
   const {
     data: totalImageCount = 0,
-  } = useGalleryImageCount();
+  } = useGalleryImageCount(queriesEnabled);
   const {
     data: voices = [],
     isLoading: voiceLoading,
     isError: voiceError,
     error: voiceErrorObj,
     refetch: refetchVoices,
-  } = useGalleryVoices();
+  } = useGalleryVoices(queriesEnabled);
   const {
     data: subtitles = [],
     isLoading: subLoading,
     isError: subError,
     error: subErrorObj,
     refetch: refetchSubtitles,
-  } = useGallerySubtitles();
+  } = useGallerySubtitles(queriesEnabled);
   const {
     data: textWorks = [],
     isLoading: textLoading,
     isError: textError,
     error: textErrorObj,
     refetch: refetchText,
-  } = useGalleryTextWorks();
+  } = useGalleryTextWorks(queriesEnabled);
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('images');
   const [startDate, setStartDate] = useState<Date | undefined>();
