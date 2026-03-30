@@ -4,7 +4,7 @@ import type { GeneratedImage } from '@/hooks/useGeneratedImages';
 import type { VoiceGeneration } from '@/hooks/useVoiceGenerations';
 import type { SubtitleConversion } from '@/hooks/useSubtitleConversions';
 
-const QUERY_TIMEOUT_MS = 15_000;
+const QUERY_TIMEOUT_MS = 30_000;
 
 function withTimeout<T>(operation: () => Promise<T>, timeoutMs: number, timeoutMessage: string): Promise<T> {
   return new Promise<T>((resolve, reject) => {
@@ -48,9 +48,9 @@ async function fetchImageCount(): Promise<number> {
   const { count, error } = await withTimeout(
     async () => await supabase
       .from('generated_images')
-      .select('*', { count: 'exact', head: true }),
+      .select('id', { count: 'exact', head: true }),
     QUERY_TIMEOUT_MS,
-    '圖片計數逾時，請稍後重試'
+    '資料庫連線逾時，正在重試中…'
   );
   if (error) throw error;
   return count ?? 0;
@@ -62,11 +62,11 @@ async function fetchImages(page: number): Promise<GeneratedImage[]> {
   const { data, error } = await withTimeout(
     async () => await supabase
       .from('generated_images')
-      .select('*')
+      .select('id, image_url, title, prompt, created_at, is_favorite, aspect_ratio, model, style, user_id')
       .order('created_at', { ascending: false })
       .range(from, to),
     QUERY_TIMEOUT_MS,
-    '圖片畫廊載入逾時，請稍後重試'
+    '資料庫連線逾時，正在重試中…'
   );
   if (error) throw error;
   return (data as GeneratedImage[]) || [];
@@ -76,10 +76,10 @@ async function fetchVoices(): Promise<VoiceGeneration[]> {
   const { data, error } = await withTimeout(
     async () => await supabase
       .from('voice_generations')
-      .select('*')
+      .select('id, audio_url, text_content, created_at, is_favorite, voice_name, model, format, language, user_id')
       .order('created_at', { ascending: false }),
     QUERY_TIMEOUT_MS,
-    '音頻畫廊載入逾時，請稍後重試'
+    '資料庫連線逾時，正在重試中…'
   );
   if (error) throw error;
   return (data as VoiceGeneration[]) || [];
@@ -89,10 +89,10 @@ async function fetchSubtitles(): Promise<SubtitleConversion[]> {
   const { data, error } = await withTimeout(
     async () => await supabase
       .from('subtitle_conversions')
-      .select('*')
+      .select('id, source_name, original_language, subtitle_urls, created_at, status, user_id')
       .order('created_at', { ascending: false }),
     QUERY_TIMEOUT_MS,
-    '字幕畫廊載入逾時，請稍後重試'
+    '資料庫連線逾時，正在重試中…'
   );
   if (error) throw error;
   return (data as unknown as SubtitleConversion[]) || [];
@@ -101,12 +101,12 @@ async function fetchSubtitles(): Promise<SubtitleConversion[]> {
 async function fetchTextWorks(): Promise<TextWork[]> {
   const [aiRes, rewriteRes] = await Promise.all([
     withTimeout(
-      async () => await supabase.from('ai_generations').select('*').order('created_at', { ascending: false }),
+      async () => await supabase.from('ai_generations').select('id, prompt, result, tool_type, created_at').order('created_at', { ascending: false }),
       QUERY_TIMEOUT_MS,
       '文字作品載入逾時，請稍後重試'
     ),
     withTimeout(
-      async () => await supabase.from('content_rewrites').select('*').order('created_at', { ascending: false }),
+      async () => await supabase.from('content_rewrites').select('id, source_url, rewritten_content, original_content, style, created_at').order('created_at', { ascending: false }),
       QUERY_TIMEOUT_MS,
       '內容重整載入逾時，請稍後重試'
     ),
@@ -142,8 +142,8 @@ async function fetchTextWorks(): Promise<TextWork[]> {
 const QUERY_OPTS = {
   staleTime: 30_000,
   refetchOnWindowFocus: true,
-  retry: 2,
-  retryDelay: 1000,
+  retry: 3,
+  retryDelay: (attempt: number) => Math.min(1000 * 2 ** attempt, 8000),
 } as const;
 
 // ── Hooks — all accept `enabled` to gate on auth readiness ──
