@@ -108,7 +108,7 @@ export function useAIGeneration() {
       return fullContent;
     } catch (error) {
       console.error('AI generation error:', error);
-      toast({ title: '內容生成失敗', variant: 'destructive' });
+      toast({ title: '內容生成失敗，未扣除任何點數', variant: 'destructive' });
       return '';
     } finally {
       setIsGenerating(false);

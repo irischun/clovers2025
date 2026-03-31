@@ -327,7 +327,7 @@ const VoiceGenerationPage = () => {
     } catch (error: any) {
       console.error('Voice generation error:', error);
       toast({ 
-        title: '語音生成失敗', 
+        title: '語音生成失敗，未扣除任何點數', 
         description: error.message || '請檢查 API 設定或稍後重試',
         variant: 'destructive' 
       });

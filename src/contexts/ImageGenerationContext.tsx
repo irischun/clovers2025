@@ -33,6 +33,7 @@ interface ImageGenerationContextValue {
   startJob: (job: Omit<GenerationJob, 'id' | 'status' | 'images' | 'startedAt'> & { 
     generateFn: () => Promise<{ images: string[]; error?: string }>;
     onComplete?: (images: string[]) => Promise<void>;
+    onFailed?: () => void;
   }) => void;
   clearCurrentJob: () => void;
   clearCompletedJob: (id: string) => void;
@@ -51,9 +52,10 @@ export const ImageGenerationProvider: React.FC<{ children: React.ReactNode }> = 
   const [completedJobs, setCompletedJobs] = useState<GenerationJob[]>([]);
   const jobRef = useRef<GenerationJob | null>(null);
 
-  const startJob = useCallback(({ generateFn, onComplete, ...jobData }: Omit<GenerationJob, 'id' | 'status' | 'images' | 'startedAt'> & {
+  const startJob = useCallback(({ generateFn, onComplete, onFailed, ...jobData }: Omit<GenerationJob, 'id' | 'status' | 'images' | 'startedAt'> & {
     generateFn: () => Promise<{ images: string[]; error?: string }>;
     onComplete?: (images: string[]) => Promise<void>;
+    onFailed?: () => void;
   }) => {
     const job: GenerationJob = {
       ...jobData,
@@ -80,13 +82,14 @@ export const ImageGenerationProvider: React.FC<{ children: React.ReactNode }> = 
       setCurrentJob(completed);
       setCompletedJobs(prev => [completed, ...prev.slice(0, 9)]);
 
-      // Run post-completion (save to DB, deduct points)
       if (!result.error && result.images.length > 0 && onComplete) {
         try {
           await onComplete(result.images);
         } catch (e) {
           console.warn('Post-generation callback failed:', e);
         }
+      } else if (result.error || result.images.length === 0) {
+        onFailed?.();
       }
     }).catch((err) => {
       const failed: GenerationJob = {
@@ -98,6 +101,7 @@ export const ImageGenerationProvider: React.FC<{ children: React.ReactNode }> = 
       jobRef.current = null;
       setCurrentJob(failed);
       setCompletedJobs(prev => [failed, ...prev.slice(0, 9)]);
+      onFailed?.();
     });
   }, []);
 

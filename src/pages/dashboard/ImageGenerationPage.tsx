@@ -838,10 +838,27 @@ const ImageGenerationPage = () => {
             console.error('Failed to save image to database:', saveError);
           }
         }
-        // Deduct points
-        await consumePoints({
-          amount: capturedTotalPoints,
-          description: `Image generation: ${images.length} image(s) at ${capturedPointsPerImage} pts each`,
+        // Deduct points only for successfully generated images
+        const actualPoints = images.length * capturedPointsPerImage;
+        if (actualPoints > 0) {
+          await consumePoints({
+            amount: actualPoints,
+            description: `Image generation: ${images.length} image(s) at ${capturedPointsPerImage} pts each`,
+          });
+        }
+        // Notify if partial failure (fewer images than requested)
+        if (images.length < capturedQuantity) {
+          const skipped = capturedQuantity - images.length;
+          toast({
+            title: `${skipped} 張圖片生成失敗，僅扣除成功的 ${actualPoints} 點`,
+            variant: 'destructive',
+          });
+        }
+      },
+      onFailed: () => {
+        toast({
+          title: '圖片生成失敗，未扣除任何點數',
+          variant: 'destructive',
         });
       },
     });

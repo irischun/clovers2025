@@ -198,7 +198,7 @@ const ContentOrganizePage = () => {
       }
     } catch (error) {
       console.error('Rewrite error:', error);
-      toast({ title: '改寫失敗，請重試', variant: 'destructive' });
+      toast({ title: '改寫失敗，未扣除任何點數，請重試', variant: 'destructive' });
     } finally {
       setIsProcessing(false);
     }
