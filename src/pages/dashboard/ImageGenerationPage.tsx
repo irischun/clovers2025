@@ -775,25 +775,44 @@ const ImageGenerationPage = () => {
       },
       generateFn: async () => {
         const images: string[] = [];
+        const MAX_PER_IMAGE_RETRIES = 2;
         try {
           for (let i = 0; i < capturedQuantity; i++) {
-            const { data, error } = await supabase.functions.invoke('generate-image', {
-              body: { 
-                prompt: fullPrompt, 
-                style: capturedPosterStyle || capturedStyleTags[0] || 'default',
-                model,
-                width: capturedAspectRatio.width,
-                height: capturedAspectRatio.height,
-                referenceImage,
-                mode: capturedMode,
-                preserveFace: capturedPreserveFace,
+            let lastError: string | null = null;
+            for (let attempt = 0; attempt <= MAX_PER_IMAGE_RETRIES; attempt++) {
+              try {
+                const { data, error } = await supabase.functions.invoke('generate-image', {
+                  body: { 
+                    prompt: fullPrompt, 
+                    style: capturedPosterStyle || capturedStyleTags[0] || 'default',
+                    model,
+                    width: capturedAspectRatio.width,
+                    height: capturedAspectRatio.height,
+                    referenceImage,
+                    mode: capturedMode,
+                    preserveFace: capturedPreserveFace,
+                  }
+                });
+                if (error) throw error;
+                if (data?.imageUrl) {
+                  images.push(data.imageUrl);
+                  lastError = null;
+                  break;
+                } else if (data?.error) {
+                  throw new Error(data.error);
+                } else {
+                  throw new Error('No image returned');
+                }
+              } catch (retryErr) {
+                lastError = retryErr instanceof Error ? retryErr.message : '生成失敗';
+                if (attempt < MAX_PER_IMAGE_RETRIES) {
+                  console.warn(`Image ${i + 1} attempt ${attempt + 1} failed, retrying...`, lastError);
+                  await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+                }
               }
-            });
-            if (error) throw error;
-            if (data.imageUrl) {
-              images.push(data.imageUrl);
-            } else if (data.error) {
-              throw new Error(data.error);
+            }
+            if (lastError && images.length === 0) {
+              throw new Error(lastError);
             }
           }
           return { images };
