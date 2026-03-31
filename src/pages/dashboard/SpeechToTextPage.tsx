@@ -224,7 +224,7 @@ const SpeechToTextPage = () => {
     } catch (error) {
       console.error('Conversion error:', error);
       toast({ 
-        title: '轉換失敗', 
+        title: '轉換失敗，未扣除任何點數', 
         description: error instanceof Error ? error.message : '請稍後再試',
         variant: 'destructive' 
       });
