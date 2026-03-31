@@ -466,11 +466,11 @@ const StickerMakerPage = () => {
       console.error('Text sticker generation error:', error);
       const msg = error?.message || '';
       if (msg.includes('429') || msg.includes('Rate limit')) {
-        toast({ title: '請求過於頻繁，請稍後再試', variant: 'destructive' });
+        toast({ title: '請求過於頻繁，請稍後再試（未扣除點數）', variant: 'destructive' });
       } else if (msg.includes('402')) {
-        toast({ title: 'AI 額度已用完，請充值', variant: 'destructive' });
+        toast({ title: 'AI 額度已用完，請充值（未扣除點數）', variant: 'destructive' });
       } else {
-        toast({ title: '生成失敗', variant: 'destructive' });
+        toast({ title: '生成失敗，未扣除任何點數', variant: 'destructive' });
       }
     } finally {
       setIsTextGenerating(false);
