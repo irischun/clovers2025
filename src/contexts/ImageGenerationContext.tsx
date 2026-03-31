@@ -33,6 +33,7 @@ interface ImageGenerationContextValue {
   startJob: (job: Omit<GenerationJob, 'id' | 'status' | 'images' | 'startedAt'> & { 
     generateFn: () => Promise<{ images: string[]; error?: string }>;
     onComplete?: (images: string[]) => Promise<void>;
+    onFailed?: () => void;
   }) => void;
   clearCurrentJob: () => void;
   clearCompletedJob: (id: string) => void;
