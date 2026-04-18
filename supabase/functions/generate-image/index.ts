@@ -268,10 +268,10 @@ serve(async (req) => {
     const data = await response.json();
     console.log("Image generation response received successfully");
     
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const rawImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
     const textContent = data.choices?.[0]?.message?.content;
 
-    if (!imageUrl) {
+    if (!rawImageUrl) {
       console.error("No image URL in response:", JSON.stringify(data).substring(0, 500));
       return new Response(
         JSON.stringify({ error: "No image generated. The AI model returned text only. Please try again or use a different model." }),
@@ -279,8 +279,41 @@ serve(async (req) => {
       );
     }
 
+    // ───── Upload base64 to Storage so DB only holds a small URL (massive perf win) ─────
+    let finalUrl = rawImageUrl;
+    try {
+      if (rawImageUrl.startsWith("data:")) {
+        const match = rawImageUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+        if (match) {
+          const mimeType = match[1];
+          const ext = mimeType.split("/")[1].split("+")[0] || "png";
+          const base64 = match[2];
+          const binary = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+
+          const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+          const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+          const admin = createClient(supabaseUrl, serviceKey);
+
+          const path = `${authResult.userId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+          const { error: upErr } = await admin.storage
+            .from("generated-images")
+            .upload(path, binary, { contentType: mimeType, upsert: false });
+
+          if (upErr) {
+            console.error("Storage upload failed, falling back to data URL:", upErr.message);
+          } else {
+            const { data: pub } = admin.storage.from("generated-images").getPublicUrl(path);
+            finalUrl = pub.publicUrl;
+            console.log("Uploaded image to storage:", finalUrl);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Image upload error (non-fatal):", e);
+    }
+
     return new Response(
-      JSON.stringify({ imageUrl, description: textContent }),
+      JSON.stringify({ imageUrl: finalUrl, description: textContent }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
