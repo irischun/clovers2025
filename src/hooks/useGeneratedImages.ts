@@ -34,10 +34,13 @@ export function useGeneratedImages() {
         return;
       }
 
+      // Only fetch the most recent 24 — and select narrow columns.
+      // The old `SELECT *` pulled every base64 row (~491MB across 255 rows) and froze the page.
       const { data, error } = await supabase
         .from('generated_images')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, user_id, prompt, image_url, title, is_avatar, is_favorite, style, model, aspect_ratio, created_at')
+        .order('created_at', { ascending: false })
+        .limit(24);
 
       if (error) throw error;
       setImages((data as GeneratedImage[]) || []);
