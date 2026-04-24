@@ -31,8 +31,9 @@ export function useSubtitleConversions() {
 
       const { data, error } = await supabase
         .from('subtitle_conversions')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, user_id, source_name, source_type, source_url, languages, status, subtitle_urls, created_at, updated_at')
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       if (error) throw error;
       setSubtitles((data as unknown as SubtitleConversion[]) || []);
