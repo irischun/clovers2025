@@ -47,7 +47,7 @@ const ACCEPTED_FORMATS = [...AUDIO_FORMATS, ...VIDEO_FORMATS].join(',');
 
 const SpeechToTextPage = () => {
   const { t } = useLanguage();
-  const { consumePoints } = usePointConsumption();
+  const { consumePoints, checkBalance } = usePointConsumption();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('convert');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -66,7 +66,10 @@ const SpeechToTextPage = () => {
     const fetchVoiceGenerations = async () => {
       setIsLoadingVoices(true);
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setVoiceGenerations([]);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('voice_generations')
@@ -93,13 +96,18 @@ const SpeechToTextPage = () => {
   const fetchConversions = async () => {
     setIsLoadingHistory(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      setConversions([]);
+      setIsLoadingHistory(false);
+      return;
+    }
 
     const { data, error } = await supabase
       .from('subtitle_conversions')
-      .select('*')
+      .select('id, source_name, source_type, source_url, languages, status, subtitle_urls, created_at')
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(50);
 
     if (!error && data) {
       setConversions(data as SubtitleConversion[]);
@@ -110,6 +118,16 @@ const SpeechToTextPage = () => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (!ACCEPTED_FORMATS.split(',').includes(file.type)) {
+        toast({ title: '檔案格式不支援', description: '請上傳 MP3、WAV、M4A、AAC、MP4、MOV、AVI、MKV 或 WebM。', variant: 'destructive' });
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+      if (file.size > 100 * 1024 * 1024) {
+        toast({ title: '檔案太大', description: '請上傳 100MB 以下的音頻或視頻檔案。', variant: 'destructive' });
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
       // Clear voice generation selection when file is uploaded
       setSelectedVoiceGeneration(null);
       setUploadedFile(file);
