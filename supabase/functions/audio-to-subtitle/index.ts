@@ -42,13 +42,13 @@ function validateBody(body: any) {
   const conversionId = typeof body?.conversionId === 'string' ? body.conversionId : '';
   const sourcePath = typeof body?.sourcePath === 'string' && body.sourcePath.trim() ? body.sourcePath.trim() : null;
   const sourceUrl = typeof body?.sourceUrl === 'string' && body.sourceUrl.trim() ? body.sourceUrl.trim() : null;
-  const languages = Array.isArray(body?.languages) ? body.languages.filter((lang: unknown) => typeof lang === 'string') : [];
+  const languages: string[] = Array.isArray(body?.languages) ? body.languages.filter((lang: unknown): lang is string => typeof lang === 'string') : [];
 
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(conversionId)) {
     throw new Error('Invalid conversion id');
   }
 
-  const uniqueLanguages = [...new Set(languages)];
+  const uniqueLanguages: string[] = [...new Set(languages)];
   if (uniqueLanguages.length === 0 || uniqueLanguages.length > MAX_LANGUAGES || uniqueLanguages.some((lang) => !SUPPORTED_LANGUAGES.has(lang))) {
     throw new Error('Invalid subtitle language selection');
   }
