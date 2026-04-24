@@ -148,6 +148,11 @@ const SpeechToTextPage = () => {
   };
 
   const handleVoiceGenerationSelect = (id: string) => {
+    const voice = voiceGenerations.find(v => v.id === id);
+    if (voice?.audio_url && !voice.audio_url.startsWith('http')) {
+      toast({ title: '此語音記錄無法轉換', description: '請改為上傳音頻檔案，或使用新的語音生成記錄。', variant: 'destructive' });
+      return;
+    }
     // Clear file upload when voice is selected
     setUploadedFile(null);
     if (fileInputRef.current) {
