@@ -169,23 +169,31 @@ const SpeechToTextPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('請先登入');
 
+      const hasEnoughPoints = await checkBalance(selectedLanguages.length);
+      if (!hasEnoughPoints) {
+        throw new Error(`點數不足：需要 ${selectedLanguages.length} 點才能轉換`);
+      }
+
       let sourceName = '';
       let sourceType = 'upload';
       let sourceUrl = '';
+      let sourcePath: string | null = null;
 
       if (uploadedFile) {
         sourceName = uploadedFile.name;
         sourceType = 'upload';
         // Upload file to storage
-        const filePath = `${user.id}/${Date.now()}-${uploadedFile.name}`;
+        const safeFileName = uploadedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const filePath = `${user.id}/speech-to-text/${Date.now()}-${safeFileName}`;
         const { error: uploadError } = await supabase.storage
           .from('media')
-          .upload(filePath, uploadedFile);
+          .upload(filePath, uploadedFile, {
+            contentType: uploadedFile.type || 'application/octet-stream',
+            upsert: false,
+          });
 
         if (uploadError) throw uploadError;
-
-        const { data: urlData } = supabase.storage.from('media').getPublicUrl(filePath);
-        sourceUrl = urlData.publicUrl;
+        sourcePath = filePath;
       } else if (selectedVoiceGeneration) {
         const voice = voiceGenerations.find(v => v.id === selectedVoiceGeneration);
         if (voice) {
@@ -193,6 +201,10 @@ const SpeechToTextPage = () => {
           sourceType = 'voice_library';
           sourceUrl = voice.audio_url || '';
         }
+      }
+
+      if (!sourcePath && !sourceUrl) {
+        throw new Error('找不到可轉換的音頻或視頻來源');
       }
 
       // Create conversion record
@@ -217,12 +229,14 @@ const SpeechToTextPage = () => {
       const { data, error } = await supabase.functions.invoke('audio-to-subtitle', {
         body: {
           conversionId: conversion.id,
-          sourceUrl: sourceUrl,
+          sourcePath,
+          sourceUrl,
           languages: selectedLanguages,
         },
       });
 
       if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || '字幕轉換未完成');
 
       // Deduct points: 1 per language
       await consumePoints({ amount: selectedLanguages.length, description: `Speech-to-text: ${selectedLanguages.length} language(s)` });
