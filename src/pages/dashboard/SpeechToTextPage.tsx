@@ -47,7 +47,7 @@ const ACCEPTED_FORMATS = [...AUDIO_FORMATS, ...VIDEO_FORMATS].join(',');
 
 const SpeechToTextPage = () => {
   const { t } = useLanguage();
-  const { consumePoints } = usePointConsumption();
+  const { consumePoints, checkBalance } = usePointConsumption();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('convert');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -64,20 +64,27 @@ const SpeechToTextPage = () => {
   // Fetch voice generations for library selection
   useEffect(() => {
     const fetchVoiceGenerations = async () => {
-      setIsLoadingVoices(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      try {
+        setIsLoadingVoices(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setVoiceGenerations([]);
+          return;
+        }
 
-      const { data, error } = await supabase
-        .from('voice_generations')
-        .select('id, voice_name, audio_url, text_content, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        const { data, error } = await supabase
+          .from('voice_generations')
+          .select('id, voice_name, audio_url, text_content, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(50);
 
-      if (!error && data) {
-        setVoiceGenerations(data);
+        if (!error && data) {
+          setVoiceGenerations(data);
+        }
+      } finally {
+        setIsLoadingVoices(false);
       }
-      setIsLoadingVoices(false);
     };
 
     fetchVoiceGenerations();
@@ -93,13 +100,18 @@ const SpeechToTextPage = () => {
   const fetchConversions = async () => {
     setIsLoadingHistory(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      setConversions([]);
+      setIsLoadingHistory(false);
+      return;
+    }
 
     const { data, error } = await supabase
       .from('subtitle_conversions')
-      .select('*')
+      .select('id, source_name, source_type, source_url, languages, status, subtitle_urls, created_at')
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(50);
 
     if (!error && data) {
       setConversions(data as SubtitleConversion[]);
@@ -110,6 +122,16 @@ const SpeechToTextPage = () => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (!ACCEPTED_FORMATS.split(',').includes(file.type)) {
+        toast({ title: '檔案格式不支援', description: '請上傳 MP3、WAV、M4A、AAC、MP4、MOV、AVI、MKV 或 WebM。', variant: 'destructive' });
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
+      if (file.size > 100 * 1024 * 1024) {
+        toast({ title: '檔案太大', description: '請上傳 100MB 以下的音頻或視頻檔案。', variant: 'destructive' });
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
       // Clear voice generation selection when file is uploaded
       setSelectedVoiceGeneration(null);
       setUploadedFile(file);
@@ -126,6 +148,11 @@ const SpeechToTextPage = () => {
   };
 
   const handleVoiceGenerationSelect = (id: string) => {
+    const voice = voiceGenerations.find(v => v.id === id);
+    if (voice?.audio_url && !voice.audio_url.startsWith('http')) {
+      toast({ title: '此語音記錄無法轉換', description: '請改為上傳音頻檔案，或使用新的語音生成記錄。', variant: 'destructive' });
+      return;
+    }
     // Clear file upload when voice is selected
     setUploadedFile(null);
     if (fileInputRef.current) {
@@ -151,23 +178,31 @@ const SpeechToTextPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('請先登入');
 
+      const hasEnoughPoints = await checkBalance(selectedLanguages.length);
+      if (!hasEnoughPoints) {
+        throw new Error(`點數不足：需要 ${selectedLanguages.length} 點才能轉換`);
+      }
+
       let sourceName = '';
       let sourceType = 'upload';
       let sourceUrl = '';
+      let sourcePath: string | null = null;
 
       if (uploadedFile) {
         sourceName = uploadedFile.name;
         sourceType = 'upload';
         // Upload file to storage
-        const filePath = `${user.id}/${Date.now()}-${uploadedFile.name}`;
+        const safeFileName = uploadedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const filePath = `${user.id}/speech-to-text/${Date.now()}-${safeFileName}`;
         const { error: uploadError } = await supabase.storage
           .from('media')
-          .upload(filePath, uploadedFile);
+          .upload(filePath, uploadedFile, {
+            contentType: uploadedFile.type || 'application/octet-stream',
+            upsert: false,
+          });
 
         if (uploadError) throw uploadError;
-
-        const { data: urlData } = supabase.storage.from('media').getPublicUrl(filePath);
-        sourceUrl = urlData.publicUrl;
+        sourcePath = filePath;
       } else if (selectedVoiceGeneration) {
         const voice = voiceGenerations.find(v => v.id === selectedVoiceGeneration);
         if (voice) {
@@ -175,6 +210,10 @@ const SpeechToTextPage = () => {
           sourceType = 'voice_library';
           sourceUrl = voice.audio_url || '';
         }
+      }
+
+      if (!sourcePath && !sourceUrl) {
+        throw new Error('找不到可轉換的音頻或視頻來源');
       }
 
       // Create conversion record
@@ -199,12 +238,14 @@ const SpeechToTextPage = () => {
       const { data, error } = await supabase.functions.invoke('audio-to-subtitle', {
         body: {
           conversionId: conversion.id,
-          sourceUrl: sourceUrl,
+          sourcePath,
+          sourceUrl,
           languages: selectedLanguages,
         },
       });
 
       if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || '字幕轉換未完成');
 
       // Deduct points: 1 per language
       await consumePoints({ amount: selectedLanguages.length, description: `Speech-to-text: ${selectedLanguages.length} language(s)` });

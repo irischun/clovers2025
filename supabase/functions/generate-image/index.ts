@@ -294,7 +294,7 @@ serve(async (req) => {
           const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
           const admin = createClient(supabaseUrl, serviceKey);
 
-          const path = `${authResult.userId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+          const path = `${auth.userId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
           const { error: upErr } = await admin.storage
             .from("generated-images")
             .upload(path, binary, { contentType: mimeType, upsert: false });
