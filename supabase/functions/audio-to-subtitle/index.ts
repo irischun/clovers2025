@@ -75,7 +75,7 @@ function toSRT(segments: CaptionSegment[]) {
     .join('\n');
 }
 
-async function createSourceSignedUrl(supabase: ReturnType<typeof createClient>, sourcePath: string | null, sourceUrl: string | null) {
+async function createSourceSignedUrl(supabase: any, sourcePath: string | null, sourceUrl: string | null) {
   if (sourcePath) {
     const { data, error } = await supabase.storage.from('media').createSignedUrl(sourcePath, 60 * 20);
     if (error || !data?.signedUrl) throw new Error('Cannot access uploaded media file');
