@@ -64,23 +64,27 @@ const SpeechToTextPage = () => {
   // Fetch voice generations for library selection
   useEffect(() => {
     const fetchVoiceGenerations = async () => {
-      setIsLoadingVoices(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setVoiceGenerations([]);
-        return;
-      }
+      try {
+        setIsLoadingVoices(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setVoiceGenerations([]);
+          return;
+        }
 
-      const { data, error } = await supabase
-        .from('voice_generations')
-        .select('id, voice_name, audio_url, text_content, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        const { data, error } = await supabase
+          .from('voice_generations')
+          .select('id, voice_name, audio_url, text_content, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(50);
 
-      if (!error && data) {
-        setVoiceGenerations(data);
+        if (!error && data) {
+          setVoiceGenerations(data);
+        }
+      } finally {
+        setIsLoadingVoices(false);
       }
-      setIsLoadingVoices(false);
     };
 
     fetchVoiceGenerations();
