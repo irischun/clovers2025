@@ -47,7 +47,3 @@ verify_jwt = false
 
 [functions.migrate-images-to-storage]
 verify_jwt = false
-
-[functions.audio-to-subtitle]
-verify_jwt = false
-
