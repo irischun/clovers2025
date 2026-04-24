@@ -89,8 +89,9 @@ async function fetchSubtitles(): Promise<SubtitleConversion[]> {
   const { data, error } = await withTimeout(
     async () => await supabase
       .from('subtitle_conversions')
-      .select('id, source_name, original_language, subtitle_urls, created_at, status, user_id')
-      .order('created_at', { ascending: false }),
+      .select('id, user_id, source_name, source_type, source_url, languages, status, subtitle_urls, created_at, updated_at')
+      .order('created_at', { ascending: false })
+      .limit(50),
     QUERY_TIMEOUT_MS,
     '資料庫連線逾時，正在重試中…'
   );
