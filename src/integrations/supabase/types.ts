@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_uploads: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          media_type: string
+          media_url: string
+          storage_path: string | null
+          title: string | null
+          uploaded_by: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          media_type: string
+          media_url: string
+          storage_path?: string | null
+          title?: string | null
+          uploaded_by: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          media_type?: string
+          media_url?: string
+          storage_path?: string | null
+          title?: string | null
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
       ai_generations: {
         Row: {
           created_at: string
