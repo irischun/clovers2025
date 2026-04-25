@@ -1,25 +1,29 @@
 import { Play, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useLanguage } from '@/i18n/LanguageContext';
+
+type FeatureKey = 'features.item.1' | 'features.item.2' | 'features.item.3' | 'features.item.4' | 'features.item.5' | 'features.item.6';
 
 interface Feature {
   id: number;
-  title: string;
+  titleKey: FeatureKey;
   videoId?: string;
   imageUrl?: string;
 }
 
 const features: Feature[] = [
-  { id: 1, title: '快速俾AI知道你product，免費幫你引流 - GEO', videoId: '7GaLcKz7Yc8' },
-  { id: 2, title: '30分鐘做好一個星期social media post', videoId: 'YwxE7JSh15Y' },
-  { id: 3, title: '低成本快速做到價值$8000商業級視頻', videoId: 'aNwTFt-uCJo' },
-  { id: 4, title: '簡易打造專業個人品牌IP，提升形象', videoId: 'Ty9k8gaIVWE' },
-  { id: 5, title: '大量原創提示詞，及你的個人提示詞庫', videoId: 'YwxE7JSh15Y' },
-  { id: 6, title: '99%嘅人都唔知可以咁樣用AI搵客', imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop' },
+  { id: 1, titleKey: 'features.item.1', videoId: '7GaLcKz7Yc8' },
+  { id: 2, titleKey: 'features.item.2', videoId: 'YwxE7JSh15Y' },
+  { id: 3, titleKey: 'features.item.3', videoId: 'aNwTFt-uCJo' },
+  { id: 4, titleKey: 'features.item.4', videoId: 'Ty9k8gaIVWE' },
+  { id: 5, titleKey: 'features.item.5', videoId: 'YwxE7JSh15Y' },
+  { id: 6, titleKey: 'features.item.6', imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop' },
 ];
 
 const FeaturesSection = () => {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  const { t } = useLanguage();
 
   return (
     <section id="features" className="py-24 sm:py-32 bg-background relative overflow-hidden">
@@ -33,13 +37,13 @@ const FeaturesSection = () => {
         <div className="text-center mb-16 sm:mb-20">
           <div className="badge-nature mb-6 inline-flex">
             <Sparkles className="w-4 h-4" />
-            <span>Features</span>
+            <span>{t('features.badge')}</span>
           </div>
           <h2 className="heading-display text-4xl sm:text-5xl lg:text-6xl mb-6">
-            Clovers 有咩用？
+            {t('features.heading')}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Explore the powerful tools designed to transform your marketing workflow
+            {t('features.subtitle')}
           </p>
         </div>
 
@@ -56,7 +60,7 @@ const FeaturesSection = () => {
               <div className="relative aspect-video overflow-hidden rounded-t-3xl">
                 <img
                   src={feature.imageUrl || `https://img.youtube.com/vi/${feature.videoId}/hqdefault.jpg`}
-                  alt={feature.title}
+                  alt={t(feature.titleKey)}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 {/* Overlay gradient */}
@@ -80,7 +84,7 @@ const FeaturesSection = () => {
               {/* Title */}
               <div className="p-6">
                 <h3 className="font-heading font-semibold text-foreground group-hover:text-primary transition-colors duration-300 leading-relaxed">
-                  {feature.title}
+                  {t(feature.titleKey)}
                 </h3>
               </div>
             </div>
