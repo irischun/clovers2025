@@ -1,22 +1,23 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Play, MessageCircle } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface Testimonial {
   id: number;
-  title: string;
   videoId: string;
 }
 
 const testimonials: Testimonial[] = [
-  { id: 1, title: 'Clovers 分享篇 01', videoId: 'dDXg2ZQWE7Q' },
-  { id: 2, title: 'Clovers 分享篇 02', videoId: 'tzTO2o-SUH4' },
-  { id: 3, title: 'Clovers 分享篇 03', videoId: 'dOnZAJwIA3w' },
-  { id: 4, title: 'Clovers 分享篇 04', videoId: 'Jb0mNtye-WQ' },
-  { id: 5, title: 'Clovers 分享篇 05', videoId: 'RIs8C2jI3Uc' },
+  { id: 1, videoId: 'dDXg2ZQWE7Q' },
+  { id: 2, videoId: 'tzTO2o-SUH4' },
+  { id: 3, videoId: 'dOnZAJwIA3w' },
+  { id: 4, videoId: 'Jb0mNtye-WQ' },
+  { id: 5, videoId: 'RIs8C2jI3Uc' },
 ];
 
 const TestimonialsSection = () => {
+  const { t } = useLanguage();
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [scrollPosition, setScrollPosition] = useState(0);
 
@@ -46,13 +47,13 @@ const TestimonialsSection = () => {
         <div className="text-center mb-12 sm:mb-16">
           <div className="badge-nature mb-6 inline-flex">
             <MessageCircle className="w-4 h-4" />
-            <span>Testimonials</span>
+            <span>{t('testimonials.badge')}</span>
           </div>
           <h2 className="heading-display text-4xl sm:text-5xl lg:text-6xl mb-6">
-            學員分享篇
+            {t('testimonials.heading')}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            聽聽我們學員的真實體驗和成功故事
+            {t('testimonials.subtitle')}
           </p>
         </div>
 
@@ -94,7 +95,7 @@ const TestimonialsSection = () => {
                   <div className="relative aspect-video overflow-hidden rounded-t-3xl">
                     <img
                       src={`https://img.youtube.com/vi/${testimonial.videoId}/maxresdefault.jpg`}
-                      alt={testimonial.title}
+                      alt={`${t('testimonials.item')} ${String(testimonial.id).padStart(2, '0')}`}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                     {/* Overlay */}
@@ -116,7 +117,7 @@ const TestimonialsSection = () => {
                   {/* Title */}
                   <div className="p-5">
                     <h3 className="font-heading font-semibold text-foreground group-hover:text-primary transition-colors duration-300">
-                      {testimonial.title}
+                      {t('testimonials.item')} {String(testimonial.id).padStart(2, '0')}
                     </h3>
                   </div>
                 </div>

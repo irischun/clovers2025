@@ -95,7 +95,7 @@ export const ImageGenerationProvider: React.FC<{ children: React.ReactNode }> = 
       const failed: GenerationJob = {
         ...job,
         status: 'failed',
-        error: err instanceof Error ? err.message : '生成失敗',
+        error: err instanceof Error ? err.message : '生成失敗', // i18n-allow: internal error fallback (translated at display)
         completedAt: Date.now(),
       };
       jobRef.current = null;

@@ -828,6 +828,46 @@ const en = {
   'admin.selectFile': 'Please select a file',
   'admin.accessDenied': 'Access denied',
   'admin.adminOnly': 'Administrator only',
+
+  // Features Section
+  'features.badge': 'Features',
+  'features.heading': 'What can Clovers do?',
+  'features.subtitle': 'Explore the powerful tools designed to transform your marketing workflow',
+  'features.item.1': 'Let AI find your product — free traffic via GEO',
+  'features.item.2': 'Produce a full week of social media posts in 30 minutes',
+  'features.item.3': 'Create $8,000-grade commercial videos at low cost',
+  'features.item.4': 'Easily build a professional personal brand IP',
+  'features.item.5': 'Massive original prompts plus your personal prompt library',
+  'features.item.6': '99% of people don\'t know AI can land clients this way',
+
+  // Workflow Section
+  'workflow.badge': 'Workflow',
+  'workflow.heading': 'From insight to execution — every step turns ideas into scalable systems.',
+  'workflow.subtitle': 'From insight to execution, each step is designed to turn ideas into scalable systems.',
+  'workflow.step.1.label': 'Step 1',
+  'workflow.step.1.title': 'Discover Trending Content',
+  'workflow.step.1.desc': 'Define target audience and content strategy',
+  'workflow.step.2.label': 'Step 2',
+  'workflow.step.2.title': 'Design',
+  'workflow.step.2.desc': 'AI-powered visual content generation',
+  'workflow.step.3.label': 'Step 3',
+  'workflow.step.3.title': 'Develop',
+  'workflow.step.3.desc': 'Batch-produce assets across platforms',
+  'workflow.step.4.label': 'Step 4',
+  'workflow.step.4.title': 'One-Click Multi-Platform Publishing',
+  'workflow.step.4.subtitle': 'Auto Social Media',
+  'workflow.step.4.desc': 'Publish to all platforms in one click',
+
+  // Testimonials Section
+  'testimonials.badge': 'Testimonials',
+  'testimonials.heading': 'Student Stories',
+  'testimonials.subtitle': 'Hear real experiences and success stories from our students',
+  'testimonials.item': 'Clovers Story',
+
+  // Showcases Section
+  'showcases.heading': 'Success Stories',
+  'showcases.label': 'Showcases',
+  'showcases.item': 'Success Story',
 } as const;
 
 export default en;

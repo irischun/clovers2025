@@ -1,27 +1,31 @@
 import { useState } from 'react';
 import { Play } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useLanguage } from '@/i18n/LanguageContext';
+import TranslatedText from '@/components/TranslatedText';
 
 interface Showcase {
   id: number;
-  title: string;
   channel: string;
   videoId: string;
 }
 
+// i18n-allow-block-start: channel names are brand strings, rendered via <TranslatedText sourceLang="zh-TW" />
 const showcases: Showcase[] = [
-  { id: 1, title: '成功案例 1', channel: 'Boni - 富邦財務全新私人貸款App', videoId: 'R-LUG7R2ZcA' },
-  { id: 2, title: '成功案例 2', channel: '命之書', videoId: 'NLGJoOzUZmA' },
-  { id: 3, title: '成功案例 3', channel: 'Lion AI 獅子智能', videoId: 'nacTkkvqkL4' },
-  { id: 4, title: '成功案例 4', channel: 'Lion AI 獅子智能', videoId: 'cpmPWhKCmSQ' },
-  { id: 5, title: '成功案例 5', channel: 'Lion AI 獅子智能', videoId: 'ZiaJJz-bJhs' },
-  { id: 6, title: '成功案例 6', channel: 'Lion AI 獅子智能', videoId: 'KrMVwIJedKk' },
-  { id: 7, title: '成功案例 7', channel: 'Lion AI 獅子智能', videoId: 'gYRWQfroffw' },
-  { id: 8, title: '成功案例 8', channel: 'Lion AI 獅子智能', videoId: 'jIhwco0fP-w' },
-  { id: 9, title: '成功案例 9', channel: 'Lion AI 獅子智能', videoId: 'iqxCZjS-ecA' },
+  { id: 1, channel: 'Boni - 富邦財務全新私人貸款App', videoId: 'R-LUG7R2ZcA' },
+  { id: 2, channel: '命之書', videoId: 'NLGJoOzUZmA' },
+  { id: 3, channel: 'Lion AI 獅子智能', videoId: 'nacTkkvqkL4' },
+  { id: 4, channel: 'Lion AI 獅子智能', videoId: 'cpmPWhKCmSQ' },
+  { id: 5, channel: 'Lion AI 獅子智能', videoId: 'ZiaJJz-bJhs' },
+  { id: 6, channel: 'Lion AI 獅子智能', videoId: 'KrMVwIJedKk' },
+  { id: 7, channel: 'Lion AI 獅子智能', videoId: 'gYRWQfroffw' },
+  { id: 8, channel: 'Lion AI 獅子智能', videoId: 'jIhwco0fP-w' },
+  { id: 9, channel: 'Lion AI 獅子智能', videoId: 'iqxCZjS-ecA' },
 ];
+// i18n-allow-block-end
 
 const ShowcasesSection = () => {
+  const { t } = useLanguage();
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
 
   return (
@@ -30,8 +34,8 @@ const ShowcasesSection = () => {
         {/* Section header */}
         <div className="text-center mb-16">
           <h2 className="heading-display text-3xl sm:text-4xl">
-            成功案例
-            <span className="text-muted-foreground ml-3">Showcases</span>
+            {t('showcases.heading')}
+            <span className="text-muted-foreground ml-3">{t('showcases.label')}</span>
           </h2>
         </div>
 
@@ -48,7 +52,7 @@ const ShowcasesSection = () => {
               <div className="relative aspect-video overflow-hidden">
                 <img
                   src={`https://img.youtube.com/vi/${showcase.videoId}/hqdefault.jpg`}
-                  alt={showcase.title}
+                  alt={`${t('showcases.item')} ${showcase.id}`}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 {/* Play overlay */}
@@ -62,11 +66,9 @@ const ShowcasesSection = () => {
               {/* Content */}
               <div className="p-4">
                 <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors mb-1">
-                  {showcase.title}
+                  {t('showcases.item')} {showcase.id}
                 </h3>
-                <p className="text-sm text-muted-foreground">
-                  {showcase.channel}
-                </p>
+                <TranslatedText text={showcase.channel} sourceLang="zh-TW" as="p" className="text-sm text-muted-foreground" />
               </div>
             </div>
           ))}

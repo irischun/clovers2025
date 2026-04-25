@@ -1,42 +1,45 @@
 import { Search, Palette, Code, Share2, Workflow } from 'lucide-react';
-
-const steps = [
-  {
-    id: 1,
-    icon: Search,
-    title: '幫你搵出熱門內容',
-    description: '設定目標受眾同內容策略',
-    label: '第一步',
-    labelEn: 'Discover',
-  },
-  {
-    id: 2,
-    icon: Palette,
-    title: '設計 Design',
-    description: 'AI智能生成視覺內容',
-    label: '第二步',
-    labelEn: 'Design',
-  },
-  {
-    id: 3,
-    icon: Code,
-    title: '開發 Develop',
-    description: '批量製作多平台素材',
-    label: '第三步',
-    labelEn: 'Develop',
-  },
-  {
-    id: 4,
-    icon: Share2,
-    title: '一鍵自動佈發多平台',
-    subtitle: 'Auto Social Media',
-    description: '一鍵發佈到所有平台',
-    label: '第四步',
-    labelEn: 'Deploy',
-  },
-];
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const WorkflowSection = () => {
+  const { t } = useLanguage();
+
+  const steps = [
+    {
+      id: 1,
+      icon: Search,
+      title: t('workflow.step.1.title'),
+      description: t('workflow.step.1.desc'),
+      label: t('workflow.step.1.label'),
+      labelEn: 'Discover',
+    },
+    {
+      id: 2,
+      icon: Palette,
+      title: t('workflow.step.2.title'),
+      description: t('workflow.step.2.desc'),
+      label: t('workflow.step.2.label'),
+      labelEn: 'Design',
+    },
+    {
+      id: 3,
+      icon: Code,
+      title: t('workflow.step.3.title'),
+      description: t('workflow.step.3.desc'),
+      label: t('workflow.step.3.label'),
+      labelEn: 'Develop',
+    },
+    {
+      id: 4,
+      icon: Share2,
+      title: t('workflow.step.4.title'),
+      subtitle: t('workflow.step.4.subtitle'),
+      description: t('workflow.step.4.desc'),
+      label: t('workflow.step.4.label'),
+      labelEn: 'Deploy',
+    },
+  ];
+
   return (
     <section className="py-24 sm:py-32 relative overflow-hidden">
       {/* Background */}
@@ -51,14 +54,14 @@ const WorkflowSection = () => {
         <div className="text-center mb-16 sm:mb-20">
           <div className="badge-nature mb-6 inline-flex">
             <Workflow className="w-4 h-4" />
-            <span>Workflow</span>
+            <span>{t('workflow.badge')}</span>
           </div>
           
           <h2 className="heading-display text-3xl sm:text-4xl lg:text-5xl max-w-4xl mx-auto mb-6">
-            從洞察到執行，每一步都旨在將創意轉化為可擴展的系統。
+            {t('workflow.heading')}
           </h2>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-            From insight to execution, each step is designed to turn ideas into scalable systems.
+            {t('workflow.subtitle')}
           </p>
         </div>
 

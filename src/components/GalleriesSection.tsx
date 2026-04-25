@@ -3,6 +3,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ImageIcon, Sparkles, Box, Palette } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useAdminUploads, AdminUploadCategory } from '@/hooks/useAdminUploads';
+import TranslatedText from '@/components/TranslatedText';
 
 interface GalleryItem {
   id: string;
@@ -46,7 +47,7 @@ const GallerySection = ({ title, subtitle, items, icon }: GalleryProps) => {
                   <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-end p-4">
-                  <p className="text-sm font-medium text-foreground line-clamp-2 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">{item.title}</p>
+                  <TranslatedText text={item.title} sourceLang="zh-TW" as="p" className="text-sm font-medium text-foreground line-clamp-2 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300" />
                 </div>
               </div>
             </div>
@@ -63,7 +64,7 @@ const GallerySection = ({ title, subtitle, items, icon }: GalleryProps) => {
               ) : (
                 <img src={selectedImage.imageUrl} alt={selectedImage.title} className="w-full h-auto rounded-xl" />
               )}
-              <p className="text-center text-foreground font-heading font-semibold px-4 pb-2">{selectedImage.title}</p>
+              <TranslatedText text={selectedImage.title} sourceLang="zh-TW" as="p" className="text-center text-foreground font-heading font-semibold px-4 pb-2" />
             </div>
           )}
         </DialogContent>
@@ -72,6 +73,7 @@ const GallerySection = ({ title, subtitle, items, icon }: GalleryProps) => {
   );
 };
 
+// i18n-allow-block-start: gallery sample data — titles are rendered via <TranslatedText sourceLang="zh-TW" /> and auto-translated for EN/zh-CN
 const mangaItems: GalleryItem[] = [
   { id: 'manga-1', title: '老散投資日記 - 點解刷新十次都仲係跌', imageUrl: 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=400&h=400&fit=crop' },
   { id: 'manga-2', title: '乒壇奇聞是與非 - 好人好者打粒粒', imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop' },
@@ -95,6 +97,7 @@ const productItems: GalleryItem[] = [
   { id: 'product-4', title: '產品攝影 - iPhone展示', imageUrl: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=400&fit=crop' },
   { id: 'product-5', title: '產品攝影 - 方便麵推廣', imageUrl: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=400&h=400&fit=crop' },
 ];
+// i18n-allow-block-end
 
 const GalleriesSection = () => {
   const { t } = useLanguage();
