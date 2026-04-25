@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
 import CommunityGallery from "./pages/CommunityGallery";
+import AdminPage from "./pages/AdminPage";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import DashboardHome from "./pages/dashboard/DashboardHome";
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/" element={<Navigate to="/main" replace />} />
               <Route path="/main" element={<Index />} />
               <Route path="/main/community_gallery" element={<CommunityGallery />} />
+              <Route path="/main/admin" element={<AdminPage />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/dashboard" element={<Dashboard />}>
                 <Route index element={<DashboardHome />} />

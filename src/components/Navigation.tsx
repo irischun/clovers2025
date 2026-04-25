@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { LogIn, User, LogOut, Menu, X, Volume2, VolumeX, ChevronDown, LayoutDashboard, CreditCard, Coins, History, GalleryHorizontalEnd, FileText, Settings, Sparkles, ImagePlus, Sticker, Mic, AudioLines, Video, Tv, Youtube, BookOpen, Rss, Image, Send, FolderEdit, Rocket, Users } from 'lucide-react';
+import { LogIn, User, LogOut, Menu, X, Volume2, VolumeX, ChevronDown, LayoutDashboard, CreditCard, Coins, History, GalleryHorizontalEnd, FileText, Settings, Sparkles, ImagePlus, Sticker, Mic, AudioLines, Video, Tv, Youtube, BookOpen, Rss, Image, Send, FolderEdit, Rocket, Users, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -18,6 +18,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 const LANDING_AUDIO_VOLUME = 0.1;
+const ADMIN_EMAIL = 'irischun2018@gmail.com';
 
 const Navigation = () => {
   const { t } = useLanguage();
@@ -211,6 +212,17 @@ const Navigation = () => {
             <span>{t('nav.community')}</span>
           </button>
 
+          {user?.email === ADMIN_EMAIL && (
+            <button
+              onClick={() => navigate('/main/admin')}
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold text-accent-foreground bg-accent hover:bg-accent/90 border-2 border-accent rounded-xl transition-all duration-300 uppercase tracking-wider shadow-md hover:shadow-lg hover:shadow-accent/30"
+              aria-label="Admin"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Admin</span>
+            </button>
+          )}
+
           <button onClick={() => scrollToSection('pricing')} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest">
             {t('nav.pricing')}
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 rounded-full" />
@@ -309,6 +321,12 @@ const Navigation = () => {
             <button onClick={() => { setMobileMenuOpen(false); navigate('/main/community_gallery'); }} className="flex items-center gap-2 w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm">
               <Users className="w-4 h-4" /> {t('nav.community')}
             </button>
+
+            {user?.email === ADMIN_EMAIL && (
+              <button onClick={() => { setMobileMenuOpen(false); navigate('/main/admin'); }} className="flex items-center gap-2 w-full text-left px-4 py-3.5 text-base font-medium text-accent-foreground bg-accent/20 hover:bg-accent/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm">
+                <ShieldCheck className="w-4 h-4" /> Admin
+              </button>
+            )}
 
             <button onClick={() => scrollToSection('pricing')} className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm">
               {t('nav.pricing')}
