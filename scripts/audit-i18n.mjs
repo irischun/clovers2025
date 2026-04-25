@@ -91,8 +91,19 @@ function findHardcodedCJK() {
       if (isAllowlisted(file)) continue;
       const src = readFileSync(file, 'utf8');
       const lines = src.split('\n');
+      let inAllowBlock = false;
       lines.forEach((line, idx) => {
-        // Skip imports and comments
+        if (/\/\/\s*i18n-allow-block-start/.test(line)) {
+          inAllowBlock = true;
+          return;
+        }
+        if (/\/\/\s*i18n-allow-block-end/.test(line)) {
+          inAllowBlock = false;
+          return;
+        }
+        if (inAllowBlock) return;
+        if (/\/\/\s*i18n-allow/.test(line)) return;
+
         const trimmed = line.trim();
         if (
           trimmed.startsWith('//') ||
@@ -102,7 +113,6 @@ function findHardcodedCJK() {
         ) {
           return;
         }
-        // Find any string literal containing CJK
         const literals = line.match(STRING_LITERAL_RE) || [];
         for (const lit of literals) {
           if (CJK_RE.test(lit)) {
@@ -114,8 +124,6 @@ function findHardcodedCJK() {
             break;
           }
         }
-        // Also catch JSX text nodes with CJK that aren't in any string literal
-        // e.g.   <h2>學員分享篇</h2>
         if (
           CJK_RE.test(line) &&
           !literals.some((l) => CJK_RE.test(l)) &&
