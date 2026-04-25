@@ -3,6 +3,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ImageIcon, Sparkles, Box, Palette } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useAdminUploads, AdminUploadCategory } from '@/hooks/useAdminUploads';
+import TranslatedText from '@/components/TranslatedText';
 
 interface GalleryItem {
   id: string;
@@ -46,7 +47,7 @@ const GallerySection = ({ title, subtitle, items, icon }: GalleryProps) => {
                   <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-end p-4">
-                  <p className="text-sm font-medium text-foreground line-clamp-2 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">{item.title}</p>
+                  <TranslatedText text={item.title} sourceLang="zh-TW" as="p" className="text-sm font-medium text-foreground line-clamp-2 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300" />
                 </div>
               </div>
             </div>
@@ -63,7 +64,7 @@ const GallerySection = ({ title, subtitle, items, icon }: GalleryProps) => {
               ) : (
                 <img src={selectedImage.imageUrl} alt={selectedImage.title} className="w-full h-auto rounded-xl" />
               )}
-              <p className="text-center text-foreground font-heading font-semibold px-4 pb-2">{selectedImage.title}</p>
+              <TranslatedText text={selectedImage.title} sourceLang="zh-TW" as="p" className="text-center text-foreground font-heading font-semibold px-4 pb-2" />
             </div>
           )}
         </DialogContent>
