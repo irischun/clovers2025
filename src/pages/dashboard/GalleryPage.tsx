@@ -24,6 +24,7 @@ import {
   GALLERY_IMAGES_KEY, GALLERY_VOICES_KEY, GALLERY_SUBTITLES_KEY, GALLERY_TEXT_KEY,
   type TextWork,
 } from '@/hooks/useGalleryData';
+import { useMyPublishedSourceIds, useCommunityActions } from '@/hooks/useCommunityPublish';
 import type { GeneratedImage } from '@/hooks/useGeneratedImages';
 import type { VoiceGeneration } from '@/hooks/useVoiceGenerations';
 import type { SubtitleConversion } from '@/hooks/useSubtitleConversions';
