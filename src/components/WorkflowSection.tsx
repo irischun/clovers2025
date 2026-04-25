@@ -113,6 +113,4 @@ const WorkflowSection = () => {
   );
 };
 
-};
-
 export default WorkflowSection;
