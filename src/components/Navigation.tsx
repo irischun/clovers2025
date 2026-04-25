@@ -322,6 +322,12 @@ const Navigation = () => {
               <Users className="w-4 h-4" /> {t('nav.community')}
             </button>
 
+            {user?.email === ADMIN_EMAIL && (
+              <button onClick={() => { setMobileMenuOpen(false); navigate('/main/admin'); }} className="flex items-center gap-2 w-full text-left px-4 py-3.5 text-base font-medium text-accent-foreground bg-accent/20 hover:bg-accent/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm">
+                <ShieldCheck className="w-4 h-4" /> Admin
+              </button>
+            )}
+
             <button onClick={() => scrollToSection('pricing')} className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm">
               {t('nav.pricing')}
             </button>
