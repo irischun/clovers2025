@@ -68,7 +68,8 @@ const App = () => (
                 <Route path="content-organize" element={<ContentOrganizePage />} />
                 <Route path="sticker-maker" element={<StickerMakerPage />} />
                 <Route path="smart-publish" element={<SmartPublishPage />} />
-                <Route path="gallery" element={<GalleryPage />} />
+                <Route path="personal_gallery" element={<GalleryPage />} />
+                <Route path="gallery" element={<Navigate to="/dashboard/personal_gallery" replace />} />
                 <Route path="subscription" element={<SubscriptionPage />} />
                 <Route path="change-subscription" element={<ChangeSubscriptionPage />} />
                 <Route path="buy-points" element={<BuyPointsPage />} />
