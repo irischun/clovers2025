@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useCommunityGallery, type CommunityItem } from '@/hooks/useCommunityPublish';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 type CommunityTab = 'images' | 'videos';
 
@@ -17,6 +18,7 @@ const formatDate = (s: string) => {
 };
 
 const CommunityGallery = () => {
+  const { t } = useLanguage();
   const { data: items = [], isLoading, isError } = useCommunityGallery(true);
   const [tab, setTab] = useState<CommunityTab>('images');
   const [selected, setSelected] = useState<CommunityItem | null>(null);
@@ -50,7 +52,7 @@ const CommunityGallery = () => {
       <div className="p-3 space-y-2">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>{formatDate(item.created_at)}</span>
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0">社群</Badge>
+          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{t('community.badge')}</Badge>
         </div>
         {item.prompt && (
           <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{item.prompt}</p>
@@ -77,7 +79,7 @@ const CommunityGallery = () => {
       <div className="p-3 space-y-2">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>{formatDate(item.created_at)}</span>
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0">社群</Badge>
+          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{t('community.badge')}</Badge>
         </div>
         {item.prompt && (
           <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{item.prompt}</p>
@@ -89,19 +91,16 @@ const CommunityGallery = () => {
   const renderEmpty = (label: string) => (
     <div className="flex flex-col items-center justify-center py-24 text-center">
       <Users className="w-16 h-16 text-muted-foreground/50 mb-4" />
-      <h3 className="text-lg font-medium text-muted-foreground mb-2">尚無社群{label}</h3>
-      <p className="text-muted-foreground">成為第一位將作品發布到社群的創作者吧</p>
+      <h3 className="text-lg font-medium text-muted-foreground mb-2">{label}</h3>
+      <p className="text-muted-foreground">{t('community.empty.cta')}</p>
     </div>
   );
 
   return (
     <>
       <Helmet>
-        <title>Community Gallery — Clovers AI</title>
-        <meta
-          name="description"
-          content="Browse community-shared AI generated images and videos from Clovers creators."
-        />
+        <title>{t('community.title')} — Clovers AI</title>
+        <meta name="description" content={t('community.subtitle')} />
       </Helmet>
 
       <div className="min-h-screen bg-background flex flex-col">
@@ -110,20 +109,20 @@ const CommunityGallery = () => {
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <header className="mb-8">
             <h1 className="text-4xl md:text-5xl font-display font-bold text-foreground">
-              社群畫廊 <span className="text-primary">Community Gallery</span>
+              {t('community.title')}
             </h1>
             <p className="text-muted-foreground mt-3 max-w-2xl">
-              探索 Clovers 社群成員公開分享的 AI 生成圖片與影片作品。
+              {t('community.subtitle')}
             </p>
           </header>
 
           <Tabs value={tab} onValueChange={(v) => setTab(v as CommunityTab)}>
             <TabsList>
               <TabsTrigger value="images" className="gap-2">
-                <ImageIcon className="w-4 h-4" /> 圖片 ({images.length})
+                <ImageIcon className="w-4 h-4" /> {t('community.tab.images')} ({images.length})
               </TabsTrigger>
               <TabsTrigger value="videos" className="gap-2">
-                <VideoIcon className="w-4 h-4" /> 影片 ({videos.length})
+                <VideoIcon className="w-4 h-4" /> {t('community.tab.videos')} ({videos.length})
               </TabsTrigger>
             </TabsList>
 
@@ -133,9 +132,9 @@ const CommunityGallery = () => {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                 </div>
               ) : isError ? (
-                <p className="text-center text-destructive py-12">載入失敗，請稍後重試</p>
+                <p className="text-center text-destructive py-12">{t('community.loadFailed')}</p>
               ) : images.length === 0 ? (
-                renderEmpty('圖片')
+                renderEmpty(t('community.empty.images'))
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {images.map(renderImage)}
@@ -149,9 +148,9 @@ const CommunityGallery = () => {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                 </div>
               ) : isError ? (
-                <p className="text-center text-destructive py-12">載入失敗，請稍後重試</p>
+                <p className="text-center text-destructive py-12">{t('community.loadFailed')}</p>
               ) : videos.length === 0 ? (
-                renderEmpty('影片')
+                renderEmpty(t('community.empty.videos'))
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {videos.map(renderVideo)}

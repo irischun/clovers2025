@@ -216,10 +216,10 @@ const Navigation = () => {
             <button
               onClick={() => navigate('/main/admin')}
               className="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold text-accent-foreground bg-accent hover:bg-accent/90 border-2 border-accent rounded-xl transition-all duration-300 uppercase tracking-wider shadow-md hover:shadow-lg hover:shadow-accent/30"
-              aria-label="Admin"
+              aria-label={t('nav.admin')}
             >
               <ShieldCheck className="w-4 h-4" />
-              <span>Admin</span>
+              <span>{t('nav.admin')}</span>
             </button>
           )}
 
@@ -324,7 +324,7 @@ const Navigation = () => {
 
             {user?.email === ADMIN_EMAIL && (
               <button onClick={() => { setMobileMenuOpen(false); navigate('/main/admin'); }} className="flex items-center gap-2 w-full text-left px-4 py-3.5 text-base font-medium text-accent-foreground bg-accent/20 hover:bg-accent/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm">
-                <ShieldCheck className="w-4 h-4" /> Admin
+                <ShieldCheck className="w-4 h-4" /> {t('nav.admin')}
               </button>
             )}
 

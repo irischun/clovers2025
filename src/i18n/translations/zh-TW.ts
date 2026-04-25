@@ -791,6 +791,43 @@ const zhTW = {
   'pointHistory.noTransactions': '尚無交易紀錄',
   'pointHistory.startBuying': '購買點數開始使用',
   'pointHistory.balance': '餘額：',
+
+  // Admin button
+  'nav.admin': '管理員',
+
+  // Community Gallery page
+  'community.title': '社群畫廊',
+  'community.subtitle': '探索 Clovers 社群成員公開分享的 AI 生成圖片與影片作品。',
+  'community.tab.images': '圖片',
+  'community.tab.videos': '影片',
+  'community.badge': '社群',
+  'community.empty.images': '尚無社群圖片',
+  'community.empty.videos': '尚無社群影片',
+  'community.empty.cta': '成為第一位將作品發布到社群的創作者吧',
+  'community.loadFailed': '載入失敗，請稍後重試',
+
+  // Admin Upload Console
+  'admin.pageTitle': '管理員上傳 | Clovers',
+  'admin.verifying': '正在驗證管理員權限⋯',
+  'admin.back': '返回',
+  'admin.heading': '管理員上傳控制台',
+  'admin.goHome': '回到主頁',
+  'admin.intro': '上傳圖片或影片，將即時顯示於公開首頁 (/main) 對應的展示區塊。',
+  'admin.cat.manga': '漫畫生成案例',
+  'admin.cat.cover': '封面圖生成案例',
+  'admin.cat.product': '產品圖片生成案例',
+  'admin.fileLabel': '圖片或影片檔案',
+  'admin.titleLabel': '標題（選填）',
+  'admin.titlePlaceholder': '例如：漫畫生成案例 - 老散投資日記',
+  'admin.uploading': '上傳中⋯',
+  'admin.uploadTo': '上傳至 {category}',
+  'admin.existing': '{category} 現有項目（{count}）',
+  'admin.loading': '載入中⋯',
+  'admin.noUploads': '此分類尚無上傳項目。',
+  'admin.delete': '刪除',
+  'admin.selectFile': '請選擇檔案',
+  'admin.accessDenied': '拒絕存取',
+  'admin.adminOnly': '僅限管理員',
 } as const;
 
 export default zhTW;
