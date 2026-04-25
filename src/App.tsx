@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
+import CommunityGallery from "./pages/CommunityGallery";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import DashboardHome from "./pages/dashboard/DashboardHome";
