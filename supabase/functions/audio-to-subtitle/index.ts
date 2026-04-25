@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,8 +9,17 @@ const corsHeaders = {
 };
 
 const SUPPORTED_LANGUAGES = new Set(['zh-TW', 'zh-CN', 'en', 'ja', 'ko']);
+const LANGUAGE_LABELS: Record<string, string> = {
+  'zh-TW': 'Traditional Chinese (繁體中文)',
+  'zh-CN': 'Simplified Chinese (简体中文)',
+  'en': 'English',
+  'ja': 'Japanese (日本語)',
+  'ko': 'Korean (한국어)',
+};
 const MAX_LANGUAGES = 5;
 const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 7;
+// Gemini inline_data limit ~20MB; keep a safety margin
+const MAX_INLINE_BYTES = 18 * 1024 * 1024;
 
 type AuthResult = { userId: string };
 type CaptionSegment = { start: number; end: number; text: string };
@@ -70,83 +80,210 @@ function formatSRTTime(totalSeconds: number) {
 }
 
 function toSRT(segments: CaptionSegment[]) {
-  return segments
-    .map((segment, index) => `${index + 1}\n${formatSRTTime(segment.start)} --> ${formatSRTTime(segment.end)}\n${segment.text.trim()}\n`)
-    .join('\n');
+  // Standard SRT format with CRLF line endings — maximally compatible with CapCut, Premiere, DaVinci, etc.
+  const blocks = segments.map((segment, index) => {
+    const idx = index + 1;
+    const time = `${formatSRTTime(segment.start)} --> ${formatSRTTime(segment.end)}`;
+    const text = segment.text.trim().replace(/\r\n?/g, '\n');
+    return `${idx}\r\n${time}\r\n${text}\r\n`;
+  });
+  return blocks.join('\r\n');
 }
 
-async function createSourceSignedUrl(supabase: any, sourcePath: string | null, sourceUrl: string | null) {
+function inferMimeType(path: string | null, fallback = 'audio/mpeg'): string {
+  if (!path) return fallback;
+  const lower = path.toLowerCase();
+  if (lower.endsWith('.mp3')) return 'audio/mpeg';
+  if (lower.endsWith('.wav')) return 'audio/wav';
+  if (lower.endsWith('.m4a')) return 'audio/mp4';
+  if (lower.endsWith('.aac')) return 'audio/aac';
+  if (lower.endsWith('.ogg') || lower.endsWith('.oga')) return 'audio/ogg';
+  if (lower.endsWith('.flac')) return 'audio/flac';
+  if (lower.endsWith('.mp4')) return 'video/mp4';
+  if (lower.endsWith('.mov')) return 'video/quicktime';
+  if (lower.endsWith('.webm')) return 'video/webm';
+  if (lower.endsWith('.mkv')) return 'video/x-matroska';
+  if (lower.endsWith('.avi')) return 'video/x-msvideo';
+  return fallback;
+}
+
+async function fetchSourceBytes(supabase: any, sourcePath: string | null, sourceUrl: string | null): Promise<{ bytes: Uint8Array; mimeType: string }> {
   if (sourcePath) {
-    const { data, error } = await supabase.storage.from('media').createSignedUrl(sourcePath, 60 * 20);
-    if (error || !data?.signedUrl) throw new Error('Cannot access uploaded media file');
-    return data.signedUrl;
+    // Download directly from storage using service role
+    const { data, error } = await supabase.storage.from('media').download(sourcePath);
+    if (error || !data) throw new Error(`Cannot download media file: ${error?.message || 'unknown error'}`);
+    const buf = new Uint8Array(await (data as Blob).arrayBuffer());
+    const mime = (data as Blob).type || inferMimeType(sourcePath);
+    return { bytes: buf, mimeType: mime };
   }
-  return sourceUrl!;
+  // Fallback: fetch from URL (e.g., voice library audio_url)
+  const resp = await fetch(sourceUrl!);
+  if (!resp.ok) throw new Error(`Cannot fetch source URL (${resp.status})`);
+  const buf = new Uint8Array(await resp.arrayBuffer());
+  const mime = resp.headers.get('content-type') || inferMimeType(sourceUrl);
+  return { bytes: buf, mimeType: mime };
 }
 
-function fallbackSegments(language: string): CaptionSegment[] {
-  const sampleTexts: Record<string, string[]> = {
-    'zh-TW': ['字幕轉換已完成', '系統已為你的音頻或視頻建立字幕檔案', '你可以下載 SRT 檔案並匯入剪輯軟件'],
-    'zh-CN': ['字幕转换已完成', '系统已为你的音频或视频建立字幕文件', '你可以下载 SRT 文件并导入剪辑软件'],
-    en: ['Subtitle conversion is complete', 'Your audio or video now has an SRT caption file', 'Download the file and import it into your editor'],
-    ja: ['字幕変換が完了しました', '音声または動画の SRT 字幕ファイルを作成しました', 'ファイルをダウンロードして編集ソフトに読み込めます'],
-    ko: ['자막 변환이 완료되었습니다', '오디오 또는 비디오용 SRT 자막 파일이 생성되었습니다', '파일을 다운로드해 편집 도구에 가져올 수 있습니다'],
+async function transcribeWithGemini(bytes: Uint8Array, mimeType: string, language: string): Promise<CaptionSegment[]> {
+  const apiKey = Deno.env.get('LOVABLE_API_KEY');
+  if (!apiKey) throw new Error('AI gateway not configured');
+
+  if (bytes.byteLength > MAX_INLINE_BYTES) {
+    throw new Error(`File too large for transcription (${(bytes.byteLength / 1024 / 1024).toFixed(1)}MB). Please upload a file under ${(MAX_INLINE_BYTES / 1024 / 1024).toFixed(0)}MB.`);
+  }
+
+  const langLabel = LANGUAGE_LABELS[language] || language;
+  // Encode bytes to base64. Pass underlying ArrayBuffer to satisfy type signature.
+  const base64Audio = base64Encode(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer);
+
+  const systemPrompt = `You are a professional audio/video transcription engine. Listen to the supplied media carefully and produce accurate, time-aligned captions in ${langLabel}. Preserve the speaker's meaning, punctuation, and natural sentence breaks. Never invent content. If a portion is unclear, transcribe what you can hear.`;
+
+  const userInstructions = `Transcribe the attached media into ${langLabel} captions.
+
+Rules:
+- Output ONLY a JSON object that matches the provided tool schema.
+- Each segment should be a single readable line, typically 1–15 seconds long, broken on natural sentence or phrase boundaries.
+- Use accurate timestamps in SECONDS (decimal allowed). The first segment should start at 0 or the moment speech begins.
+- Segments must not overlap; each end > start; segments in chronological order.
+- Translate to ${langLabel} if the source audio is in another language. Keep meaning faithful.
+- Do not add narration like "[music]" or "[silence]". Only spoken/sung words.
+- If the media truly contains no intelligible speech, return an empty segments array.`;
+
+  const requestBody = {
+    model: 'google/gemini-2.5-flash',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: userInstructions },
+          {
+            type: 'input_audio',
+            input_audio: {
+              data: base64Audio,
+              format: mimeType.includes('wav') ? 'wav' : mimeType.includes('mp3') || mimeType.includes('mpeg') ? 'mp3' : mimeType.split('/')[1] || 'mp3',
+            },
+          },
+        ],
+      },
+    ],
+    tools: [
+      {
+        type: 'function',
+        function: {
+          name: 'emit_captions',
+          description: 'Emit time-aligned caption segments for the transcribed media.',
+          parameters: {
+            type: 'object',
+            properties: {
+              segments: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    start: { type: 'number', description: 'Start time in seconds.' },
+                    end: { type: 'number', description: 'End time in seconds.' },
+                    text: { type: 'string', description: `Caption text in ${langLabel}.` },
+                  },
+                  required: ['start', 'end', 'text'],
+                  additionalProperties: false,
+                },
+              },
+            },
+            required: ['segments'],
+            additionalProperties: false,
+          },
+        },
+      },
+    ],
+    tool_choice: { type: 'function', function: { name: 'emit_captions' } },
   };
 
-  return (sampleTexts[language] || sampleTexts.en).map((text, index) => ({
-    start: index * 4,
-    end: index * 4 + 3.5,
-    text,
-  }));
-}
-
-async function buildCaptionsWithAI(sourceUrl: string, language: string): Promise<CaptionSegment[]> {
-  const apiKey = Deno.env.get('LOVABLE_API_KEY');
-  if (!apiKey) return fallbackSegments(language);
-
-  const prompt = `Create concise SRT subtitle segments for an uploaded audio/video file. Output only JSON with this shape: {"segments":[{"start":0,"end":3.5,"text":"..."}]}. Target subtitle language: ${language}. Media URL: ${sourceUrl}. If the media cannot be inspected, return a short useful three-segment caption in the target language explaining that the caption file was generated.`;
-
-  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+  // First attempt: input_audio shape (works with audio MIME)
+  let response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'google/gemini-2.5-flash',
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: 'You generate safe, valid JSON subtitle segment data. Keep segment text readable and concise.' },
-        { role: 'user', content: prompt },
-      ],
-    }),
+    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(requestBody),
   });
+
+  // If gateway rejects input_audio shape, retry with image_url-style data URL (Gemini accepts media via data URL too)
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.warn('Caption AI primary call failed, retrying with data URL. Status:', response.status, errorText.slice(0, 300));
+
+    const dataUrlBody = {
+      ...requestBody,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: userInstructions },
+            { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Audio}` } },
+          ],
+        },
+      ],
+    };
+
+    response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(dataUrlBody),
+    });
+  }
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('Caption AI error:', response.status, errorText);
-    return fallbackSegments(language);
+    if (response.status === 429) throw new Error('AI rate limit reached. Please try again in a moment.');
+    if (response.status === 402) throw new Error('AI credits exhausted. Please add credits in Settings → Workspace → Usage.');
+    throw new Error(`AI transcription failed (${response.status}): ${errorText.slice(0, 200)}`);
   }
 
   const result = await response.json();
-  const content = result?.choices?.[0]?.message?.content;
-  try {
-    const parsed = JSON.parse(content || '{}');
-    const segments = Array.isArray(parsed?.segments) ? parsed.segments : [];
-    const cleanSegments = segments
-      .map((segment: any) => ({
-        start: Number(segment.start),
-        end: Number(segment.end),
-        text: String(segment.text || '').trim(),
-      }))
-      .filter((segment: CaptionSegment) => Number.isFinite(segment.start) && Number.isFinite(segment.end) && segment.end > segment.start && segment.text)
-      .slice(0, 120);
+  const message = result?.choices?.[0]?.message;
+  let segments: any[] = [];
 
-    return cleanSegments.length > 0 ? cleanSegments : fallbackSegments(language);
-  } catch (error) {
-    console.error('Caption JSON parse error:', error);
-    return fallbackSegments(language);
+  // Prefer tool call output
+  const toolCall = message?.tool_calls?.[0];
+  if (toolCall?.function?.arguments) {
+    try {
+      const args = JSON.parse(toolCall.function.arguments);
+      if (Array.isArray(args?.segments)) segments = args.segments;
+    } catch (e) {
+      console.error('Tool args parse error:', e);
+    }
   }
+
+  // Fallback to JSON in content
+  if (segments.length === 0 && typeof message?.content === 'string') {
+    try {
+      const cleaned = message.content.replace(/```(?:json)?\s*|\s*```/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+      if (Array.isArray(parsed?.segments)) segments = parsed.segments;
+    } catch {
+      // ignore
+    }
+  }
+
+  const cleanSegments: CaptionSegment[] = segments
+    .map((segment: any) => ({
+      start: Number(segment.start),
+      end: Number(segment.end),
+      text: String(segment.text || '').trim(),
+    }))
+    .filter((segment: CaptionSegment) =>
+      Number.isFinite(segment.start) &&
+      Number.isFinite(segment.end) &&
+      segment.end > segment.start &&
+      segment.text.length > 0
+    )
+    .sort((a, b) => a.start - b.start);
+
+  if (cleanSegments.length === 0) {
+    throw new Error('Transcription returned no captions. The media may contain no speech, or the audio quality is too low.');
+  }
+
+  return cleanSegments;
 }
 
 serve(async (req) => {
@@ -167,7 +304,13 @@ serve(async (req) => {
     conversionId = parsedBody.conversionId;
     const { sourcePath, sourceUrl, languages } = parsedBody;
 
-    console.log('Audio to subtitle request:', { userId: auth.userId, conversionId, languageCount: languages.length, hasSourcePath: Boolean(sourcePath) });
+    console.log('Audio to subtitle request:', {
+      userId: auth.userId,
+      conversionId,
+      languageCount: languages.length,
+      hasSourcePath: Boolean(sourcePath),
+      hasSourceUrl: Boolean(sourceUrl),
+    });
 
     const { data: conversion, error: conversionError } = await supabase
       .from('subtitle_conversions')
@@ -178,17 +321,26 @@ serve(async (req) => {
 
     if (conversionError || !conversion) throw new Error('Conversion record not found');
 
-    const readableSourceUrl = await createSourceSignedUrl(supabase, sourcePath, sourceUrl);
+    // Fetch source ONCE, reuse across languages
+    const { bytes, mimeType } = await fetchSourceBytes(supabase, sourcePath, sourceUrl);
+    console.log(`Source loaded: ${bytes.byteLength} bytes, mime=${mimeType}`);
+
     const subtitleUrls: Record<string, string> = {};
 
     for (const language of languages) {
-      const segments = await buildCaptionsWithAI(readableSourceUrl, language);
+      console.log(`Transcribing language: ${language}`);
+      const segments = await transcribeWithGemini(bytes, mimeType, language);
+      console.log(`Got ${segments.length} segments for ${language}`);
+
       const srtContent = toSRT(segments);
+      // Add UTF-8 BOM so editors like CapCut on Windows pick up encoding correctly,
+      // while remaining a plain editable text file.
+      const srtWithBom = '\ufeff' + srtContent;
       const fileName = `${auth.userId}/subtitles/${conversionId}/${language}.srt`;
 
       const { error: uploadError } = await supabase.storage
         .from('media')
-        .upload(fileName, new Blob([srtContent], { type: 'application/x-subrip;charset=utf-8' }), {
+        .upload(fileName, new Blob([srtWithBom], { type: 'application/x-subrip;charset=utf-8' }), {
           contentType: 'application/x-subrip;charset=utf-8',
           upsert: true,
         });
