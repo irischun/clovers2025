@@ -58,7 +58,11 @@ const GallerySection = ({ title, subtitle, items, icon }: GalleryProps) => {
         <DialogContent className="max-w-[95vw] sm:max-w-4xl p-2 bg-background/95 backdrop-blur-xl border-border/50 rounded-2xl shadow-2xl">
           {selectedImage && (
             <div className="space-y-4">
-              <img src={selectedImage.imageUrl} alt={selectedImage.title} className="w-full h-auto rounded-xl" />
+              {selectedImage.mediaType === 'video' ? (
+                <video src={selectedImage.imageUrl} className="w-full h-auto rounded-xl" controls autoPlay />
+              ) : (
+                <img src={selectedImage.imageUrl} alt={selectedImage.title} className="w-full h-auto rounded-xl" />
+              )}
               <p className="text-center text-foreground font-heading font-semibold px-4 pb-2">{selectedImage.title}</p>
             </div>
           )}
