@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { LogIn, User, LogOut, Menu, X, Volume2, VolumeX, ChevronDown, LayoutDashboard, CreditCard, Coins, History, GalleryHorizontalEnd, FileText, Settings, Sparkles, ImagePlus, Sticker, Mic, AudioLines, Video, Tv, Youtube, BookOpen, Rss, Image, Send, FolderEdit, Rocket } from 'lucide-react';
+import { LogIn, User, LogOut, Menu, X, Volume2, VolumeX, ChevronDown, LayoutDashboard, CreditCard, Coins, History, GalleryHorizontalEnd, FileText, Settings, Sparkles, ImagePlus, Sticker, Mic, AudioLines, Video, Tv, Youtube, BookOpen, Rss, Image, Send, FolderEdit, Rocket, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -201,6 +201,12 @@ const Navigation = () => {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <button onClick={() => navigate('/main/community_gallery')} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest inline-flex items-center gap-1.5">
+            <Users className="w-4 h-4" />
+            {t('nav.community')}
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 rounded-full" />
+          </button>
 
           <button onClick={() => scrollToSection('pricing')} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest">
             {t('nav.pricing')}
