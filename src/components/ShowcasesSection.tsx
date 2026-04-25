@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Play } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useLanguage } from '@/i18n/LanguageContext';
+import TranslatedText from '@/components/TranslatedText';
 
 interface Showcase {
   id: number;
@@ -65,9 +66,7 @@ const ShowcasesSection = () => {
                 <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors mb-1">
                   {t('showcases.item')} {showcase.id}
                 </h3>
-                <p className="text-sm text-muted-foreground">
-                  {showcase.channel}
-                </p>
+                <TranslatedText text={showcase.channel} sourceLang="zh-TW" as="p" className="text-sm text-muted-foreground" />
               </div>
             </div>
           ))}
