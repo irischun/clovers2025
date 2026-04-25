@@ -17,16 +17,12 @@ import {
   useUploadAdminMedia,
 } from '@/hooks/useAdminUploads';
 import { useToast } from '@/hooks/use-toast';
-
-const CATEGORIES: { key: AdminUploadCategory; label: string }[] = [
-  { key: 'manga', label: '漫畫生成案例' },
-  { key: 'cover', label: '封面圖生成案例' },
-  { key: 'product', label: '產品圖片生成案例' },
-];
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const AdminPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [activeCategory, setActiveCategory] = useState<AdminUploadCategory>('manga');
@@ -37,6 +33,12 @@ const AdminPage = () => {
   const uploadMutation = useUploadAdminMedia();
   const deleteMutation = useDeleteAdminUpload();
 
+  const CATEGORIES: { key: AdminUploadCategory; label: string }[] = [
+    { key: 'manga', label: t('admin.cat.manga') },
+    { key: 'cover', label: t('admin.cat.cover') },
+    { key: 'product', label: t('admin.cat.product') },
+  ];
+
   useEffect(() => {
     const check = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -45,7 +47,7 @@ const AdminPage = () => {
         return;
       }
       if (user.email !== ADMIN_EMAIL) {
-        toast({ title: 'Access denied', description: 'Administrator only', variant: 'destructive' });
+        toast({ title: t('admin.accessDenied'), description: t('admin.adminOnly'), variant: 'destructive' });
         navigate('/main');
         return;
       }
@@ -53,60 +55,59 @@ const AdminPage = () => {
       setAuthChecked(true);
     };
     check();
-  }, [navigate, toast]);
+  }, [navigate, toast, t]);
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      toast({ title: 'Select a file', variant: 'destructive' });
+      toast({ title: t('admin.selectFile'), variant: 'destructive' });
       return;
     }
     await uploadMutation.mutateAsync({ file, category: activeCategory, title: title || undefined });
     setFile(null);
     setTitle('');
-    (document.getElementById('admin-file-input') as HTMLInputElement | null)?.value && ((document.getElementById('admin-file-input') as HTMLInputElement).value = '');
+    const input = document.getElementById('admin-file-input') as HTMLInputElement | null;
+    if (input) input.value = '';
   };
 
   if (!authChecked || !isAdmin) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Verifying admin access…</p>
+        <p className="text-muted-foreground">{t('admin.verifying')}</p>
       </div>
     );
   }
 
   const itemsForCategory = uploads.filter((u) => u.category === activeCategory);
+  const activeLabel = CATEGORIES.find((c) => c.key === activeCategory)?.label ?? '';
 
   return (
     <>
       <Helmet>
-        <title>Admin Upload | Clovers</title>
+        <title>{t('admin.pageTitle')}</title>
       </Helmet>
       <div className="min-h-screen bg-background">
         <Navigation />
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-wrap items-center gap-3 mb-8">
             <Button variant="ghost" size="sm" onClick={() => navigate('/main')} className="gap-2">
-              <ArrowLeft className="w-4 h-4" /> Back
+              <ArrowLeft className="w-4 h-4" /> {t('admin.back')}
             </Button>
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-6 h-6 text-primary" />
-              <h1 className="font-heading text-3xl font-bold">Admin Upload Console</h1>
+              <h1 className="font-heading text-3xl font-bold">{t('admin.heading')}</h1>
             </div>
             <Button
               onClick={() => navigate('/main')}
               className="ml-auto gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg hover:shadow-primary/30 rounded-xl"
-              aria-label="回到主頁 / Go back to Main Page"
+              aria-label={t('admin.goHome')}
             >
               <Home className="w-4 h-4" />
-              回到主頁 / Go back to Main Page
+              {t('admin.goHome')}
             </Button>
           </div>
 
-          <p className="text-muted-foreground mb-8">
-            Upload images or videos. They will appear instantly inside the matching showcase
-            section on the public landing page (/main).
-          </p>
+          <p className="text-muted-foreground mb-8">{t('admin.intro')}</p>
 
           <Tabs value={activeCategory} onValueChange={(v) => setActiveCategory(v as AdminUploadCategory)}>
             <TabsList className="mb-6">
@@ -120,7 +121,7 @@ const AdminPage = () => {
                 <Card className="p-6">
                   <form onSubmit={handleUpload} className="space-y-4">
                     <div>
-                      <Label htmlFor="admin-file-input">Image or Video file</Label>
+                      <Label htmlFor="admin-file-input">{t('admin.fileLabel')}</Label>
                       <Input
                         id="admin-file-input"
                         type="file"
@@ -129,29 +130,31 @@ const AdminPage = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="admin-title">Title (optional)</Label>
+                      <Label htmlFor="admin-title">{t('admin.titleLabel')}</Label>
                       <Input
                         id="admin-title"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        placeholder="e.g. 漫畫生成案例 - 老散投資日記"
+                        placeholder={t('admin.titlePlaceholder')}
                       />
                     </div>
                     <Button type="submit" disabled={uploadMutation.isPending} className="gap-2">
                       <Upload className="w-4 h-4" />
-                      {uploadMutation.isPending ? 'Uploading…' : `Upload to ${c.label}`}
+                      {uploadMutation.isPending
+                        ? t('admin.uploading')
+                        : t('admin.uploadTo', { category: c.label })}
                     </Button>
                   </form>
                 </Card>
 
                 <div>
                   <h2 className="font-heading text-xl font-semibold mb-4">
-                    Existing items in {c.label} ({itemsForCategory.length})
+                    {t('admin.existing', { category: activeLabel, count: itemsForCategory.length })}
                   </h2>
                   {isLoading ? (
-                    <p className="text-muted-foreground">Loading…</p>
+                    <p className="text-muted-foreground">{t('admin.loading')}</p>
                   ) : itemsForCategory.length === 0 ? (
-                    <p className="text-muted-foreground">No uploads yet for this category.</p>
+                    <p className="text-muted-foreground">{t('admin.noUploads')}</p>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                       {itemsForCategory.map((item) => (
@@ -172,7 +175,7 @@ const AdminPage = () => {
                               disabled={deleteMutation.isPending}
                               onClick={() => deleteMutation.mutate(item)}
                             >
-                              <Trash2 className="w-3 h-3" /> Delete
+                              <Trash2 className="w-3 h-3" /> {t('admin.delete')}
                             </Button>
                           </div>
                         </Card>
