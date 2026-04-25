@@ -132,9 +132,9 @@ const CommunityGallery = () => {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                 </div>
               ) : isError ? (
-                <p className="text-center text-destructive py-12">載入失敗，請稍後重試</p>
+                <p className="text-center text-destructive py-12">{t('community.loadFailed')}</p>
               ) : images.length === 0 ? (
-                renderEmpty('圖片')
+                renderEmpty(t('community.empty.images'))
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {images.map(renderImage)}
@@ -148,9 +148,9 @@ const CommunityGallery = () => {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                 </div>
               ) : isError ? (
-                <p className="text-center text-destructive py-12">載入失敗，請稍後重試</p>
+                <p className="text-center text-destructive py-12">{t('community.loadFailed')}</p>
               ) : videos.length === 0 ? (
-                renderEmpty('影片')
+                renderEmpty(t('community.empty.videos'))
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {videos.map(renderVideo)}
