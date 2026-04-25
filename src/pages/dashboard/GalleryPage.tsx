@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
   Calendar as CalendarIcon, Star, Grid3X3, ImageIcon, Video, Filter, Trash2,
-  Download, Copy, Check, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Maximize2, Music, FileText, Play, Pause, Type, RefreshCw
+  Download, Copy, Check, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Maximize2, Music, FileText, Play, Pause, Type, RefreshCw,
+  Globe, GlobeLock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
