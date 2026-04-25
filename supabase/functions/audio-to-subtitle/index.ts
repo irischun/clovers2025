@@ -133,8 +133,8 @@ async function transcribeWithGemini(bytes: Uint8Array, mimeType: string, languag
   }
 
   const langLabel = LANGUAGE_LABELS[language] || language;
-  // Encode bytes to base64 in chunks to avoid call-stack overflow on large arrays
-  const base64Audio = base64Encode(bytes);
+  // Encode bytes to base64. Pass underlying ArrayBuffer to satisfy type signature.
+  const base64Audio = base64Encode(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer);
 
   const systemPrompt = `You are a professional audio/video transcription engine. Listen to the supplied media carefully and produce accurate, time-aligned captions in ${langLabel}. Preserve the speaker's meaning, punctuation, and natural sentence breaks. Never invent content. If a portion is unclear, transcribe what you can hear.`;
 
