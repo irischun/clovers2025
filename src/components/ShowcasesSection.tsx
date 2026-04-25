@@ -10,6 +10,7 @@ interface Showcase {
   videoId: string;
 }
 
+// i18n-allow-block-start: channel names are brand strings, rendered via <TranslatedText sourceLang="zh-TW" />
 const showcases: Showcase[] = [
   { id: 1, channel: 'Boni - 富邦財務全新私人貸款App', videoId: 'R-LUG7R2ZcA' },
   { id: 2, channel: '命之書', videoId: 'NLGJoOzUZmA' },
@@ -21,6 +22,7 @@ const showcases: Showcase[] = [
   { id: 8, channel: 'Lion AI 獅子智能', videoId: 'jIhwco0fP-w' },
   { id: 9, channel: 'Lion AI 獅子智能', videoId: 'iqxCZjS-ecA' },
 ];
+// i18n-allow-block-end
 
 const ShowcasesSection = () => {
   const { t } = useLanguage();

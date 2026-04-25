@@ -73,6 +73,7 @@ const GallerySection = ({ title, subtitle, items, icon }: GalleryProps) => {
   );
 };
 
+// i18n-allow-block-start: gallery sample data — titles are rendered via <TranslatedText sourceLang="zh-TW" /> and auto-translated for EN/zh-CN
 const mangaItems: GalleryItem[] = [
   { id: 'manga-1', title: '老散投資日記 - 點解刷新十次都仲係跌', imageUrl: 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=400&h=400&fit=crop' },
   { id: 'manga-2', title: '乒壇奇聞是與非 - 好人好者打粒粒', imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop' },
@@ -96,6 +97,7 @@ const productItems: GalleryItem[] = [
   { id: 'product-4', title: '產品攝影 - iPhone展示', imageUrl: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=400&fit=crop' },
   { id: 'product-5', title: '產品攝影 - 方便麵推廣', imageUrl: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=400&h=400&fit=crop' },
 ];
+// i18n-allow-block-end
 
 const GalleriesSection = () => {
   const { t } = useLanguage();
