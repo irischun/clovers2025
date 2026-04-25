@@ -1,0 +1,51 @@
+name: i18n Tri-Language Audit
+
+# Runs the static tri-language audit (en / zh-TW / zh-CN) on the first
+# day of every month, on every push to main, and on demand.
+on:
+  schedule:
+    - cron: '0 3 1 * *' # 03:00 UTC on the 1st of each month
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'scripts/audit-i18n.mjs'
+      - '.github/workflows/i18n-audit.yml'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run tri-language audit
+        run: node scripts/audit-i18n.mjs
+
+      - name: Open issue on monthly failure
+        if: failure() && github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🌐 Monthly i18n audit failed (${new Date().toISOString().slice(0,10)})`;
+            const body = [
+              'The scheduled monthly tri-language audit detected issues.',
+              '',
+              `See workflow run: ${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+              '',
+              'Run locally to reproduce:',
+              '```',
+              'node scripts/audit-i18n.mjs',
+              '```',
+            ].join('\n');
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['i18n', 'automated'],
+            });
