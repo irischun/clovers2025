@@ -90,6 +90,11 @@ const GalleryPage = () => {
     refetch: refetchText,
   } = useGalleryTextWorks(queriesEnabled);
 
+
+  // Community publishing
+  const { data: publishedSet = new Set<string>() } = useMyPublishedSourceIds(queriesEnabled);
+  const { publish: publishToCommunity, unpublish: unpublishFromCommunity } = useCommunityActions();
+
   const [activeTab, setActiveTab] = useState<ActiveTab>('images');
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
