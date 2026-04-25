@@ -1,21 +1,12 @@
-import { createContext, useContext, useState, useCallback, useRef, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import en from './translations/en';
 import zhTW from './translations/zh-TW';
 import zhCN from './translations/zh-CN';
+import { Language, languageLabels, languageNames } from './languages';
 
-export type Language = 'en' | 'zh-TW' | 'zh-CN';
-
-export const languageLabels: Record<Language, string> = {
-  'en': 'EN',
-  'zh-TW': '繁',
-  'zh-CN': '简',
-};
-
-export const languageNames: Record<Language, string> = {
-  'en': 'English',
-  'zh-TW': '繁體中文',
-  'zh-CN': '简体中文',
-};
+// Re-export for backward compatibility with existing imports
+export { languageLabels, languageNames };
+export type { Language };
 
 type TranslationKey = keyof typeof en;
 
