@@ -47,6 +47,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Navigate to="/main" replace />} />
               <Route path="/main" element={<Index />} />
+              <Route path="/main/community_gallery" element={<CommunityGallery />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/dashboard" element={<Dashboard />}>
                 <Route index element={<DashboardHome />} />
