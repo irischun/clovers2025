@@ -224,15 +224,17 @@ function main() {
     if (parityIssues.length > 50) console.log(`   …and ${parityIssues.length - 50} more.`);
   }
 
-  // 3. Language purity
+  // 3. Language purity (warnings only — many bilingual headlines are intentional)
   const purity = checkLanguagePurity(tables);
+  const fatalPurity = purity.filter((p) => p.type === 'en-contains-cjk');
   if (purity.length === 0) {
     console.log('\n✅ Language purity OK (en has no CJK, zh files look localized).');
   } else {
-    failed = true;
-    console.log(`\n⚠️  ${purity.length} purity warning(s):`);
+    if (fatalPurity.length > 0) failed = true;
+    console.log(`\n⚠️  ${purity.length} purity ${purity.length === 1 ? 'note' : 'notes'} (${fatalPurity.length} fatal):`);
     for (const p of purity.slice(0, 30)) {
-      console.log(`   [${p.type}] ${p.key}  →  "${p.value}"`);
+      const tag = p.type === 'en-contains-cjk' ? '❌' : 'ℹ️ ';
+      console.log(`   ${tag} [${p.type}] ${p.key}  →  "${p.value}"`);
     }
     if (purity.length > 30) console.log(`   …and ${purity.length - 30} more.`);
   }
