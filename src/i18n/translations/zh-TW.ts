@@ -828,6 +828,46 @@ const zhTW = {
   'admin.selectFile': '請選擇檔案',
   'admin.accessDenied': '拒絕存取',
   'admin.adminOnly': '僅限管理員',
+
+  // Features Section
+  'features.badge': '功能特色',
+  'features.heading': 'Clovers 有咩用？',
+  'features.subtitle': '探索強大工具，徹底改變你的行銷工作流程',
+  'features.item.1': '快速俾AI知道你product，免費幫你引流 - GEO',
+  'features.item.2': '30分鐘做好一個星期social media post',
+  'features.item.3': '低成本快速做到價值$8000商業級視頻',
+  'features.item.4': '簡易打造專業個人品牌IP，提升形象',
+  'features.item.5': '大量原創提示詞，及你的個人提示詞庫',
+  'features.item.6': '99%嘅人都唔知可以咁樣用AI搵客',
+
+  // Workflow Section
+  'workflow.badge': '工作流程',
+  'workflow.heading': '從洞察到執行,每一步都旨在將創意轉化為可擴展的系統。',
+  'workflow.subtitle': '從洞察到執行,每一步都旨在將創意轉化為可擴展的系統。',
+  'workflow.step.1.label': '第一步',
+  'workflow.step.1.title': '幫你搵出熱門內容',
+  'workflow.step.1.desc': '設定目標受眾同內容策略',
+  'workflow.step.2.label': '第二步',
+  'workflow.step.2.title': '設計 Design',
+  'workflow.step.2.desc': 'AI智能生成視覺內容',
+  'workflow.step.3.label': '第三步',
+  'workflow.step.3.title': '開發 Develop',
+  'workflow.step.3.desc': '批量製作多平台素材',
+  'workflow.step.4.label': '第四步',
+  'workflow.step.4.title': '一鍵自動佈發多平台',
+  'workflow.step.4.subtitle': 'Auto Social Media',
+  'workflow.step.4.desc': '一鍵發佈到所有平台',
+
+  // Testimonials Section
+  'testimonials.badge': '學員見證',
+  'testimonials.heading': '學員分享篇',
+  'testimonials.subtitle': '聽聽我們學員的真實體驗和成功故事',
+  'testimonials.item': 'Clovers 分享篇',
+
+  // Showcases Section
+  'showcases.heading': '成功案例',
+  'showcases.label': 'Showcases',
+  'showcases.item': '成功案例',
 } as const;
 
 export default zhTW;
