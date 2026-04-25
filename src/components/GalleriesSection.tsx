@@ -40,7 +40,11 @@ const GallerySection = ({ title, subtitle, items, icon }: GalleryProps) => {
           {items.map((item, index) => (
             <div key={item.id} className="group cursor-pointer overflow-hidden rounded-2xl bg-card border border-border/50 hover:border-primary/40 transition-all duration-500 animate-slide-up hover:shadow-xl hover:shadow-primary/5" style={{ animationDelay: `${index * 50}ms` }} onClick={() => setSelectedImage(item)}>
               <div className="aspect-square relative overflow-hidden">
-                <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                {item.mediaType === 'video' ? (
+                  <video src={item.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" muted loop playsInline preload="metadata" onMouseEnter={(e) => (e.currentTarget as HTMLVideoElement).play().catch(() => {})} onMouseLeave={(e) => { const v = e.currentTarget as HTMLVideoElement; v.pause(); v.currentTime = 0; }} />
+                ) : (
+                  <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-end p-4">
                   <p className="text-sm font-medium text-foreground line-clamp-2 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">{item.title}</p>
                 </div>
