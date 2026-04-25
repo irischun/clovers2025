@@ -770,8 +770,8 @@ const GalleryPage = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">我的畫廊</h1>
-        <p className="text-muted-foreground mt-1">瀏覽您生成的所有圖像、視頻、音頻、字幕和文字作品</p>
+        <h1 className="text-3xl font-bold">個人畫廊 / Personal Gallery</h1>
+        <p className="text-muted-foreground mt-1">瀏覽您生成的所有圖像、視頻、音頻、字幕和文字作品。可發布作品到社群畫廊與所有訪客分享。</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)}>
