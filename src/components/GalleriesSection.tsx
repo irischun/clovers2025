@@ -98,6 +98,21 @@ const productItems: GalleryItem[] = [
 
 const GalleriesSection = () => {
   const { t } = useLanguage();
+  const { data: adminUploads = [] } = useAdminUploads();
+
+  const adminItemsByCategory = (cat: AdminUploadCategory): GalleryItem[] =>
+    adminUploads
+      .filter((u) => u.category === cat)
+      .map((u) => ({
+        id: `admin-${u.id}`,
+        title: u.title || '',
+        imageUrl: u.media_url,
+        mediaType: u.media_type,
+      }));
+
+  // Admin uploads first (newest), then defaults
+  const merged = (cat: AdminUploadCategory, defaults: GalleryItem[]) =>
+    [...adminItemsByCategory(cat), ...defaults];
 
   return (
     <section className="py-24 sm:py-32 relative overflow-hidden">
@@ -115,9 +130,9 @@ const GalleriesSection = () => {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t('gallery.subtitle')}</p>
         </div>
         
-        <GallerySection title={t('gallery.manga')} subtitle={t('gallery.mangaSub')} items={mangaItems} icon={<Palette className="w-6 h-6 text-primary" />} />
-        <GallerySection title={t('gallery.cover')} subtitle={t('gallery.coverSub')} items={coverItems} icon={<Sparkles className="w-6 h-6 text-primary" />} />
-        <GallerySection title={t('gallery.product')} subtitle={t('gallery.productSub')} items={productItems} icon={<Box className="w-6 h-6 text-primary" />} />
+        <GallerySection title={t('gallery.manga')} subtitle={t('gallery.mangaSub')} items={merged('manga', mangaItems)} icon={<Palette className="w-6 h-6 text-primary" />} />
+        <GallerySection title={t('gallery.cover')} subtitle={t('gallery.coverSub')} items={merged('cover', coverItems)} icon={<Sparkles className="w-6 h-6 text-primary" />} />
+        <GallerySection title={t('gallery.product')} subtitle={t('gallery.productSub')} items={merged('product', productItems)} icon={<Box className="w-6 h-6 text-primary" />} />
       </div>
     </section>
   );
