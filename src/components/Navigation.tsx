@@ -202,10 +202,13 @@ const Navigation = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <button onClick={() => navigate('/main/community_gallery')} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest inline-flex items-center gap-1.5">
+          <button
+            onClick={() => navigate('/main/community_gallery')}
+            className="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 border-2 border-primary rounded-xl transition-all duration-300 uppercase tracking-wider shadow-md hover:shadow-lg hover:shadow-primary/30"
+            aria-label="Community Gallery"
+          >
             <Users className="w-4 h-4" />
-            {t('nav.community')}
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 rounded-full" />
+            <span>{t('nav.community')}</span>
           </button>
 
           <button onClick={() => scrollToSection('pricing')} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest">
