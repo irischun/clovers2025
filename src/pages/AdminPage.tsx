@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Trash2, Upload, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { Trash2, Upload, ShieldCheck, ArrowLeft, Home } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import {
   ADMIN_EMAIL,
@@ -85,7 +85,7 @@ const AdminPage = () => {
       <div className="min-h-screen bg-background">
         <Navigation />
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex items-center gap-3 mb-8">
+          <div className="flex flex-wrap items-center gap-3 mb-8">
             <Button variant="ghost" size="sm" onClick={() => navigate('/main')} className="gap-2">
               <ArrowLeft className="w-4 h-4" /> Back
             </Button>
@@ -93,6 +93,14 @@ const AdminPage = () => {
               <ShieldCheck className="w-6 h-6 text-primary" />
               <h1 className="font-heading text-3xl font-bold">Admin Upload Console</h1>
             </div>
+            <Button
+              onClick={() => navigate('/main')}
+              className="ml-auto gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg hover:shadow-primary/30 rounded-xl"
+              aria-label="回到主頁 / Go back to Main Page"
+            >
+              <Home className="w-4 h-4" />
+              回到主頁 / Go back to Main Page
+            </Button>
           </div>
 
           <p className="text-muted-foreground mb-8">
