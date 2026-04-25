@@ -791,6 +791,43 @@ const en = {
   'pointHistory.noTransactions': 'No transactions yet',
   'pointHistory.startBuying': 'Buy points to get started',
   'pointHistory.balance': 'Balance:',
+
+  // Admin button
+  'nav.admin': 'Admin',
+
+  // Community Gallery page
+  'community.title': 'Community Gallery',
+  'community.subtitle': 'Explore AI-generated images and videos publicly shared by Clovers community members.',
+  'community.tab.images': 'Images',
+  'community.tab.videos': 'Videos',
+  'community.badge': 'Community',
+  'community.empty.images': 'No community images yet',
+  'community.empty.videos': 'No community videos yet',
+  'community.empty.cta': 'Be the first creator to share your work to the community',
+  'community.loadFailed': 'Failed to load. Please try again later.',
+
+  // Admin Upload Console
+  'admin.pageTitle': 'Admin Upload | Clovers',
+  'admin.verifying': 'Verifying admin access…',
+  'admin.back': 'Back',
+  'admin.heading': 'Admin Upload Console',
+  'admin.goHome': 'Go back to Main Page',
+  'admin.intro': 'Upload images or videos. They will appear instantly inside the matching showcase section on the public landing page (/main).',
+  'admin.cat.manga': 'Manga Generation Examples',
+  'admin.cat.cover': 'Cover Image Examples',
+  'admin.cat.product': 'Product Image Examples',
+  'admin.fileLabel': 'Image or Video file',
+  'admin.titleLabel': 'Title (optional)',
+  'admin.titlePlaceholder': 'e.g. Manga Example - Investor Diary',
+  'admin.uploading': 'Uploading…',
+  'admin.uploadTo': 'Upload to {category}',
+  'admin.existing': 'Existing items in {category} ({count})',
+  'admin.loading': 'Loading…',
+  'admin.noUploads': 'No uploads yet for this category.',
+  'admin.delete': 'Delete',
+  'admin.selectFile': 'Please select a file',
+  'admin.accessDenied': 'Access denied',
+  'admin.adminOnly': 'Administrator only',
 } as const;
 
 export default en;
