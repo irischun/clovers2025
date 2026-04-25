@@ -303,6 +303,10 @@ const Navigation = () => {
 
             <div className="border-t border-border/50 pt-2" />
 
+            <button onClick={() => { setMobileMenuOpen(false); navigate('/main/community_gallery'); }} className="flex items-center gap-2 w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm">
+              <Users className="w-4 h-4" /> {t('nav.community')}
+            </button>
+
             <button onClick={() => scrollToSection('pricing')} className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm">
               {t('nav.pricing')}
             </button>
