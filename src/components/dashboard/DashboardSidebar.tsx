@@ -32,7 +32,7 @@ const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
     { title: t('nav.item.subscription'), icon: CreditCard, path: '/dashboard/subscription' },
     { title: t('nav.item.buyPoints'), icon: Coins, path: '/dashboard/buy-points' },
     { title: t('nav.item.pointHistory'), icon: History, path: '/dashboard/point-history' },
-    { title: t('nav.item.gallery'), icon: GalleryHorizontalEnd, path: '/dashboard/gallery' },
+    { title: t('nav.item.gallery'), icon: GalleryHorizontalEnd, path: '/dashboard/personal_gallery' },
     { title: t('nav.item.prompts'), icon: FileText, path: '/dashboard/prompts' },
     { title: t('nav.item.settings'), icon: Settings, path: '/dashboard/settings' },
   ];

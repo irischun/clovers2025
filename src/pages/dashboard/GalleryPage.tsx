@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
   Calendar as CalendarIcon, Star, Grid3X3, ImageIcon, Video, Filter, Trash2,
-  Download, Copy, Check, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Maximize2, Music, FileText, Play, Pause, Type, RefreshCw
+  Download, Copy, Check, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Maximize2, Music, FileText, Play, Pause, Type, RefreshCw,
+  Globe, GlobeLock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,6 +24,7 @@ import {
   GALLERY_IMAGES_KEY, GALLERY_VOICES_KEY, GALLERY_SUBTITLES_KEY, GALLERY_TEXT_KEY,
   type TextWork,
 } from '@/hooks/useGalleryData';
+import { useMyPublishedSourceIds, useCommunityActions } from '@/hooks/useCommunityPublish';
 import type { GeneratedImage } from '@/hooks/useGeneratedImages';
 import type { VoiceGeneration } from '@/hooks/useVoiceGenerations';
 import type { SubtitleConversion } from '@/hooks/useSubtitleConversions';
@@ -87,6 +89,11 @@ const GalleryPage = () => {
     error: textErrorObj,
     refetch: refetchText,
   } = useGalleryTextWorks(queriesEnabled);
+
+
+  // Community publishing
+  const { data: publishedSet = new Set<string>() } = useMyPublishedSourceIds(queriesEnabled);
+  const { publish: publishToCommunity, unpublish: unpublishFromCommunity } = useCommunityActions();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('images');
   const [startDate, setStartDate] = useState<Date | undefined>();
@@ -409,6 +416,22 @@ const GalleryPage = () => {
     const isCopied = copiedId === img.id;
     const promptText = img.prompt || '';
     const shouldTruncate = promptText.length > 80;
+    const isPublished = publishedSet.has(`image:${img.id}`);
+
+    const handleTogglePublish = async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (isPublished) {
+        await unpublishFromCommunity({ media_type: 'image', source_id: img.id });
+      } else {
+        await publishToCommunity({
+          media_type: 'image',
+          source_id: img.id,
+          media_url: img.image_url,
+          title: img.title,
+          prompt: img.prompt,
+        });
+      }
+    };
 
     return (
       <div key={img.id} className="group bg-card border border-border rounded-xl overflow-hidden hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 animate-slide-up" style={{ animationDelay: `${index * 30}ms` }}>
@@ -417,6 +440,13 @@ const GalleryPage = () => {
           <button onClick={(e) => { e.stopPropagation(); toggleFavorite(img.id, img.is_favorite); }} className="absolute top-2 left-2 p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors">
             <Star className={cn("w-4 h-4", img.is_favorite ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground")} />
           </button>
+          {isPublished && (
+            <div className="absolute top-2 left-12">
+              <Badge variant="secondary" className="bg-primary/20 backdrop-blur-sm text-primary border-primary/40 text-[10px] px-1.5 py-0 gap-1">
+                <Globe className="w-3 h-3" /> 社群
+              </Badge>
+            </div>
+          )}
           <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button onClick={(e) => handleDownload(img.image_url, img.title || '', e)} className="p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors" title="下載"><Download className="w-4 h-4 text-muted-foreground" /></button>
             <button onClick={(e) => { e.stopPropagation(); setSelectedItem(img); }} className="p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors" title="放大"><Maximize2 className="w-4 h-4 text-muted-foreground" /></button>
@@ -449,6 +479,19 @@ const GalleryPage = () => {
               </div>
             </div>
           )}
+          <Button
+            type="button"
+            variant={isPublished ? 'outline' : 'default'}
+            size="sm"
+            className="w-full gap-2"
+            onClick={handleTogglePublish}
+          >
+            {isPublished ? (
+              <><GlobeLock className="w-4 h-4" /> 從社群移除</>
+            ) : (
+              <><Globe className="w-4 h-4" /> 發布到社群</>
+            )}
+          </Button>
         </div>
       </div>
     );
@@ -727,8 +770,8 @@ const GalleryPage = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">我的畫廊</h1>
-        <p className="text-muted-foreground mt-1">瀏覽您生成的所有圖像、視頻、音頻、字幕和文字作品</p>
+        <h1 className="text-3xl font-bold">個人畫廊 / Personal Gallery</h1>
+        <p className="text-muted-foreground mt-1">瀏覽您生成的所有圖像、視頻、音頻、字幕和文字作品。可發布作品到社群畫廊與所有訪客分享。</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as ActiveTab)}>

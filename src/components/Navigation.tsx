@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { LogIn, User, LogOut, Menu, X, Volume2, VolumeX, ChevronDown, LayoutDashboard, CreditCard, Coins, History, GalleryHorizontalEnd, FileText, Settings, Sparkles, ImagePlus, Sticker, Mic, AudioLines, Video, Tv, Youtube, BookOpen, Rss, Image, Send, FolderEdit, Rocket } from 'lucide-react';
+import { LogIn, User, LogOut, Menu, X, Volume2, VolumeX, ChevronDown, LayoutDashboard, CreditCard, Coins, History, GalleryHorizontalEnd, FileText, Settings, Sparkles, ImagePlus, Sticker, Mic, AudioLines, Video, Tv, Youtube, BookOpen, Rss, Image, Send, FolderEdit, Rocket, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -42,7 +42,7 @@ const Navigation = () => {
         { title: t('nav.item.subscription'), icon: CreditCard, path: '/dashboard/subscription' },
         { title: t('nav.item.buyPoints'), icon: Coins, path: '/dashboard/buy-points' },
         { title: t('nav.item.pointHistory'), icon: History, path: '/dashboard/point-history' },
-        { title: t('nav.item.gallery'), icon: GalleryHorizontalEnd, path: '/dashboard/gallery' },
+        { title: t('nav.item.gallery'), icon: GalleryHorizontalEnd, path: '/dashboard/personal_gallery' },
         { title: t('nav.item.prompts'), icon: FileText, path: '/dashboard/prompts' },
         { title: t('nav.item.settings'), icon: Settings, path: '/dashboard/settings' },
       ],
@@ -202,6 +202,12 @@ const Navigation = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          <button onClick={() => navigate('/main/community_gallery')} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest inline-flex items-center gap-1.5">
+            <Users className="w-4 h-4" />
+            {t('nav.community')}
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 rounded-full" />
+          </button>
+
           <button onClick={() => scrollToSection('pricing')} className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors duration-300 relative group uppercase tracking-widest">
             {t('nav.pricing')}
             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 rounded-full" />
@@ -296,6 +302,10 @@ const Navigation = () => {
             </div>
 
             <div className="border-t border-border/50 pt-2" />
+
+            <button onClick={() => { setMobileMenuOpen(false); navigate('/main/community_gallery'); }} className="flex items-center gap-2 w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm">
+              <Users className="w-4 h-4" /> {t('nav.community')}
+            </button>
 
             <button onClick={() => scrollToSection('pricing')} className="block w-full text-left px-4 py-3.5 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/30 rounded-xl transition-all duration-300 uppercase tracking-widest text-sm">
               {t('nav.pricing')}

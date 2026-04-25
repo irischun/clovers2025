@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
+import CommunityGallery from "./pages/CommunityGallery";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import DashboardHome from "./pages/dashboard/DashboardHome";
@@ -46,6 +47,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Navigate to="/main" replace />} />
               <Route path="/main" element={<Index />} />
+              <Route path="/main/community_gallery" element={<CommunityGallery />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/dashboard" element={<Dashboard />}>
                 <Route index element={<DashboardHome />} />
@@ -66,7 +68,8 @@ const App = () => (
                 <Route path="content-organize" element={<ContentOrganizePage />} />
                 <Route path="sticker-maker" element={<StickerMakerPage />} />
                 <Route path="smart-publish" element={<SmartPublishPage />} />
-                <Route path="gallery" element={<GalleryPage />} />
+                <Route path="personal_gallery" element={<GalleryPage />} />
+                <Route path="gallery" element={<Navigate to="/dashboard/personal_gallery" replace />} />
                 <Route path="subscription" element={<SubscriptionPage />} />
                 <Route path="change-subscription" element={<ChangeSubscriptionPage />} />
                 <Route path="buy-points" element={<BuyPointsPage />} />
