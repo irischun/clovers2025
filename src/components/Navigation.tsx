@@ -18,6 +18,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 const LANDING_AUDIO_VOLUME = 0.1;
+const ADMIN_EMAIL = 'irischun2018@gmail.com';
 
 const Navigation = () => {
   const { t } = useLanguage();
