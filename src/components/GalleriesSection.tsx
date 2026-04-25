@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ImageIcon, Sparkles, Box, Palette } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useAdminUploads, AdminUploadCategory } from '@/hooks/useAdminUploads';
 
 interface GalleryItem {
   id: string;
   title: string;
   imageUrl: string;
+  mediaType?: 'image' | 'video';
 }
 
 interface GalleryProps {
