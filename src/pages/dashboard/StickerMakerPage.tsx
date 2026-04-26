@@ -169,7 +169,6 @@ const textStyles: StyleOption[] = [
   { id: 'original', label: '原圖風格', emoji: '🖼️', category: 'popular' },
   { id: 'doraemon', label: '多啦A夢風格', emoji: '🐱', category: 'fun' },
   { id: 'minimal', label: '極簡', emoji: '✨', category: 'popular' },
-  { id: 'cyberpunk_cool', label: '型格Cyberpunk', emoji: '🌃', category: 'fantasy' },
   { id: 'crayon_shin', label: '蠟筆小新', emoji: '🖍️', category: 'fun' },
   { id: 'crayon_doodle', label: '蠟筆塗鴉', emoji: '🖊️', category: 'painting' },
   { id: 'bold', label: '醒目', emoji: '💥', category: 'popular' },
