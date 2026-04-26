@@ -45,8 +45,6 @@ const textStyles: StyleOption[] = [
   { id: 'graffiti', label: 'Graffiti', emoji: '🧱', category: 'painting' },
 
   // 型格Cyberpunk second (per Version 54 request)
-  { id: 'cyberpunk_cool', label: '型格Cyberpunk', emoji: '🌃', category: 'fantasy' },
-
   // 3D & Material
   { id: 'three_d_polaroid', label: '3D Polaroid', emoji: '📋', category: 'realistic' },
   { id: 'three_d_q', label: '3D Q版', emoji: '🧊', category: '3d' },
