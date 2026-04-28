@@ -312,7 +312,81 @@ const SpeechToTextPage = () => {
     a.click();
   };
 
-  const getFileTypeIcon = (file: File | null) => {
+  // ===== Editable transcript helpers =====
+  const formatSrtTime = (totalSeconds: number) => {
+    const t = Math.max(0, totalSeconds);
+    const h = Math.floor(t / 3600);
+    const m = Math.floor((t % 3600) / 60);
+    const s = Math.floor(t % 60);
+    const ms = Math.floor((t - Math.floor(t)) * 1000);
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')},${String(ms).padStart(3, '0')}`;
+  };
+
+  const segmentsToSrt = (segments: Segment[]) =>
+    segments
+      .map((seg, i) => `${i + 1}\r\n${formatSrtTime(seg.start)} --> ${formatSrtTime(seg.end)}\r\n${(seg.text || '').trim()}\r\n`)
+      .join('\r\n');
+
+  const updateSegmentText = (lang: string, idx: number, text: string) => {
+    setEditableSegments(prev => {
+      const next = { ...prev };
+      const list = [...(next[lang] || [])];
+      list[idx] = { ...list[idx], text };
+      next[lang] = list;
+      return next;
+    });
+  };
+
+  const updateSegmentTime = (lang: string, idx: number, field: 'start' | 'end', value: number) => {
+    setEditableSegments(prev => {
+      const next = { ...prev };
+      const list = [...(next[lang] || [])];
+      list[idx] = { ...list[idx], [field]: value };
+      next[lang] = list;
+      return next;
+    });
+  };
+
+  const removeSegment = (lang: string, idx: number) => {
+    setEditableSegments(prev => {
+      const next = { ...prev };
+      next[lang] = (next[lang] || []).filter((_, i) => i !== idx);
+      return next;
+    });
+  };
+
+  const downloadEditedSrt = (lang: string) => {
+    const segs = editableSegments[lang] || [];
+    if (segs.length === 0) {
+      toast({ title: '沒有可下載的字幕內容', variant: 'destructive' });
+      return;
+    }
+    const langLabel = SUPPORTED_LANGUAGES.find(l => l.id === lang)?.label || lang;
+    const srt = '\ufeff' + segmentsToSrt(segs);
+    const blob = new Blob([srt], { type: 'application/x-subrip;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${editorSourceName || 'subtitles'}-${langLabel}.srt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: '已下載編輯後的字幕' });
+  };
+
+  const downloadEditedTxt = (lang: string) => {
+    const segs = editableSegments[lang] || [];
+    if (segs.length === 0) return;
+    const langLabel = SUPPORTED_LANGUAGES.find(l => l.id === lang)?.label || lang;
+    const text = segs.map(s => s.text).join('\n');
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${editorSourceName || 'subtitles'}-${langLabel}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
     if (!file) return FileAudio;
     return VIDEO_FORMATS.includes(file.type) ? FileVideo : FileAudio;
   };
