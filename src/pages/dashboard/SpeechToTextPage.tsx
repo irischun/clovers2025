@@ -63,6 +63,12 @@ const SpeechToTextPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  // Editable transcripts: language -> segments
+  type Segment = { start: number; end: number; text: string };
+  const [editableSegments, setEditableSegments] = useState<Record<string, Segment[]>>({});
+  const [editorSourceName, setEditorSourceName] = useState<string>('');
+  const [activeEditorLang, setActiveEditorLang] = useState<string | null>(null);
+
   // Fetch voice generations for library selection
   useEffect(() => {
     const fetchVoiceGenerations = async () => {
