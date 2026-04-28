@@ -68,7 +68,8 @@ const App = () => (
                 <Route path="xiaohongshu-search" element={<XiaohongshuSearchPage />} />
                 <Route path="rss" element={<RSSPage />} />
                 <Route path="content-organize" element={<ContentOrganizePage />} />
-                <Route path="sticker-maker" element={<StickerMakerPage />} />
+                <Route path="sticker-maker-many-marvelous_styles" element={<StickerMakerPage />} />
+                <Route path="sticker-maker" element={<Navigate to="/dashboard/sticker-maker-many-marvelous_styles" replace />} />
                 <Route path="smart-publish" element={<SmartPublishPage />} />
                 <Route path="personal_gallery" element={<GalleryPage />} />
                 <Route path="gallery" element={<Navigate to="/dashboard/personal_gallery" replace />} />
