@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
-import { Upload, Loader2, Download, FileAudio, FileVideo, Trash2, Check, Languages, History, Subtitles, Play } from 'lucide-react';
+import { Upload, Loader2, Download, FileAudio, FileVideo, Trash2, Check, Languages, History, Subtitles, Play, Pencil, Save, X } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -60,6 +62,12 @@ const SpeechToTextPage = () => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  // Editable transcripts: language -> segments
+  type Segment = { start: number; end: number; text: string };
+  const [editableSegments, setEditableSegments] = useState<Record<string, Segment[]>>({});
+  const [editorSourceName, setEditorSourceName] = useState<string>('');
+  const [activeEditorLang, setActiveEditorLang] = useState<string | null>(null);
 
   // Fetch voice generations for library selection
   useEffect(() => {
@@ -249,9 +257,16 @@ const SpeechToTextPage = () => {
 
       // Deduct points: 1 per language
       await consumePoints({ amount: selectedLanguages.length, description: `Speech-to-text: ${selectedLanguages.length} language(s)` });
-      toast({ title: '轉換成功', description: '字幕檔案已生成' });
-      
-      // Reset form
+      toast({ title: '轉換成功', description: '字幕已生成，您可在下方編輯後再下載' });
+
+      // Capture segments for inline editing
+      const returnedSegments = (data?.segments || {}) as Record<string, Segment[]>;
+      setEditableSegments(returnedSegments);
+      setEditorSourceName(sourceName);
+      const firstLang = Object.keys(returnedSegments)[0] || selectedLanguages[0];
+      setActiveEditorLang(firstLang || null);
+
+      // Reset form (but keep editor visible)
       setUploadedFile(null);
       setSelectedVoiceGeneration(null);
       setSelectedLanguages([]);
@@ -259,9 +274,8 @@ const SpeechToTextPage = () => {
         fileInputRef.current.value = '';
       }
 
-      // Refresh history
+      // Refresh history in background, but stay on convert tab so user can edit
       fetchConversions();
-      setActiveTab('history');
     } catch (error) {
       console.error('Conversion error:', error);
       toast({ 
@@ -296,6 +310,81 @@ const SpeechToTextPage = () => {
     a.href = url;
     a.download = `${sourceName}-${langLabel}.srt`;
     a.click();
+  };
+
+  // ===== Editable transcript helpers =====
+  const formatSrtTime = (totalSeconds: number) => {
+    const t = Math.max(0, totalSeconds);
+    const h = Math.floor(t / 3600);
+    const m = Math.floor((t % 3600) / 60);
+    const s = Math.floor(t % 60);
+    const ms = Math.floor((t - Math.floor(t)) * 1000);
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')},${String(ms).padStart(3, '0')}`;
+  };
+
+  const segmentsToSrt = (segments: Segment[]) =>
+    segments
+      .map((seg, i) => `${i + 1}\r\n${formatSrtTime(seg.start)} --> ${formatSrtTime(seg.end)}\r\n${(seg.text || '').trim()}\r\n`)
+      .join('\r\n');
+
+  const updateSegmentText = (lang: string, idx: number, text: string) => {
+    setEditableSegments(prev => {
+      const next = { ...prev };
+      const list = [...(next[lang] || [])];
+      list[idx] = { ...list[idx], text };
+      next[lang] = list;
+      return next;
+    });
+  };
+
+  const updateSegmentTime = (lang: string, idx: number, field: 'start' | 'end', value: number) => {
+    setEditableSegments(prev => {
+      const next = { ...prev };
+      const list = [...(next[lang] || [])];
+      list[idx] = { ...list[idx], [field]: value };
+      next[lang] = list;
+      return next;
+    });
+  };
+
+  const removeSegment = (lang: string, idx: number) => {
+    setEditableSegments(prev => {
+      const next = { ...prev };
+      next[lang] = (next[lang] || []).filter((_, i) => i !== idx);
+      return next;
+    });
+  };
+
+  const downloadEditedSrt = (lang: string) => {
+    const segs = editableSegments[lang] || [];
+    if (segs.length === 0) {
+      toast({ title: '沒有可下載的字幕內容', variant: 'destructive' });
+      return;
+    }
+    const langLabel = SUPPORTED_LANGUAGES.find(l => l.id === lang)?.label || lang;
+    const srt = '\ufeff' + segmentsToSrt(segs);
+    const blob = new Blob([srt], { type: 'application/x-subrip;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${editorSourceName || 'subtitles'}-${langLabel}.srt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: '已下載編輯後的字幕' });
+  };
+
+  const downloadEditedTxt = (lang: string) => {
+    const segs = editableSegments[lang] || [];
+    if (segs.length === 0) return;
+    const langLabel = SUPPORTED_LANGUAGES.find(l => l.id === lang)?.label || lang;
+    const text = segs.map(s => s.text).join('\n');
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${editorSourceName || 'subtitles'}-${langLabel}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const getFileTypeIcon = (file: File | null) => {
@@ -526,6 +615,99 @@ const SpeechToTextPage = () => {
               </>
             )}
           </Button>
+
+          {/* Inline Subtitle/Lyrics Editor */}
+          {Object.keys(editableSegments).length > 0 && activeEditorLang && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Pencil className="w-5 h-5" />
+                  編輯字幕 / 歌詞
+                </CardTitle>
+                <CardDescription>
+                  您可以直接修改每句字幕的文字與時間，再下載編輯後的 .srt 或 .txt 檔案。
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Language tabs */}
+                <div className="flex flex-wrap gap-2">
+                  {Object.keys(editableSegments).map((lang) => {
+                    const label = SUPPORTED_LANGUAGES.find(l => l.id === lang)?.label || lang;
+                    return (
+                      <Button
+                        key={lang}
+                        size="sm"
+                        variant={activeEditorLang === lang ? 'default' : 'outline'}
+                        onClick={() => setActiveEditorLang(lang)}
+                      >
+                        {label} ({editableSegments[lang]?.length || 0})
+                      </Button>
+                    );
+                  })}
+                  <div className="ml-auto flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => downloadEditedTxt(activeEditorLang!)}>
+                      <Download className="w-4 h-4 mr-1" />
+                      下載 .txt
+                    </Button>
+                    <Button size="sm" onClick={() => downloadEditedSrt(activeEditorLang!)}>
+                      <Save className="w-4 h-4 mr-1" />
+                      下載編輯後的 .srt
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Segment editor list */}
+                <div className="max-h-[600px] overflow-y-auto border rounded-lg divide-y">
+                  {(editableSegments[activeEditorLang] || []).map((seg, idx) => (
+                    <div key={idx} className="p-3 grid gap-2 md:grid-cols-[auto_1fr_auto] items-start">
+                      <div className="flex flex-col gap-1 text-xs text-muted-foreground min-w-[140px]">
+                        <span className="font-mono">#{idx + 1}</span>
+                        <Input
+                          type="number"
+                          step="0.001"
+                          value={seg.start}
+                          onChange={(e) => updateSegmentTime(activeEditorLang, idx, 'start', parseFloat(e.target.value) || 0)}
+                          className="h-7 text-xs"
+                          aria-label="開始時間（秒）"
+                        />
+                        <Input
+                          type="number"
+                          step="0.001"
+                          value={seg.end}
+                          onChange={(e) => updateSegmentTime(activeEditorLang, idx, 'end', parseFloat(e.target.value) || 0)}
+                          className="h-7 text-xs"
+                          aria-label="結束時間（秒）"
+                        />
+                      </div>
+                      <Textarea
+                        value={seg.text}
+                        onChange={(e) => updateSegmentText(activeEditorLang, idx, e.target.value)}
+                        className="min-h-[60px] text-sm"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeSegment(activeEditorLang, idx)}
+                        aria-label="刪除此句"
+                      >
+                        <X className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-end">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { setEditableSegments({}); setActiveEditorLang(null); }}
+                  >
+                    關閉編輯器
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="history" className="mt-6">
