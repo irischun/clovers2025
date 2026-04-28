@@ -136,21 +136,26 @@ async function transcribeWithGemini(bytes: Uint8Array, mimeType: string, languag
   // Encode bytes to base64. Pass underlying ArrayBuffer to satisfy type signature.
   const base64Audio = base64Encode(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer);
 
-  const systemPrompt = `You are a professional audio/video transcription engine. Listen to the supplied media carefully and produce accurate, time-aligned captions in ${langLabel}. Preserve the speaker's meaning, punctuation, and natural sentence breaks. Never invent content. If a portion is unclear, transcribe what you can hear.`;
+  const systemPrompt = `You are a world-class multilingual audio/video transcription and song-lyrics recognition engine. You can accurately transcribe BOTH spoken speech AND SUNG LYRICS across many languages including English, Mandarin (Traditional & Simplified), Cantonese, Japanese, Korean, Spanish, French, German, Italian, Portuguese, and more — including multilingual / code-switching tracks. You produce highly accurate, time-aligned captions in ${langLabel}. Preserve meaning, punctuation, and natural line breaks. Treat song lyrics as first-class content: capture every sung line, including repeated choruses, ad-libs that carry words (e.g. "oh, yeah"), and bilingual lines. Never invent content. If part is unclear, transcribe your best phonetic guess rather than skipping it.`;
 
-  const userInstructions = `Transcribe the attached media into ${langLabel} captions.
+  const userInstructions = `Transcribe the attached media into ${langLabel} captions/lyrics with top-notch accuracy.
+
+Audio may contain: pure speech, pure singing, songs with backing music, multilingual speech, or mixed speech+song.
 
 Rules:
 - Output ONLY a JSON object that matches the provided tool schema.
-- Each segment should be a single readable line, typically 1–15 seconds long, broken on natural sentence or phrase boundaries.
-- Use accurate timestamps in SECONDS (decimal allowed). The first segment should start at 0 or the moment speech begins.
-- Segments must not overlap; each end > start; segments in chronological order.
-- Translate to ${langLabel} if the source audio is in another language. Keep meaning faithful.
-- Do not add narration like "[music]" or "[silence]". Only spoken/sung words.
-- If the media truly contains no intelligible speech, return an empty segments array.`;
+- Detect the source language(s) automatically. If the source is not ${langLabel}, TRANSLATE the meaning faithfully into ${langLabel} while keeping line-by-line alignment with the original timing.
+- For SONG LYRICS: one segment per sung line (or short phrase). Keep poetic line breaks. Include repeated choruses every time they are sung. Do NOT collapse repeats.
+- For SPEECH: one segment per natural sentence or short phrase, typically 1–8 seconds.
+- Timestamps in SECONDS (decimal allowed, e.g. 12.450). First segment starts at the moment audio content begins.
+- Segments must NOT overlap; each end > start; strictly chronological order.
+- Do not output stage directions like "[music]", "[applause]", "[instrumental]" — only the actual sung or spoken words.
+- Preserve proper nouns, brand names, and song titles in their original spelling when possible.
+- If the media truly contains no intelligible speech or singing, return an empty segments array.`;
 
   const requestBody = {
-    model: 'google/gemini-2.5-flash',
+    // Gemini 2.5 Pro: best multimodal reasoning for music + multilingual lyrics recognition.
+    model: 'google/gemini-2.5-pro',
     messages: [
       { role: 'system', content: systemPrompt },
       {
