@@ -331,11 +331,13 @@ serve(async (req) => {
     console.log(`Source loaded: ${bytes.byteLength} bytes, mime=${mimeType}`);
 
     const subtitleUrls: Record<string, string> = {};
+    const subtitleSegments: Record<string, CaptionSegment[]> = {};
 
     for (const language of languages) {
       console.log(`Transcribing language: ${language}`);
       const segments = await transcribeWithGemini(bytes, mimeType, language);
       console.log(`Got ${segments.length} segments for ${language}`);
+      subtitleSegments[language] = segments;
 
       const srtContent = toSRT(segments);
       // Add UTF-8 BOM so editors like CapCut on Windows pick up encoding correctly,
@@ -368,7 +370,7 @@ serve(async (req) => {
 
     if (updateError) throw updateError;
 
-    return jsonResponse({ success: true, subtitleUrls, message: 'Subtitles generated successfully' });
+    return jsonResponse({ success: true, subtitleUrls, segments: subtitleSegments, message: 'Subtitles generated successfully' });
   } catch (error) {
     console.error('Error in audio-to-subtitle function:', error);
 
