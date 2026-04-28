@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import PointsBalanceCard from '@/components/dashboard/PointsBalanceCard';
-import { Upload, Loader2, Download, FileAudio, FileVideo, Trash2, Check, Languages, History, Subtitles, Play } from 'lucide-react';
+import { Upload, Loader2, Download, FileAudio, FileVideo, Trash2, Check, Languages, History, Subtitles, Play, Pencil, Save, X } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
