@@ -387,6 +387,7 @@ const SpeechToTextPage = () => {
     URL.revokeObjectURL(url);
   };
 
+  const getFileTypeIcon = (file: File | null) => {
     if (!file) return FileAudio;
     return VIDEO_FORMATS.includes(file.type) ? FileVideo : FileAudio;
   };
