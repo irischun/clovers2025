@@ -257,9 +257,16 @@ const SpeechToTextPage = () => {
 
       // Deduct points: 1 per language
       await consumePoints({ amount: selectedLanguages.length, description: `Speech-to-text: ${selectedLanguages.length} language(s)` });
-      toast({ title: '轉換成功', description: '字幕檔案已生成' });
-      
-      // Reset form
+      toast({ title: '轉換成功', description: '字幕已生成，您可在下方編輯後再下載' });
+
+      // Capture segments for inline editing
+      const returnedSegments = (data?.segments || {}) as Record<string, Segment[]>;
+      setEditableSegments(returnedSegments);
+      setEditorSourceName(sourceName);
+      const firstLang = Object.keys(returnedSegments)[0] || selectedLanguages[0];
+      setActiveEditorLang(firstLang || null);
+
+      // Reset form (but keep editor visible)
       setUploadedFile(null);
       setSelectedVoiceGeneration(null);
       setSelectedLanguages([]);
@@ -267,9 +274,8 @@ const SpeechToTextPage = () => {
         fileInputRef.current.value = '';
       }
 
-      // Refresh history
+      // Refresh history in background, but stay on convert tab so user can edit
       fetchConversions();
-      setActiveTab('history');
     } catch (error) {
       console.error('Conversion error:', error);
       toast({ 
