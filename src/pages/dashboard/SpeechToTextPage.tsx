@@ -615,6 +615,99 @@ const SpeechToTextPage = () => {
               </>
             )}
           </Button>
+
+          {/* Inline Subtitle/Lyrics Editor */}
+          {Object.keys(editableSegments).length > 0 && activeEditorLang && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Pencil className="w-5 h-5" />
+                  編輯字幕 / 歌詞
+                </CardTitle>
+                <CardDescription>
+                  您可以直接修改每句字幕的文字與時間，再下載編輯後的 .srt 或 .txt 檔案。
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Language tabs */}
+                <div className="flex flex-wrap gap-2">
+                  {Object.keys(editableSegments).map((lang) => {
+                    const label = SUPPORTED_LANGUAGES.find(l => l.id === lang)?.label || lang;
+                    return (
+                      <Button
+                        key={lang}
+                        size="sm"
+                        variant={activeEditorLang === lang ? 'default' : 'outline'}
+                        onClick={() => setActiveEditorLang(lang)}
+                      >
+                        {label} ({editableSegments[lang]?.length || 0})
+                      </Button>
+                    );
+                  })}
+                  <div className="ml-auto flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => downloadEditedTxt(activeEditorLang!)}>
+                      <Download className="w-4 h-4 mr-1" />
+                      下載 .txt
+                    </Button>
+                    <Button size="sm" onClick={() => downloadEditedSrt(activeEditorLang!)}>
+                      <Save className="w-4 h-4 mr-1" />
+                      下載編輯後的 .srt
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Segment editor list */}
+                <div className="max-h-[600px] overflow-y-auto border rounded-lg divide-y">
+                  {(editableSegments[activeEditorLang] || []).map((seg, idx) => (
+                    <div key={idx} className="p-3 grid gap-2 md:grid-cols-[auto_1fr_auto] items-start">
+                      <div className="flex flex-col gap-1 text-xs text-muted-foreground min-w-[140px]">
+                        <span className="font-mono">#{idx + 1}</span>
+                        <Input
+                          type="number"
+                          step="0.001"
+                          value={seg.start}
+                          onChange={(e) => updateSegmentTime(activeEditorLang, idx, 'start', parseFloat(e.target.value) || 0)}
+                          className="h-7 text-xs"
+                          aria-label="開始時間（秒）"
+                        />
+                        <Input
+                          type="number"
+                          step="0.001"
+                          value={seg.end}
+                          onChange={(e) => updateSegmentTime(activeEditorLang, idx, 'end', parseFloat(e.target.value) || 0)}
+                          className="h-7 text-xs"
+                          aria-label="結束時間（秒）"
+                        />
+                      </div>
+                      <Textarea
+                        value={seg.text}
+                        onChange={(e) => updateSegmentText(activeEditorLang, idx, e.target.value)}
+                        className="min-h-[60px] text-sm"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeSegment(activeEditorLang, idx)}
+                        aria-label="刪除此句"
+                      >
+                        <X className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-end">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { setEditableSegments({}); setActiveEditorLang(null); }}
+                  >
+                    關閉編輯器
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="history" className="mt-6">
