@@ -460,8 +460,20 @@ const GalleryPage = () => {
             <span>{formatDateSafe(img.created_at)}</span>
             {img.model && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{img.model}</Badge>}
           </div>
-          <div className="text-xs text-muted-foreground">
-            檔案大小: <span className="text-foreground">{fileSizes[img.id] && fileSizes[img.id] > 0 ? formatFileSize(fileSizes[img.id]) : fileSizes[img.id] === -1 ? '無法取得' : '計算中...'}</span>
+          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+            <div>
+              {t('galleryPage.fileSize')}: <span className="text-foreground">{fileSizes[img.id] && fileSizes[img.id] > 0 ? formatFileSize(fileSizes[img.id]) : fileSizes[img.id] === -1 ? '無法取得' : '計算中...'}</span>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-7 px-2 gap-1 text-xs"
+              onClick={(e) => handleDownload(img.image_url, img.title || '', e)}
+              title={t('common.download')}
+            >
+              <Download className="w-3.5 h-3.5" /> {t('common.download')}
+            </Button>
           </div>
           {img.style && <div className="text-xs text-muted-foreground">風格: <span className="text-foreground">{img.style}</span></div>}
           {promptText && (
