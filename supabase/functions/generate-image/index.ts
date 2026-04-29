@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Image } from "https://deno.land/x/imagescript@1.2.17/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -87,19 +88,34 @@ async function verifyAuth(req: Request): Promise<{ userId: string } | null> {
 function buildEnhancedPrompt(prompt: string, style: string, width?: number, height?: number): string {
   const parts: string[] = [];
   parts.push(prompt);
-  
+
   const styleEnhancement = stylePromptMap[style] || stylePromptMap['default'];
   parts.push(styleEnhancement);
-  
+
   if (width && height) {
     const ratio = width / height;
     if (ratio > 1.5) parts.push(resolutionGuide['16:9']);
     else if (ratio < 0.7) parts.push(resolutionGuide['9:16']);
     else if (Math.abs(ratio - 1) < 0.1) parts.push(resolutionGuide['1:1']);
     else parts.push(resolutionGuide['4:3']);
+
+    // Explicit dimensional directive — many image models honor explicit pixel targets in the prompt.
+    parts.push(
+      `OUTPUT DIMENSIONS: render at exactly ${width} x ${height} pixels (width x height), full-bleed, no letterboxing, no padding, no borders, fill the entire ${width}x${height} canvas`
+    );
   }
-  
-  parts.push('masterpiece quality', 'highly detailed', 'sharp focus', 'professional composition', '8K UHD resolution', 'trending on artstation', 'award-winning', 'clean, clear, well-lit, properly exposed');
+
+  parts.push(
+    'maximum native resolution',
+    'ultra high definition 4K to 8K',
+    'masterpiece quality',
+    'highly detailed',
+    'sharp focus',
+    'professional composition',
+    'trending on artstation',
+    'award-winning',
+    'clean, clear, well-lit, properly exposed'
+  );
   return parts.join(', ');
 }
 
@@ -279,32 +295,68 @@ serve(async (req) => {
       );
     }
 
-    // ───── Upload base64 to Storage so DB only holds a small URL (massive perf win) ─────
+    // ───── Decode → upscale to requested dimensions → upload to Storage ─────
     let finalUrl = rawImageUrl;
+    let finalWidth: number | undefined;
+    let finalHeight: number | undefined;
     try {
       if (rawImageUrl.startsWith("data:")) {
         const match = rawImageUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
         if (match) {
-          const mimeType = match[1];
-          const ext = mimeType.split("/")[1].split("+")[0] || "png";
           const base64 = match[2];
-          const binary = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+          let binary = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+          let outputMime = "image/png";
+          let outputExt = "png";
+
+          // Upscale if model returned an image smaller than what the user requested.
+          // "Bigger is better" — never deliver below requested dimensions.
+          try {
+            const decoded = await Image.decode(binary);
+            const srcW = decoded.width;
+            const srcH = decoded.height;
+            finalWidth = srcW;
+            finalHeight = srcH;
+
+            // Target dimensions: at least the requested width/height; preserve the model's aspect.
+            const reqW = typeof width === "number" && width > 0 ? width : srcW;
+            const reqH = typeof height === "number" && height > 0 ? height : srcH;
+
+            // Scale factor required so BOTH dimensions meet or exceed the request.
+            const scale = Math.max(reqW / srcW, reqH / srcH, 1);
+
+            if (scale > 1.001) {
+              const targetW = Math.round(srcW * scale);
+              const targetH = Math.round(srcH * scale);
+              // ImageScript's resize uses Lanczos (RESIZE_AUTO -> high quality) by default.
+              decoded.resize(targetW, targetH);
+              finalWidth = targetW;
+              finalHeight = targetH;
+              binary = await decoded.encode(0); // PNG, lossless
+              outputMime = "image/png";
+              outputExt = "png";
+              console.log(`Upscaled image ${srcW}x${srcH} -> ${targetW}x${targetH} (requested ${reqW}x${reqH})`);
+            } else {
+              console.log(`Native size ${srcW}x${srcH} already meets requested ${reqW}x${reqH}`);
+            }
+          } catch (decodeErr) {
+            console.warn("Image decode/upscale skipped:", decodeErr);
+          }
 
           const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
           const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
           const admin = createClient(supabaseUrl, serviceKey);
 
-          const path = `${auth.userId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+          const path = `${auth.userId}/${Date.now()}-${crypto.randomUUID()}.${outputExt}`;
           const { error: upErr } = await admin.storage
             .from("generated-images")
-            .upload(path, binary, { contentType: mimeType, upsert: false });
+            .upload(path, binary, { contentType: outputMime, upsert: false });
 
           if (upErr) {
             console.error("Storage upload failed, falling back to data URL:", upErr.message);
           } else {
             const { data: pub } = admin.storage.from("generated-images").getPublicUrl(path);
             finalUrl = pub.publicUrl;
-            console.log("Uploaded image to storage:", finalUrl);
+            console.log("Uploaded image to storage:", finalUrl, finalWidth, "x", finalHeight);
           }
         }
       }
@@ -313,7 +365,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ imageUrl: finalUrl, description: textContent }),
+      JSON.stringify({ imageUrl: finalUrl, description: textContent, width: finalWidth, height: finalHeight }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
