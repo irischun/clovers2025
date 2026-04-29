@@ -99,9 +99,15 @@ function buildEnhancedPrompt(prompt: string, style: string, width?: number, heig
     else if (Math.abs(ratio - 1) < 0.1) parts.push(resolutionGuide['1:1']);
     else parts.push(resolutionGuide['4:3']);
 
-    // Explicit dimensional directive — many image models honor explicit pixel targets in the prompt.
+    // Explicit dimensional directive — request a BIG-SCREEN render. We ask for at least
+    // 2560px on the long side (4K-class), preserving the requested aspect ratio. The
+    // edge function additionally upscales any smaller native output to guarantee this.
+    const longTarget = Math.max(width, height, 2560);
+    const aspect = width / height;
+    const targetW = aspect >= 1 ? longTarget : Math.round(longTarget * aspect);
+    const targetH = aspect >= 1 ? Math.round(longTarget / aspect) : longTarget;
     parts.push(
-      `OUTPUT DIMENSIONS: render at exactly ${width} x ${height} pixels (width x height), full-bleed, no letterboxing, no padding, no borders, fill the entire ${width}x${height} canvas`
+      `OUTPUT DIMENSIONS: render at the highest possible native resolution, target ${targetW} x ${targetH} pixels (width x height) or larger, full-bleed, no letterboxing, no padding, no borders, fill the entire canvas, suitable for very large 4K displays`
     );
   }
 
@@ -317,12 +323,19 @@ serve(async (req) => {
             finalWidth = srcW;
             finalHeight = srcH;
 
-            // Target dimensions: at least the requested width/height; preserve the model's aspect.
+          // Target dimensions: at least the requested width/height; preserve the model's aspect.
+            // BIG-SCREEN GUARANTEE: enforce a minimum long-side of 2560px so every output is
+            // suitable for very large displays (4K/retina) regardless of the model's native size.
+            const MIN_LONG_SIDE = 2560;
+            const srcLong = Math.max(srcW, srcH);
+            const minLongScale = MIN_LONG_SIDE / srcLong;
+
             const reqW = typeof width === "number" && width > 0 ? width : srcW;
             const reqH = typeof height === "number" && height > 0 ? height : srcH;
 
-            // Scale factor required so BOTH dimensions meet or exceed the request.
-            const scale = Math.max(reqW / srcW, reqH / srcH, 1);
+            // Scale factor required so BOTH dimensions meet or exceed the request,
+            // AND the long side meets the big-screen minimum.
+            const scale = Math.max(reqW / srcW, reqH / srcH, minLongScale, 1);
 
             if (scale > 1.001) {
               const targetW = Math.round(srcW * scale);
