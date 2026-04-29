@@ -99,9 +99,15 @@ function buildEnhancedPrompt(prompt: string, style: string, width?: number, heig
     else if (Math.abs(ratio - 1) < 0.1) parts.push(resolutionGuide['1:1']);
     else parts.push(resolutionGuide['4:3']);
 
-    // Explicit dimensional directive — many image models honor explicit pixel targets in the prompt.
+    // Explicit dimensional directive — request a BIG-SCREEN render. We ask for at least
+    // 2560px on the long side (4K-class), preserving the requested aspect ratio. The
+    // edge function additionally upscales any smaller native output to guarantee this.
+    const longTarget = Math.max(width, height, 2560);
+    const aspect = width / height;
+    const targetW = aspect >= 1 ? longTarget : Math.round(longTarget * aspect);
+    const targetH = aspect >= 1 ? Math.round(longTarget / aspect) : longTarget;
     parts.push(
-      `OUTPUT DIMENSIONS: render at exactly ${width} x ${height} pixels (width x height), full-bleed, no letterboxing, no padding, no borders, fill the entire ${width}x${height} canvas`
+      `OUTPUT DIMENSIONS: render at the highest possible native resolution, target ${targetW} x ${targetH} pixels (width x height) or larger, full-bleed, no letterboxing, no padding, no borders, fill the entire canvas, suitable for very large 4K displays`
     );
   }
 
