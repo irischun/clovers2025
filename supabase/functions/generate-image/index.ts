@@ -295,32 +295,68 @@ serve(async (req) => {
       );
     }
 
-    // ───── Upload base64 to Storage so DB only holds a small URL (massive perf win) ─────
+    // ───── Decode → upscale to requested dimensions → upload to Storage ─────
     let finalUrl = rawImageUrl;
+    let finalWidth: number | undefined;
+    let finalHeight: number | undefined;
     try {
       if (rawImageUrl.startsWith("data:")) {
         const match = rawImageUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
         if (match) {
-          const mimeType = match[1];
-          const ext = mimeType.split("/")[1].split("+")[0] || "png";
           const base64 = match[2];
-          const binary = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+          let binary = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+          let outputMime = "image/png";
+          let outputExt = "png";
+
+          // Upscale if model returned an image smaller than what the user requested.
+          // "Bigger is better" — never deliver below requested dimensions.
+          try {
+            const decoded = await Image.decode(binary);
+            const srcW = decoded.width;
+            const srcH = decoded.height;
+            finalWidth = srcW;
+            finalHeight = srcH;
+
+            // Target dimensions: at least the requested width/height; preserve the model's aspect.
+            const reqW = typeof width === "number" && width > 0 ? width : srcW;
+            const reqH = typeof height === "number" && height > 0 ? height : srcH;
+
+            // Scale factor required so BOTH dimensions meet or exceed the request.
+            const scale = Math.max(reqW / srcW, reqH / srcH, 1);
+
+            if (scale > 1.001) {
+              const targetW = Math.round(srcW * scale);
+              const targetH = Math.round(srcH * scale);
+              // ImageScript's resize uses Lanczos (RESIZE_AUTO -> high quality) by default.
+              decoded.resize(targetW, targetH);
+              finalWidth = targetW;
+              finalHeight = targetH;
+              binary = await decoded.encode(0); // PNG, lossless
+              outputMime = "image/png";
+              outputExt = "png";
+              console.log(`Upscaled image ${srcW}x${srcH} -> ${targetW}x${targetH} (requested ${reqW}x${reqH})`);
+            } else {
+              console.log(`Native size ${srcW}x${srcH} already meets requested ${reqW}x${reqH}`);
+            }
+          } catch (decodeErr) {
+            console.warn("Image decode/upscale skipped:", decodeErr);
+          }
 
           const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
           const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
           const admin = createClient(supabaseUrl, serviceKey);
 
-          const path = `${auth.userId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+          const path = `${auth.userId}/${Date.now()}-${crypto.randomUUID()}.${outputExt}`;
           const { error: upErr } = await admin.storage
             .from("generated-images")
-            .upload(path, binary, { contentType: mimeType, upsert: false });
+            .upload(path, binary, { contentType: outputMime, upsert: false });
 
           if (upErr) {
             console.error("Storage upload failed, falling back to data URL:", upErr.message);
           } else {
             const { data: pub } = admin.storage.from("generated-images").getPublicUrl(path);
             finalUrl = pub.publicUrl;
-            console.log("Uploaded image to storage:", finalUrl);
+            console.log("Uploaded image to storage:", finalUrl, finalWidth, "x", finalHeight);
           }
         }
       }
@@ -329,7 +365,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ imageUrl: finalUrl, description: textContent }),
+      JSON.stringify({ imageUrl: finalUrl, description: textContent, width: finalWidth, height: finalHeight }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
