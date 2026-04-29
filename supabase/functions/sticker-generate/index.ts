@@ -231,34 +231,82 @@ type ChatMessage = {
 };
 
 
-async function generateStickerCandidate(messages: ChatMessage[], apiKey: string, style: string): Promise<string> {
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function callImageModel(
+  messages: ChatMessage[],
+  apiKey: string,
+  style: string,
+  model: string,
+): Promise<Response> {
+  return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-3.1-flash-image-preview",
+      model,
       messages,
       modalities: ["image", "text"],
       temperature: style === 'irasutoya' ? 0.1 : 0.8,
     }),
   });
+}
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    const error = new Error("Sticker generation failed") as Error & { status?: number; details?: string };
-    error.status = response.status;
-    error.details = errorText;
+async function generateStickerCandidate(messages: ChatMessage[], apiKey: string, style: string): Promise<string> {
+  // Primary + fallback model chain. Both are image-capable models on the gateway.
+  // Falling back to nano-banana (gemini-2.5-flash-image) when the preview is exhausted.
+  const modelChain = [
+    "google/gemini-3.1-flash-image-preview",
+    "google/gemini-2.5-flash-image",
+  ];
+  const maxAttemptsPerModel = 3;
+  let lastError: (Error & { status?: number; details?: string }) | null = null;
+  let response: Response | null = null;
 
-    if (response.status === 429) {
-      error.message = "Rate limit exceeded. Please try again later.";
-    } else if (response.status === 402) {
-      error.message = "AI credits exhausted. Please add credits.";
+  outer: for (const model of modelChain) {
+    for (let attempt = 1; attempt <= maxAttemptsPerModel; attempt++) {
+      response = await callImageModel(messages, apiKey, style, model);
+
+      if (response.ok) {
+        break outer;
+      }
+
+      const errorText = await response.text();
+      const status = response.status;
+      console.warn(`[sticker-generate] model=${model} attempt=${attempt} status=${status}`);
+
+      // Retryable: 429 (rate limit / resource exhausted), 500/502/503/504 (transient)
+      const retryable = status === 429 || (status >= 500 && status < 600);
+      const err = new Error(
+        status === 429
+          ? "Rate limit exceeded. Please try again later."
+          : status === 402
+            ? "AI credits exhausted. Please add credits."
+            : `Sticker generation failed (HTTP ${status})`,
+      ) as Error & { status?: number; details?: string };
+      err.status = status;
+      err.details = errorText;
+      lastError = err;
+
+      // Non-retryable -> stop entirely (e.g. 400, 401, 402)
+      if (!retryable) {
+        throw err;
+      }
+
+      // Retry with backoff for the same model unless it's the last attempt
+      if (attempt < maxAttemptsPerModel) {
+        const backoff = Math.min(8000, 1000 * Math.pow(2, attempt - 1)) + Math.floor(Math.random() * 500);
+        await sleep(backoff);
+      }
     }
+    // Exhausted attempts on this model — fall through to next model in the chain
+    console.warn(`[sticker-generate] exhausted retries for model=${model}, trying fallback if any`);
+  }
 
-    throw error;
+  if (!response || !response.ok) {
+    throw lastError ?? new Error("Sticker generation failed after retries");
   }
 
   const data = await response.json();
