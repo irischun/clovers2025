@@ -87,19 +87,34 @@ async function verifyAuth(req: Request): Promise<{ userId: string } | null> {
 function buildEnhancedPrompt(prompt: string, style: string, width?: number, height?: number): string {
   const parts: string[] = [];
   parts.push(prompt);
-  
+
   const styleEnhancement = stylePromptMap[style] || stylePromptMap['default'];
   parts.push(styleEnhancement);
-  
+
   if (width && height) {
     const ratio = width / height;
     if (ratio > 1.5) parts.push(resolutionGuide['16:9']);
     else if (ratio < 0.7) parts.push(resolutionGuide['9:16']);
     else if (Math.abs(ratio - 1) < 0.1) parts.push(resolutionGuide['1:1']);
     else parts.push(resolutionGuide['4:3']);
+
+    // Explicit dimensional directive — many image models honor explicit pixel targets in the prompt.
+    parts.push(
+      `OUTPUT DIMENSIONS: render at exactly ${width} x ${height} pixels (width x height), full-bleed, no letterboxing, no padding, no borders, fill the entire ${width}x${height} canvas`
+    );
   }
-  
-  parts.push('masterpiece quality', 'highly detailed', 'sharp focus', 'professional composition', '8K UHD resolution', 'trending on artstation', 'award-winning', 'clean, clear, well-lit, properly exposed');
+
+  parts.push(
+    'maximum native resolution',
+    'ultra high definition 4K to 8K',
+    'masterpiece quality',
+    'highly detailed',
+    'sharp focus',
+    'professional composition',
+    'trending on artstation',
+    'award-winning',
+    'clean, clear, well-lit, properly exposed'
+  );
   return parts.join(', ');
 }
 
