@@ -317,12 +317,19 @@ serve(async (req) => {
             finalWidth = srcW;
             finalHeight = srcH;
 
-            // Target dimensions: at least the requested width/height; preserve the model's aspect.
+          // Target dimensions: at least the requested width/height; preserve the model's aspect.
+            // BIG-SCREEN GUARANTEE: enforce a minimum long-side of 2560px so every output is
+            // suitable for very large displays (4K/retina) regardless of the model's native size.
+            const MIN_LONG_SIDE = 2560;
+            const srcLong = Math.max(srcW, srcH);
+            const minLongScale = MIN_LONG_SIDE / srcLong;
+
             const reqW = typeof width === "number" && width > 0 ? width : srcW;
             const reqH = typeof height === "number" && height > 0 ? height : srcH;
 
-            // Scale factor required so BOTH dimensions meet or exceed the request.
-            const scale = Math.max(reqW / srcW, reqH / srcH, 1);
+            // Scale factor required so BOTH dimensions meet or exceed the request,
+            // AND the long side meets the big-screen minimum.
+            const scale = Math.max(reqW / srcW, reqH / srcH, minLongScale, 1);
 
             if (scale > 1.001) {
               const targetW = Math.round(srcW * scale);
