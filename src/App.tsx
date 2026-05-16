@@ -17,6 +17,7 @@ import MediaPage from "./pages/dashboard/MediaPage";
 import AIToolsPage from "./pages/dashboard/AIToolsPage";
 import SettingsPage from "./pages/dashboard/SettingsPage";
 import ImageGenerationPage from "./pages/dashboard/ImageGenerationPage";
+import ImageResizingPage from "./pages/dashboard/ImageResizingPage";
 import VoiceGenerationPage from "./pages/dashboard/VoiceGenerationPage";
 import SpeechToTextPage from "./pages/dashboard/SpeechToTextPage";
 import VideoGenerationPage from "./pages/dashboard/VideoGenerationPage";
@@ -59,6 +60,7 @@ const App = () => (
                 <Route path="ai-copy-writing" element={<AIToolsPage />} />
                 <Route path="settings" element={<SettingsPage />} />
                 <Route path="image-generation" element={<ImageGenerationPage />} />
+                <Route path="image-resizing" element={<ImageResizingPage />} />
                 <Route path="voice-generation" element={<VoiceGenerationPage />} />
                 <Route path="speech-to-text" element={<SpeechToTextPage />} />
                 <Route path="video-generation" element={<VideoGenerationPage />} />

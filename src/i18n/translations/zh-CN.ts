@@ -30,6 +30,7 @@ const zhCN = {
   'nav.item.settings': '用户资料',
   'nav.item.aiCopywriting': 'AI 文案创作',
   'nav.item.imageGen': '图片生成',
+  'nav.item.imageResize': '图片调整尺寸',
   'nav.item.stickerMaker': '贴图制作器',
   'nav.item.voiceGen': '语音生成',
   'nav.item.speechToText': '语音转字幕',

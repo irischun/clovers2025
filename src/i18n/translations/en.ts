@@ -30,6 +30,7 @@ const en = {
   'nav.item.settings': 'Profile Settings',
   'nav.item.aiCopywriting': 'AI Copywriting',
   'nav.item.imageGen': 'Image Generation',
+  'nav.item.imageResize': 'Image Resizer',
   'nav.item.stickerMaker': 'Sticker Maker',
   'nav.item.voiceGen': 'Voice Generation',
   'nav.item.speechToText': 'Speech to Subtitle',
