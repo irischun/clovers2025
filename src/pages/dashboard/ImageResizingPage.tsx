@@ -596,7 +596,7 @@ const ImageResizingPage = () => {
                   )}
                 </div>
 
-                <Tabs defaultValue="dims">
+                <Tabs value={tabValue} onValueChange={(v) => setTabValue(v as 'dims' | 'scale' | 'presets')}>
                   <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="dims">{L.target}</TabsTrigger>
                     <TabsTrigger value="scale">{L.scaleByPct}</TabsTrigger>
