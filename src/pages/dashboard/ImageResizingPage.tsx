@@ -51,6 +51,22 @@ const RES_TARGETS: { label: string; long: number }[] = [
   { label: '4K', long: 3840 },
 ];
 
+// Aspect-ratio options. 'auto' = follow source image ratio.
+type AspectRatioKey = 'auto' | '1:1' | '3:4' | '4:3' | '2:3' | '3:2' | '9:16' | '16:9' | '5:4' | '4:5' | '21:9';
+const ASPECT_RATIOS: { key: AspectRatioKey; ratio: number | null }[] = [
+  { key: 'auto', ratio: null },
+  { key: '1:1', ratio: 1 / 1 },
+  { key: '3:4', ratio: 3 / 4 },
+  { key: '4:3', ratio: 4 / 3 },
+  { key: '2:3', ratio: 2 / 3 },
+  { key: '3:2', ratio: 3 / 2 },
+  { key: '9:16', ratio: 9 / 16 },
+  { key: '16:9', ratio: 16 / 9 },
+  { key: '5:4', ratio: 5 / 4 },
+  { key: '4:5', ratio: 4 / 5 },
+  { key: '21:9', ratio: 21 / 9 },
+];
+
 // High-quality multi-step resize (halving downscale, single-pass upscale).
 function resizeBitmap(
   source: CanvasImageSource,
@@ -158,6 +174,7 @@ const ImageResizingPage = () => {
   const [outputSize, setOutputSize] = useState<{ w: number; h: number; bytes: number } | null>(null);
   const [targetSizeMb, setTargetSizeMb] = useState<number | null>(null); // null => no size cap
   const [customSizeMb, setCustomSizeMb] = useState<number>(10);
+  const [aspectRatio, setAspectRatio] = useState<AspectRatioKey>('auto');
   const dropRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -201,6 +218,8 @@ const ImageResizingPage = () => {
     none: language === 'en' ? 'None' : language === 'zh-CN' ? '不限' : '不限',
     topazDesc: language === 'en' ? 'High-fidelity general-purpose upscale' : language === 'zh-CN' ? '通用高保真放大' : '通用高保真放大',
     topazGenDesc: language === 'en' ? 'Detail-enhanced generative upscale' : language === 'zh-CN' ? '细节增强的生成式放大' : '細節增強的生成式放大',
+    aspectRatio: language === 'en' ? 'Aspect Ratio' : language === 'zh-CN' ? '宽高比' : '寬高比',
+    auto: language === 'en' ? 'Auto' : language === 'zh-CN' ? '自动' : '自動',
   }), [language]);
 
   const handleFile = useCallback(async (file: File) => {
@@ -233,13 +252,36 @@ const ImageResizingPage = () => {
   const onDrop = (e: React.DragEvent) => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) handleFile(f); };
   const onPickFile = (e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) handleFile(f); };
 
+  // Effective ratio: explicit aspect ratio overrides the source ratio (and lock).
+  const effectiveRatio = (): number | null => {
+    const ar = ASPECT_RATIOS.find((a) => a.key === aspectRatio);
+    if (ar?.ratio) return ar.ratio;
+    if (lockRatio && image) return image.width / image.height;
+    return null;
+  };
+
   const updateWidth = (w: number) => {
     setTargetW(w);
-    if (lockRatio && image) setTargetH(Math.max(1, Math.round((w * image.height) / image.width)));
+    const r = effectiveRatio();
+    if (r) setTargetH(Math.max(1, Math.round(w / r)));
   };
   const updateHeight = (h: number) => {
     setTargetH(h);
-    if (lockRatio && image) setTargetW(Math.max(1, Math.round((h * image.width) / image.height)));
+    const r = effectiveRatio();
+    if (r) setTargetW(Math.max(1, Math.round(h * r)));
+  };
+
+  const applyAspectRatio = (key: AspectRatioKey) => {
+    setAspectRatio(key);
+    const ar = ASPECT_RATIOS.find((a) => a.key === key);
+    if (!image) return;
+    if (!ar?.ratio) {
+      // Auto: restore source ratio at current width
+      setTargetH(Math.max(1, Math.round(targetW * image.height / image.width)));
+      return;
+    }
+    // Keep current width, recompute height to match the chosen ratio
+    setTargetH(Math.max(1, Math.round(targetW / ar.ratio)));
   };
   const updateScale = (pct: number) => {
     setScalePct(pct);
@@ -352,6 +394,7 @@ const ImageResizingPage = () => {
     setImage(null); setPreviewUrl(null); setOutputBlob(null); setOutputSize(null);
     setTargetSizeMb(null); setScalePct(100); setMode('upscale');
     setModel('topaz'); setFitMode('contain'); setFormat('image/jpeg'); setQuality(95);
+    setAspectRatio('auto');
   };
 
   useEffect(() => () => {
@@ -459,6 +502,23 @@ const ImageResizingPage = () => {
                       </SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Aspect Ratio */}
+                <div>
+                  <Label className="mb-2 block">{L.aspectRatio}</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {ASPECT_RATIOS.map((a) => (
+                      <Button
+                        key={a.key}
+                        variant={aspectRatio === a.key ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => applyAspectRatio(a.key)}
+                      >
+                        {a.key === 'auto' ? L.auto : a.key}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Resolution quick buttons */}
