@@ -394,6 +394,7 @@ const ImageResizingPage = () => {
     setImage(null); setPreviewUrl(null); setOutputBlob(null); setOutputSize(null);
     setTargetSizeMb(null); setScalePct(100); setMode('upscale');
     setModel('topaz'); setFitMode('contain'); setFormat('image/jpeg'); setQuality(95);
+    setAspectRatio('auto');
   };
 
   useEffect(() => () => {
