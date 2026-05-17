@@ -175,6 +175,7 @@ const ImageResizingPage = () => {
   const [targetSizeMb, setTargetSizeMb] = useState<number | null>(null); // null => no size cap
   const [customSizeMb, setCustomSizeMb] = useState<number>(10);
   const [aspectRatio, setAspectRatio] = useState<AspectRatioKey>('auto');
+  const [tabValue, setTabValue] = useState<'dims' | 'scale' | 'presets'>('dims');
   const dropRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -273,15 +274,19 @@ const ImageResizingPage = () => {
 
   const applyAspectRatio = (key: AspectRatioKey) => {
     setAspectRatio(key);
+    setTabValue('dims'); // jump to dimensions tab so the change is visible
     const ar = ASPECT_RATIOS.find((a) => a.key === key);
-    if (!image) return;
+    const baseW = targetW > 0 ? targetW : (image?.width ?? 1920);
     if (!ar?.ratio) {
-      // Auto: restore source ratio at current width
-      setTargetH(Math.max(1, Math.round(targetW * image.height / image.width)));
+      // Auto: restore source ratio (or keep current if no image)
+      if (image) {
+        setTargetH(Math.max(1, Math.round(baseW * image.height / image.width)));
+      }
       return;
     }
-    // Keep current width, recompute height to match the chosen ratio
-    setTargetH(Math.max(1, Math.round(targetW / ar.ratio)));
+    setTargetW(baseW);
+    setTargetH(Math.max(1, Math.round(baseW / ar.ratio)));
+    setLockRatio(true);
   };
   const updateScale = (pct: number) => {
     setScalePct(pct);
@@ -506,11 +511,17 @@ const ImageResizingPage = () => {
 
                 {/* Aspect Ratio */}
                 <div>
-                  <Label className="mb-2 block">{L.aspectRatio}</Label>
+                  <Label className="mb-2 block">
+                    {L.aspectRatio}
+                    <span className="ml-2 text-xs font-normal text-muted-foreground">
+                      → {targetW} × {targetH}
+                    </span>
+                  </Label>
                   <div className="flex flex-wrap gap-2">
                     {ASPECT_RATIOS.map((a) => (
                       <Button
                         key={a.key}
+                        type="button"
                         variant={aspectRatio === a.key ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => applyAspectRatio(a.key)}
@@ -585,7 +596,7 @@ const ImageResizingPage = () => {
                   )}
                 </div>
 
-                <Tabs defaultValue="dims">
+                <Tabs value={tabValue} onValueChange={(v) => setTabValue(v as 'dims' | 'scale' | 'presets')}>
                   <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="dims">{L.target}</TabsTrigger>
                     <TabsTrigger value="scale">{L.scaleByPct}</TabsTrigger>
