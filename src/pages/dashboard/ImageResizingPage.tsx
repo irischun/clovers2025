@@ -175,6 +175,7 @@ const ImageResizingPage = () => {
   const [targetSizeMb, setTargetSizeMb] = useState<number | null>(null); // null => no size cap
   const [customSizeMb, setCustomSizeMb] = useState<number>(10);
   const [aspectRatio, setAspectRatio] = useState<AspectRatioKey>('auto');
+  const [tabValue, setTabValue] = useState<'dims' | 'scale' | 'presets'>('dims');
   const dropRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
