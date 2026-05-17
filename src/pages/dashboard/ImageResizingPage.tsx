@@ -511,11 +511,17 @@ const ImageResizingPage = () => {
 
                 {/* Aspect Ratio */}
                 <div>
-                  <Label className="mb-2 block">{L.aspectRatio}</Label>
+                  <Label className="mb-2 block">
+                    {L.aspectRatio}
+                    <span className="ml-2 text-xs font-normal text-muted-foreground">
+                      → {targetW} × {targetH}
+                    </span>
+                  </Label>
                   <div className="flex flex-wrap gap-2">
                     {ASPECT_RATIOS.map((a) => (
                       <Button
                         key={a.key}
+                        type="button"
                         variant={aspectRatio === a.key ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => applyAspectRatio(a.key)}
