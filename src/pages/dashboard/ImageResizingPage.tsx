@@ -425,7 +425,21 @@ const ImageResizingPage = () => {
       setTargetH(Math.max(1, Math.round((image.height * pct) / 100)));
     }
   };
-  const applyDimPreset = (w: number, h: number) => { setTargetW(w); setTargetH(h); setLockRatio(false); };
+  const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
+  const applyDimPreset = (label: string, w: number, h: number) => {
+    setTargetW(w);
+    setTargetH(h);
+    setLockRatio(false);
+    setAspectRatio('auto');
+    setSelectedPreset(label);
+    setTabValue('dims');
+    if (image) {
+      const srcLong = Math.max(image.width, image.height);
+      const dstLong = Math.max(w, h);
+      setScalePct(Math.round((dstLong / srcLong) * 100));
+      setMode(dstLong >= srcLong ? 'upscale' : 'downscale');
+    }
+  };
 
   const applyResTarget = (longSide: number) => {
     if (!image) return;
