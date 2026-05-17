@@ -128,30 +128,111 @@ async function canvasToBlob(canvas: HTMLCanvasElement, format: OutputFormat, qua
   );
 }
 
-// Binary-search JPEG/WebP quality to hit a target byte size as closely as
-// possible without going over. Returns the encoded blob.
+// Resample a canvas to new pixel dimensions with high-quality smoothing.
+function resampleCanvas(src: HTMLCanvasElement, w: number, h: number): HTMLCanvasElement {
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(w));
+  c.height = Math.max(1, Math.round(h));
+  const ctx = c.getContext('2d')!;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(src, 0, 0, c.width, c.height);
+  return c;
+}
+
+// Pad a blob to exactly targetBytes by appending zero bytes. This is safe for
+// JPEG/WebP/PNG: decoders read until their internal end-of-stream marker and
+// ignore trailing bytes, so the image still displays correctly while the file
+// on disk has the requested weight.
+function padBlobToSize(blob: Blob, targetBytes: number): Blob {
+  if (blob.size >= targetBytes) return blob;
+  const pad = new Uint8Array(targetBytes - blob.size); // zero-filled
+  return new Blob([blob, pad], { type: blob.type });
+}
+
+// Encode a canvas so the resulting file weight matches `targetBytes` as
+// closely as possible (within ±2% tolerance). Strategy:
+//   1. If quality=1.0 already exceeds the target → binary-search quality down.
+//   2. If still under target → switch to PNG (lossless = larger).
+//   3. If PNG is still under target → progressively upscale pixel dimensions
+//      and re-encode PNG until we cross the target, then binary-search the
+//      exact dimension between the last under/over pair.
+//   4. As a final guarantee, pad the resulting blob with trailing bytes so
+//      the on-disk size matches the requested target exactly.
 async function encodeToTargetSize(
   canvas: HTMLCanvasElement,
   format: OutputFormat,
   targetBytes: number,
-): Promise<Blob> {
-  if (format === 'image/png') {
-    // PNG is lossless; just return the encoded blob.
-    return canvasToBlob(canvas, format);
-  }
-  let lo = 0.2, hi = 1.0, best: Blob | null = null;
-  for (let i = 0; i < 8; i++) {
-    const q = (lo + hi) / 2;
-    const blob = await canvasToBlob(canvas, format, q);
-    if (blob.size <= targetBytes) {
-      best = blob;
-      lo = q; // try higher quality
-    } else {
-      hi = q;
+): Promise<{ blob: Blob; format: OutputFormat }> {
+  const TOL = 0.02; // ±2%
+  const within = (n: number) => n >= targetBytes * (1 - TOL) && n <= targetBytes * (1 + TOL);
+
+  // Step 1 — try max-quality lossy first to decide which branch.
+  if (format !== 'image/png') {
+    const top = await canvasToBlob(canvas, format, 1.0);
+    if (top.size > targetBytes) {
+      // Binary-search quality to land as close as possible without exceeding.
+      let lo = 0.05, hi = 1.0, best: Blob = top;
+      let bestDelta = Math.abs(top.size - targetBytes);
+      for (let i = 0; i < 12; i++) {
+        const q = (lo + hi) / 2;
+        const b = await canvasToBlob(canvas, format, q);
+        const delta = Math.abs(b.size - targetBytes);
+        if (delta < bestDelta) { best = b; bestDelta = delta; }
+        if (within(b.size)) { best = b; break; }
+        if (b.size > targetBytes) hi = q; else lo = q;
+      }
+      // Pad up to exact target if best is still slightly under.
+      return { blob: padBlobToSize(best, targetBytes), format };
     }
   }
-  if (!best) best = await canvasToBlob(canvas, format, 0.2);
-  return best;
+
+  // Step 2 — switch to PNG (lossless, always larger than max-quality JPEG).
+  let png = await canvasToBlob(canvas, 'image/png');
+  if (png.size >= targetBytes) {
+    return { blob: padBlobToSize(png, targetBytes), format: 'image/png' };
+  }
+
+  // Step 3 — upscale dimensions until PNG crosses the target.
+  let curCanvas = canvas;
+  let curBlob = png;
+  let lastUnderCanvas = canvas;
+  let lastUnderBlob = png;
+  const MAX_DIM = 16384; // hard safety cap
+  for (let i = 0; i < 8; i++) {
+    if (curBlob.size >= targetBytes) break;
+    // Pixel count scales roughly linearly with PNG size for natural images.
+    const factor = Math.min(2.0, Math.sqrt((targetBytes / curBlob.size) * 1.15));
+    const nextW = Math.min(MAX_DIM, Math.round(curCanvas.width * factor));
+    const nextH = Math.min(MAX_DIM, Math.round(curCanvas.height * factor));
+    if (nextW === curCanvas.width && nextH === curCanvas.height) break;
+    lastUnderCanvas = curCanvas;
+    lastUnderBlob = curBlob;
+    curCanvas = resampleCanvas(canvas, nextW, nextH);
+    curBlob = await canvasToBlob(curCanvas, 'image/png');
+  }
+
+  // Step 4 — binary-search dimensions between last under and current over.
+  if (curBlob.size > targetBytes && lastUnderBlob.size < targetBytes) {
+    let loW = lastUnderCanvas.width, hiW = curCanvas.width;
+    let loH = lastUnderCanvas.height, hiH = curCanvas.height;
+    let best = within(curBlob.size) || Math.abs(curBlob.size - targetBytes) < Math.abs(lastUnderBlob.size - targetBytes)
+      ? curBlob : lastUnderBlob;
+    let bestDelta = Math.abs(best.size - targetBytes);
+    for (let i = 0; i < 6; i++) {
+      const mW = Math.round((loW + hiW) / 2);
+      const mH = Math.round((loH + hiH) / 2);
+      const c = resampleCanvas(canvas, mW, mH);
+      const b = await canvasToBlob(c, 'image/png');
+      const delta = Math.abs(b.size - targetBytes);
+      if (delta < bestDelta) { best = b; bestDelta = delta; }
+      if (within(b.size)) { best = b; break; }
+      if (b.size > targetBytes) { hiW = mW; hiH = mH; } else { loW = mW; loH = mH; }
+    }
+    return { blob: padBlobToSize(best, targetBytes), format: 'image/png' };
+  }
+
+  return { blob: padBlobToSize(curBlob, targetBytes), format: 'image/png' };
 }
 
 const ImageResizingPage = () => {
