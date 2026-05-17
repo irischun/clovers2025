@@ -51,6 +51,22 @@ const RES_TARGETS: { label: string; long: number }[] = [
   { label: '4K', long: 3840 },
 ];
 
+// Aspect-ratio options. 'auto' = follow source image ratio.
+type AspectRatioKey = 'auto' | '1:1' | '3:4' | '4:3' | '2:3' | '3:2' | '9:16' | '16:9' | '5:4' | '4:5' | '21:9';
+const ASPECT_RATIOS: { key: AspectRatioKey; ratio: number | null }[] = [
+  { key: 'auto', ratio: null },
+  { key: '1:1', ratio: 1 / 1 },
+  { key: '3:4', ratio: 3 / 4 },
+  { key: '4:3', ratio: 4 / 3 },
+  { key: '2:3', ratio: 2 / 3 },
+  { key: '3:2', ratio: 3 / 2 },
+  { key: '9:16', ratio: 9 / 16 },
+  { key: '16:9', ratio: 16 / 9 },
+  { key: '5:4', ratio: 5 / 4 },
+  { key: '4:5', ratio: 4 / 5 },
+  { key: '21:9', ratio: 21 / 9 },
+];
+
 // High-quality multi-step resize (halving downscale, single-pass upscale).
 function resizeBitmap(
   source: CanvasImageSource,
