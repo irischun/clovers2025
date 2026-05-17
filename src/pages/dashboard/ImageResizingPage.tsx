@@ -781,12 +781,27 @@ const ImageResizingPage = () => {
                   </TabsContent>
 
                   <TabsContent value="presets" className="pt-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto">
-                      {DIMENSION_PRESETS.map((p) => (
-                        <Button key={p.label} variant="outline" size="sm"
-                          onClick={() => applyDimPreset(p.w, p.h)} className="justify-start">
-                          {p.label}
-                        </Button>
+                    <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+                      {Array.from(new Set(DIMENSION_PRESETS.map((p) => p.group))).map((group) => (
+                        <div key={group}>
+                          <div className="text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
+                            {group}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {DIMENSION_PRESETS.filter((p) => p.group === group).map((p) => (
+                              <Button
+                                key={p.label}
+                                type="button"
+                                variant={selectedPreset === p.label ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => applyDimPreset(p.label, p.w, p.h)}
+                                className="justify-start text-left"
+                              >
+                                {p.label}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </TabsContent>
