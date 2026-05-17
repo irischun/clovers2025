@@ -442,11 +442,13 @@ const ImageResizingPage = () => {
       octx.drawImage(resized, offX, offY, drawW, drawH);
 
       let blob: Blob;
+      let effectiveExt = format === 'image/jpeg' ? 'jpg' : format === 'image/webp' ? 'webp' : 'png';
       if (targetSizeMb != null) {
         const tgt = targetSizeMb * 1024 * 1024;
-        // If PNG selected but a size cap is requested, switch to JPEG/WebP for binary search.
         const fmtForSize: OutputFormat = format === 'image/png' ? 'image/jpeg' : format;
-        blob = await encodeToTargetSize(out, fmtForSize, tgt);
+        const result = await encodeToTargetSize(out, fmtForSize, tgt);
+        blob = result.blob;
+        effectiveExt = result.format === 'image/jpeg' ? 'jpg' : result.format === 'image/webp' ? 'webp' : 'png';
       } else {
         blob = await canvasToBlob(out, format, quality / 100);
       }
@@ -454,6 +456,7 @@ const ImageResizingPage = () => {
       const url = URL.createObjectURL(blob);
       setPreviewUrl(url); setOutputBlob(blob);
       setOutputSize({ w: W, h: H, bytes: blob.size });
+      (window as any).__clovers_last_ext = effectiveExt;
       toast({ title: L.done, description: `${W}×${H} • ${(blob.size / 1024 / 1024).toFixed(2)} MB` });
     } catch (err: any) {
       console.error(err);
@@ -465,8 +468,8 @@ const ImageResizingPage = () => {
 
   const download = () => {
     if (!outputBlob || !image || !previewUrl) return;
-    let ext = format === 'image/jpeg' ? 'jpg' : format === 'image/webp' ? 'webp' : 'png';
-    if (targetSizeMb != null && format === 'image/png') ext = 'jpg';
+    const ext = (window as any).__clovers_last_ext
+      || (format === 'image/jpeg' ? 'jpg' : format === 'image/webp' ? 'webp' : 'png');
     const base = image.file.name.replace(/\.[^.]+$/, '');
     const a = document.createElement('a');
     a.href = previewUrl;
