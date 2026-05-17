@@ -252,13 +252,36 @@ const ImageResizingPage = () => {
   const onDrop = (e: React.DragEvent) => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) handleFile(f); };
   const onPickFile = (e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; if (f) handleFile(f); };
 
+  // Effective ratio: explicit aspect ratio overrides the source ratio (and lock).
+  const effectiveRatio = (): number | null => {
+    const ar = ASPECT_RATIOS.find((a) => a.key === aspectRatio);
+    if (ar?.ratio) return ar.ratio;
+    if (lockRatio && image) return image.width / image.height;
+    return null;
+  };
+
   const updateWidth = (w: number) => {
     setTargetW(w);
-    if (lockRatio && image) setTargetH(Math.max(1, Math.round((w * image.height) / image.width)));
+    const r = effectiveRatio();
+    if (r) setTargetH(Math.max(1, Math.round(w / r)));
   };
   const updateHeight = (h: number) => {
     setTargetH(h);
-    if (lockRatio && image) setTargetW(Math.max(1, Math.round((h * image.width) / image.height)));
+    const r = effectiveRatio();
+    if (r) setTargetW(Math.max(1, Math.round(h * r)));
+  };
+
+  const applyAspectRatio = (key: AspectRatioKey) => {
+    setAspectRatio(key);
+    const ar = ASPECT_RATIOS.find((a) => a.key === key);
+    if (!image) return;
+    if (!ar?.ratio) {
+      // Auto: restore source ratio at current width
+      setTargetH(Math.max(1, Math.round(targetW * image.height / image.width)));
+      return;
+    }
+    // Keep current width, recompute height to match the chosen ratio
+    setTargetH(Math.max(1, Math.round(targetW / ar.ratio)));
   };
   const updateScale = (pct: number) => {
     setScalePct(pct);
