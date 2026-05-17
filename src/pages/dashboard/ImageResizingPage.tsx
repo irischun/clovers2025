@@ -218,6 +218,8 @@ const ImageResizingPage = () => {
     none: language === 'en' ? 'None' : language === 'zh-CN' ? '不限' : '不限',
     topazDesc: language === 'en' ? 'High-fidelity general-purpose upscale' : language === 'zh-CN' ? '通用高保真放大' : '通用高保真放大',
     topazGenDesc: language === 'en' ? 'Detail-enhanced generative upscale' : language === 'zh-CN' ? '细节增强的生成式放大' : '細節增強的生成式放大',
+    aspectRatio: language === 'en' ? 'Aspect Ratio' : language === 'zh-CN' ? '宽高比' : '寬高比',
+    auto: language === 'en' ? 'Auto' : language === 'zh-CN' ? '自动' : '自動',
   }), [language]);
 
   const handleFile = useCallback(async (file: File) => {
