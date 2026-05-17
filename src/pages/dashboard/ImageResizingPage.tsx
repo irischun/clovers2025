@@ -31,15 +31,64 @@ type ModelKind = 'topaz' | 'topaz-generative';
 const MAX_UPLOAD_MB = 100;
 const MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024;
 
-const DIMENSION_PRESETS: { label: string; w: number; h: number }[] = [
-  { label: '1:1 Square 1080', w: 1080, h: 1080 },
-  { label: '16:9 HD 1920×1080', w: 1920, h: 1080 },
-  { label: '16:9 4K 3840×2160', w: 3840, h: 2160 },
-  { label: '16:9 8K 7680×4320', w: 7680, h: 4320 },
-  { label: '9:16 Story 1080×1920', w: 1080, h: 1920 },
-  { label: '4:5 Portrait 1080×1350', w: 1080, h: 1350 },
-  { label: '3:2 Photo 3000×2000', w: 3000, h: 2000 },
-  { label: 'A4 Print 300dpi 2480×3508', w: 2480, h: 3508 },
+const DIMENSION_PRESETS: { label: string; w: number; h: number; group: string }[] = [
+  // Square
+  { group: 'Square', label: '1:1 Square 512', w: 512, h: 512 },
+  { group: 'Square', label: '1:1 Square 1080', w: 1080, h: 1080 },
+  { group: 'Square', label: '1:1 Square 2048', w: 2048, h: 2048 },
+  { group: 'Square', label: '1:1 Square 4096', w: 4096, h: 4096 },
+  // Landscape 16:9
+  { group: 'Landscape 16:9', label: '16:9 HD 1280×720', w: 1280, h: 720 },
+  { group: 'Landscape 16:9', label: '16:9 FHD 1920×1080', w: 1920, h: 1080 },
+  { group: 'Landscape 16:9', label: '16:9 2K 2560×1440', w: 2560, h: 1440 },
+  { group: 'Landscape 16:9', label: '16:9 4K 3840×2160', w: 3840, h: 2160 },
+  { group: 'Landscape 16:9', label: '16:9 5K 5120×2880', w: 5120, h: 2880 },
+  { group: 'Landscape 16:9', label: '16:9 8K 7680×4320', w: 7680, h: 4320 },
+  // Portrait 9:16
+  { group: 'Portrait 9:16', label: '9:16 Story 720×1280', w: 720, h: 1280 },
+  { group: 'Portrait 9:16', label: '9:16 Story 1080×1920', w: 1080, h: 1920 },
+  { group: 'Portrait 9:16', label: '9:16 2K 1440×2560', w: 1440, h: 2560 },
+  { group: 'Portrait 9:16', label: '9:16 4K 2160×3840', w: 2160, h: 3840 },
+  // Social - Instagram / TikTok / etc.
+  { group: 'Social', label: 'IG Post 1:1 1080×1080', w: 1080, h: 1080 },
+  { group: 'Social', label: 'IG Portrait 4:5 1080×1350', w: 1080, h: 1350 },
+  { group: 'Social', label: 'IG Reels 9:16 1080×1920', w: 1080, h: 1920 },
+  { group: 'Social', label: 'IG Landscape 1.91:1 1080×566', w: 1080, h: 566 },
+  { group: 'Social', label: 'TikTok 9:16 1080×1920', w: 1080, h: 1920 },
+  { group: 'Social', label: 'YouTube Thumb 1280×720', w: 1280, h: 720 },
+  { group: 'Social', label: 'YouTube Banner 2560×1440', w: 2560, h: 1440 },
+  { group: 'Social', label: 'Facebook Cover 820×312', w: 820, h: 312 },
+  { group: 'Social', label: 'Facebook Post 1200×630', w: 1200, h: 630 },
+  { group: 'Social', label: 'X / Twitter Post 1600×900', w: 1600, h: 900 },
+  { group: 'Social', label: 'X Header 1500×500', w: 1500, h: 500 },
+  { group: 'Social', label: 'LinkedIn Post 1200×627', w: 1200, h: 627 },
+  { group: 'Social', label: 'LinkedIn Banner 1584×396', w: 1584, h: 396 },
+  { group: 'Social', label: 'Pinterest Pin 1000×1500', w: 1000, h: 1500 },
+  { group: 'Social', label: 'Xiaohongshu 3:4 1242×1660', w: 1242, h: 1660 },
+  // Photo / Camera
+  { group: 'Photo', label: '3:2 Photo 3000×2000', w: 3000, h: 2000 },
+  { group: 'Photo', label: '3:2 Photo 6000×4000', w: 6000, h: 4000 },
+  { group: 'Photo', label: '4:3 Photo 4032×3024', w: 4032, h: 3024 },
+  { group: 'Photo', label: '2:3 Portrait 2000×3000', w: 2000, h: 3000 },
+  // Cinematic
+  { group: 'Cinematic', label: '21:9 Ultrawide 2560×1080', w: 2560, h: 1080 },
+  { group: 'Cinematic', label: '21:9 Ultrawide 3440×1440', w: 3440, h: 1440 },
+  { group: 'Cinematic', label: '21:9 5K 5120×2160', w: 5120, h: 2160 },
+  { group: 'Cinematic', label: '2.39:1 Cinema 4096×1716', w: 4096, h: 1716 },
+  // Print (300 DPI)
+  { group: 'Print 300dpi', label: 'A4 Portrait 2480×3508', w: 2480, h: 3508 },
+  { group: 'Print 300dpi', label: 'A4 Landscape 3508×2480', w: 3508, h: 2480 },
+  { group: 'Print 300dpi', label: 'A3 Portrait 3508×4961', w: 3508, h: 4961 },
+  { group: 'Print 300dpi', label: 'A5 Portrait 1748×2480', w: 1748, h: 2480 },
+  { group: 'Print 300dpi', label: 'Letter 2550×3300', w: 2550, h: 3300 },
+  { group: 'Print 300dpi', label: 'Postcard 4×6 1200×1800', w: 1200, h: 1800 },
+  { group: 'Print 300dpi', label: 'Photo 5×7 1500×2100', w: 1500, h: 2100 },
+  { group: 'Print 300dpi', label: 'Photo 8×10 2400×3000', w: 2400, h: 3000 },
+  // Display / Wallpaper
+  { group: 'Wallpaper', label: 'Desktop 1080p 1920×1080', w: 1920, h: 1080 },
+  { group: 'Wallpaper', label: 'Desktop 4K 3840×2160', w: 3840, h: 2160 },
+  { group: 'Wallpaper', label: 'iPhone 15 Pro 1290×2796', w: 1290, h: 2796 },
+  { group: 'Wallpaper', label: 'iPad Pro 2048×2732', w: 2048, h: 2732 },
 ];
 
 // File-size target buttons (MB). null = "Other" (custom).
@@ -376,7 +425,21 @@ const ImageResizingPage = () => {
       setTargetH(Math.max(1, Math.round((image.height * pct) / 100)));
     }
   };
-  const applyDimPreset = (w: number, h: number) => { setTargetW(w); setTargetH(h); setLockRatio(false); };
+  const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
+  const applyDimPreset = (label: string, w: number, h: number) => {
+    setTargetW(w);
+    setTargetH(h);
+    setLockRatio(false);
+    setAspectRatio('auto');
+    setSelectedPreset(label);
+    setTabValue('dims');
+    if (image) {
+      const srcLong = Math.max(image.width, image.height);
+      const dstLong = Math.max(w, h);
+      setScalePct(Math.round((dstLong / srcLong) * 100));
+      setMode(dstLong >= srcLong ? 'upscale' : 'downscale');
+    }
+  };
 
   const applyResTarget = (longSide: number) => {
     if (!image) return;
@@ -718,12 +781,27 @@ const ImageResizingPage = () => {
                   </TabsContent>
 
                   <TabsContent value="presets" className="pt-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto">
-                      {DIMENSION_PRESETS.map((p) => (
-                        <Button key={p.label} variant="outline" size="sm"
-                          onClick={() => applyDimPreset(p.w, p.h)} className="justify-start">
-                          {p.label}
-                        </Button>
+                    <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+                      {Array.from(new Set(DIMENSION_PRESETS.map((p) => p.group))).map((group) => (
+                        <div key={group}>
+                          <div className="text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
+                            {group}
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {DIMENSION_PRESETS.filter((p) => p.group === group).map((p) => (
+                              <Button
+                                key={p.label}
+                                type="button"
+                                variant={selectedPreset === p.label ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => applyDimPreset(p.label, p.w, p.h)}
+                                className="justify-start text-left"
+                              >
+                                {p.label}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </TabsContent>
