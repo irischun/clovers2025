@@ -503,6 +503,23 @@ const ImageResizingPage = () => {
                   </Select>
                 </div>
 
+                {/* Aspect Ratio */}
+                <div>
+                  <Label className="mb-2 block">{L.aspectRatio}</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {ASPECT_RATIOS.map((a) => (
+                      <Button
+                        key={a.key}
+                        variant={aspectRatio === a.key ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => applyAspectRatio(a.key)}
+                      >
+                        {a.key === 'auto' ? L.auto : a.key}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Resolution quick buttons */}
                 <div>
                   <Label className="mb-2 block">{L.targetResolution}</Label>
