@@ -274,15 +274,19 @@ const ImageResizingPage = () => {
 
   const applyAspectRatio = (key: AspectRatioKey) => {
     setAspectRatio(key);
+    setTabValue('dims'); // jump to dimensions tab so the change is visible
     const ar = ASPECT_RATIOS.find((a) => a.key === key);
-    if (!image) return;
+    const baseW = targetW > 0 ? targetW : (image?.width ?? 1920);
     if (!ar?.ratio) {
-      // Auto: restore source ratio at current width
-      setTargetH(Math.max(1, Math.round(targetW * image.height / image.width)));
+      // Auto: restore source ratio (or keep current if no image)
+      if (image) {
+        setTargetH(Math.max(1, Math.round(baseW * image.height / image.width)));
+      }
       return;
     }
-    // Keep current width, recompute height to match the chosen ratio
-    setTargetH(Math.max(1, Math.round(targetW / ar.ratio)));
+    setTargetW(baseW);
+    setTargetH(Math.max(1, Math.round(baseW / ar.ratio)));
+    setLockRatio(true);
   };
   const updateScale = (pct: number) => {
     setScalePct(pct);
