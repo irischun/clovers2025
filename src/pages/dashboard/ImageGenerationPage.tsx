@@ -800,6 +800,7 @@ const ImageGenerationPage = () => {
                     width: capturedAspectRatio.width,
                     height: capturedAspectRatio.height,
                     referenceImage,
+                    referenceImages,
                     mode: capturedMode,
                     preserveFace: capturedPreserveFace,
                   }
