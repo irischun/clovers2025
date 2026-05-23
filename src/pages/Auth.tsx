@@ -481,20 +481,6 @@ const Auth = () => {
         </div>
 
         <div className="bg-card border border-border rounded-2xl p-6 shadow-xl">
-          {/* Mute/Unmute toggle — placed right above the sign-in form for easy access */}
-          <div className="flex justify-end mb-4">
-            <button
-              type="button"
-              onClick={toggleMute}
-              aria-label={isMuted ? 'Unmute background music' : 'Mute background music'}
-              title={isMuted ? 'Unmute' : 'Mute'}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-secondary border-2 border-primary/40 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors shadow-lg text-xs font-semibold uppercase tracking-wider animate-pulse-glow"
-            >
-              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-              <span>{isMuted ? 'Unmute' : 'Mute'}</span>
-            </button>
-          </div>
-
           {recoveryError && !recoveryMode && (
             <div className="mb-4 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive-foreground">
               <p>{recoveryError}</p>
@@ -526,13 +512,13 @@ const Auth = () => {
             <form onSubmit={handleSetNewPassword} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New password</Label>
-                <Input id="newPassword" type="password" placeholder="••••••••" value={newPassword}
+                <Input id="newPassword" type="password" placeholder="••••••••" value={newPassword} autoComplete="new-password"
                        onChange={(e) => setNewPassword(e.target.value)} required minLength={6}
                        className="bg-secondary border-border" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm password</Label>
-                <Input id="confirmPassword" type="password" placeholder="••••••••" value={confirmPassword}
+                <Input id="confirmPassword" type="password" placeholder="••••••••" value={confirmPassword} autoComplete="new-password"
                        onChange={(e) => setConfirmPassword(e.target.value)} required minLength={6}
                        className="bg-secondary border-border" />
               </div>
@@ -547,14 +533,14 @@ const Auth = () => {
                 {!isLogin && (
                   <div className="space-y-2">
                     <Label htmlFor="fullName">{t('auth.name')}</Label>
-                    <Input id="fullName" type="text" placeholder={t('auth.namePlaceholder')} value={fullName}
+                     <Input id="fullName" type="text" placeholder={t('auth.namePlaceholder')} value={fullName} autoComplete="name"
                            onChange={(e) => setFullName(e.target.value)} required={!isLogin}
                            className="bg-secondary border-border" />
                   </div>
                 )}
                 <div className="space-y-2">
                   <Label htmlFor="email">{t('auth.email')}</Label>
-                  <Input id="email" type="email" placeholder="your@email.com" value={email}
+                   <Input id="email" type="email" placeholder="your@email.com" value={email} autoComplete="email" autoCapitalize="none" autoCorrect="off"
                          onChange={(e) => setEmail(e.target.value)} required className="bg-secondary border-border" />
                 </div>
                 <div className="space-y-2">
@@ -568,7 +554,7 @@ const Auth = () => {
                     )}
                   </div>
                   <div className="relative">
-                    <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password}
+                     <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} autoComplete={isLogin ? 'current-password' : 'new-password'}
                            onChange={(e) => setPassword(e.target.value)} required minLength={6}
                            className="bg-secondary border-border pr-10" />
                     <button type="button" onClick={() => setShowPassword(!showPassword)}
@@ -619,7 +605,7 @@ const Auth = () => {
         </div>
 
         <div className="text-center mt-6">
-          <a href="/" className="text-muted-foreground hover:text-foreground text-sm transition-colors">
+          <a href={`${basePath}/main`} className="text-muted-foreground hover:text-foreground text-sm transition-colors">
             {t('auth.backHome')}
           </a>
         </div>
@@ -637,7 +623,7 @@ const Auth = () => {
           <form onSubmit={handleForgotSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="forgotEmail">Email</Label>
-              <Input id="forgotEmail" type="email" placeholder="your@email.com" value={forgotEmail}
+               <Input id="forgotEmail" type="email" placeholder="your@email.com" value={forgotEmail} autoComplete="email" autoCapitalize="none" autoCorrect="off"
                      onChange={(e) => setForgotEmail(e.target.value)} required
                      className="bg-secondary border-border" />
             </div>
