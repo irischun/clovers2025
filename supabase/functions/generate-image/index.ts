@@ -126,6 +126,30 @@ function buildEnhancedPrompt(prompt: string, style: string, width?: number, heig
 }
 
 function buildSystemMessage(hasReferenceImage: boolean, preserveFace: boolean, isMultiImageEdit: boolean = false): string {
+  // Object-swap / multi-image edit uses a surgical system prompt.
+  // Generic "art quality" filler is intentionally removed — it pushes the model to
+  // free-regenerate, which is why the swap fails and IMAGE 2 comes back unchanged.
+  if (isMultiImageEdit) {
+    return `You are a precision IMAGE EDITOR (not a free-form generator). Your only job is OBJECT REPLACEMENT / COMPOSITING on the supplied images. Returning IMAGE 2 unchanged, or returning a hybrid of the two subjects, is a FAILURE.
+
+INPUT CONTRACT (images are sent in fixed order):
+- IMAGE 1 = SOURCE SUBJECT. This is the object/person/product that MUST appear in the OUTPUT. Preserve its exact silhouette, label text, typography, glass tint, cap, collar, color, material, proportions, and brand identity. Do NOT restyle, recolor, or redesign it.
+- IMAGE 2 = TARGET SCENE. Preserve composition, camera angle, focal length, depth of field, bokeh, lighting direction, color grading, water, splashes, droplets, ripples, foliage, props, and background EXACTLY. Only the foreground subject changes.
+- IMAGE 3+ (if present) = style or detail references.
+
+STEPS:
+1. Locate the existing foreground subject in IMAGE 2 (the one to be replaced).
+2. Remove it cleanly, reconstructing whatever was behind it from the surrounding scene.
+3. Insert the SUBJECT from IMAGE 1 at the same position, scale, and orientation.
+4. Re-light the inserted subject so highlights, shadows, reflections, refractions, and contact shadows match IMAGE 2's lighting and environment.
+5. Do NOT invent a hybrid. Do NOT blend the two subjects. Do NOT change camera angle. Do NOT redesign the scene.
+
+OUTPUT REQUIREMENTS:
+- A single edited image at the same aspect ratio as IMAGE 2.
+- The output's foreground subject MUST be visually identifiable as the subject from IMAGE 1, NOT the one originally in IMAGE 2.
+- Photorealistic compositing quality, sharp focus on the swapped subject.`;
+  }
+
   let msg = `You are an expert AI image generator. Create exactly what the user requests with the following quality standards:
 
 1. COMPOSITION: Follow professional photography and art composition rules. Use rule of thirds, leading lines, and proper framing.
@@ -155,17 +179,6 @@ You have been provided with a reference image. You MUST use this reference image
 FACE PRESERVATION MODE ACTIVE:
 You MUST preserve ALL facial features from the reference image with extreme precision.
 The face in the generated image must be IDENTICAL to the reference.`;
-  }
-
-  if (isMultiImageEdit) {
-    msg += `
-
-MULTI-IMAGE COMPOSITING MODE:
-You have been given multiple reference images, presented in order (IMAGE 1, IMAGE 2, ...).
-- Treat IMAGE 1 as the SOURCE asset whose identity, shape, labels, typography, color, material, and proportions must be preserved EXACTLY.
-- Treat IMAGE 2 as the SCENE / BACKGROUND. Preserve its composition, lighting, environment, props, textures, and color grading EXACTLY.
-- Your task is COMPOSITING / OBJECT REPLACEMENT, not free generation. Insert the subject from IMAGE 1 into IMAGE 2 at the location currently occupied by the analogous subject (or as the user specifies), removing the original. Re-light the inserted subject to match IMAGE 2.
-- DO NOT invent a new hybrid object. DO NOT change the camera angle, background, splashes, or surrounding props.`;
   }
 
   msg += `\n\nGenerate the image now with these principles in mind.`;
