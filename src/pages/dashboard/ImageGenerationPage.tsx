@@ -676,18 +676,27 @@ const ImageGenerationPage = () => {
     });
   };
 
-  // Get reference image as base64 for the API
+  // Get reference image as base64 for the API (legacy - first image only)
   const getReferenceImage = async (): Promise<string | null> => {
-    // Priority: uploaded images first, then gallery selection
     if (uploadedImages.length > 0) {
-      // Use the first uploaded image as the primary reference
       return await fileToBase64(uploadedImages[0].file);
     }
     if (selectedGalleryImage) {
-      // Gallery images are already URLs, return as-is
       return selectedGalleryImage;
     }
     return null;
+  };
+
+  // Get ALL reference images (multi-image compositing / object swap support)
+  const getReferenceImages = async (): Promise<string[]> => {
+    const imgs: string[] = [];
+    for (const img of uploadedImages) {
+      imgs.push(await fileToBase64(img.file));
+    }
+    if (selectedGalleryImage) {
+      imgs.push(selectedGalleryImage);
+    }
+    return imgs;
   };
 
   // Sync results from background job back into local state
