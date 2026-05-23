@@ -30,6 +30,8 @@ const Auth = () => {
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSending, setForgotSending] = useState(false);
+  const [forgotCooldown, setForgotCooldown] = useState(0); // seconds remaining
+  const [forgotNotice, setForgotNotice] = useState<{ type: 'success' | 'error' | 'rate'; message: string } | null>(null);
 
   // Recovery (set new password)
   const [recoveryMode, setRecoveryMode] = useState(false);
@@ -194,28 +196,72 @@ const Auth = () => {
     }
   };
 
+  // Countdown ticker for forgot-password cooldown
+  useEffect(() => {
+    if (forgotCooldown <= 0) return;
+    const id = setInterval(() => {
+      setForgotCooldown((s) => (s <= 1 ? 0 : s - 1));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [forgotCooldown]);
+
+  const formatCooldown = (s: number) => {
+    if (s >= 60) {
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return r ? `${m}m ${r}s` : `${m}m`;
+    }
+    return `${s}s`;
+  };
+
   const handleForgotSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!forgotEmail) return;
+    if (!forgotEmail || forgotCooldown > 0) return;
     setForgotSending(true);
+    setForgotNotice(null);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
         redirectTo: resetRedirectTo,
       });
       if (error) {
-        toast({ title: t('auth.error'), description: error.message, variant: 'destructive' });
+        const msg = (error.message || '').toLowerCase();
+        const status = (error as any)?.status;
+        const isRate =
+          status === 429 ||
+          msg.includes('rate limit') ||
+          msg.includes('over_email_send_rate_limit') ||
+          msg.includes('too many');
+        if (isRate) {
+          // Supabase default email rate window is ~60s per address.
+          // Parse "after N seconds" if present, otherwise default to 60s.
+          const match = error.message?.match(/(\d+)\s*(second|seconds|sec|s)\b/i);
+          const wait = match ? Math.max(parseInt(match[1], 10), 30) : 60;
+          setForgotCooldown(wait);
+          const notice = `You've reached the email send limit. Please wait ${formatCooldown(wait)} before requesting another reset link on this page.`;
+          setForgotNotice({ type: 'rate', message: notice });
+          toast({ title: 'Please wait', description: notice, variant: 'destructive' });
+        } else {
+          setForgotNotice({ type: 'error', message: error.message });
+          toast({ title: t('auth.error'), description: error.message, variant: 'destructive' });
+        }
         return;
       }
+      // Success — apply a 60s client cooldown to prevent immediate re-trigger
+      setForgotCooldown(60);
+      setForgotNotice({
+        type: 'success',
+        message: 'Reset link sent. Check your inbox (and spam folder). You can request another link in 60s.',
+      });
       toast({
         title: 'Reset link sent',
         description: 'Check your email for a secure link to reset your password.',
       });
-      setForgotOpen(false);
       setForgotEmail('');
     } finally {
       setForgotSending(false);
     }
   };
+
 
   const handleSetNewPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -398,13 +444,32 @@ const Auth = () => {
                      onChange={(e) => setForgotEmail(e.target.value)} required
                      className="bg-secondary border-border" />
             </div>
+
+            {forgotNotice && (
+              <div
+                role="alert"
+                className={`rounded-md border p-3 text-sm ${
+                  forgotNotice.type === 'success'
+                    ? 'border-primary/40 bg-primary/10 text-primary-foreground'
+                    : 'border-destructive/50 bg-destructive/10 text-destructive-foreground'
+                }`}
+              >
+                <p>{forgotNotice.message}</p>
+                {forgotCooldown > 0 && (
+                  <p className="mt-1 font-semibold">
+                    Try again in {formatCooldown(forgotCooldown)}.
+                  </p>
+                )}
+              </div>
+            )}
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setForgotOpen(false)} disabled={forgotSending}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={forgotSending}>
+              <Button type="submit" disabled={forgotSending || forgotCooldown > 0}>
                 {forgotSending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                Send reset link
+                {forgotCooldown > 0 ? `Wait ${formatCooldown(forgotCooldown)}` : 'Send reset link'}
               </Button>
             </DialogFooter>
           </form>
