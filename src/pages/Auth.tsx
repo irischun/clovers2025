@@ -294,6 +294,7 @@ const Auth = () => {
     if (!forgotEmail || forgotCooldown > 0) return;
     setForgotSending(true);
     setForgotNotice(null);
+    setRecoveryError(null);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
         redirectTo: resetRedirectTo,
@@ -362,6 +363,7 @@ const Auth = () => {
       setRecoveryMode(false);
       setNewPassword('');
       setConfirmPassword('');
+      setRecoveryError(null);
       // Clean URL
       window.history.replaceState({}, '', `${basePath}/auth`);
     } finally {
