@@ -404,6 +404,12 @@ const Auth = () => {
             </button>
           </div>
 
+          {recoveryError && !recoveryMode && (
+            <div className="mb-4 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive-foreground">
+              <p>{recoveryError}</p>
+            </div>
+          )}
+
           {recoveryMode ? (
             <form onSubmit={handleSetNewPassword} className="space-y-4">
               <div className="space-y-2">
