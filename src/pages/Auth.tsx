@@ -18,6 +18,8 @@ const AUTH_REDIRECT_STORAGE_KEY = 'post-auth-redirect';
 const AUDIO_MUTED_KEY = 'auth-audio-muted';
 const FORGOT_PASSWORD_SAFE_RETRY_SECONDS = 60 * 60;
 const RECOVERY_ERROR_STORAGE_KEY = 'auth-recovery-error';
+const EMAIL_VERIFICATION_STORAGE_KEY = 'auth-pending-email-verification';
+const VERIFICATION_RESEND_SAFE_RETRY_SECONDS = 60;
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -34,6 +36,9 @@ const Auth = () => {
   const [forgotSending, setForgotSending] = useState(false);
   const [forgotCooldown, setForgotCooldown] = useState(0); // seconds remaining
   const [forgotNotice, setForgotNotice] = useState<{ type: 'success' | 'error' | 'rate'; message: string } | null>(null);
+  const [verificationNotice, setVerificationNotice] = useState<{ email: string; message: string } | null>(null);
+  const [verificationSending, setVerificationSending] = useState(false);
+  const [verificationCooldown, setVerificationCooldown] = useState(0);
 
   // Recovery (set new password)
   const [recoveryMode, setRecoveryMode] = useState(false);
@@ -73,6 +78,15 @@ const Auth = () => {
 
   const authPath = useMemo(() => `${basePath}/auth`, [basePath]);
 
+  const showVerificationNotice = (targetEmail: string, message: string) => {
+    const normalizedEmail = targetEmail.trim();
+    if (!normalizedEmail) return;
+
+    sessionStorage.setItem(EMAIL_VERIFICATION_STORAGE_KEY, normalizedEmail);
+    setVerificationNotice({ email: normalizedEmail, message });
+    setEmail((currentEmail) => currentEmail || normalizedEmail);
+  };
+
   const readRecoveryErrorFromUrl = () => {
     const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
     const hashParams = new URLSearchParams(hash);
@@ -103,6 +117,17 @@ const Auth = () => {
       sessionStorage.setItem(AUTH_REDIRECT_STORAGE_KEY, target);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const pendingEmail = sessionStorage.getItem(EMAIL_VERIFICATION_STORAGE_KEY);
+    if (!pendingEmail) return;
+
+    setVerificationNotice({
+      email: pendingEmail,
+      message: t('auth.verifyEmailPending'),
+    });
+    setEmail((currentEmail) => currentEmail || pendingEmail);
+  }, [t]);
 
   useEffect(() => {
     const storedRedirect = sessionStorage.getItem('spa-redirect');
@@ -153,6 +178,8 @@ const Auth = () => {
         return;
       }
       if (session && !recoveryMode && searchParams.get('type') !== 'recovery') {
+        sessionStorage.removeItem(EMAIL_VERIFICATION_STORAGE_KEY);
+        setVerificationNotice(null);
         sessionStorage.removeItem(AUTH_REDIRECT_STORAGE_KEY);
         navigate(redirectPath, { replace: true });
       }
@@ -170,6 +197,8 @@ const Auth = () => {
         return;
       }
       if (session) {
+        sessionStorage.removeItem(EMAIL_VERIFICATION_STORAGE_KEY);
+        setVerificationNotice(null);
         sessionStorage.removeItem(AUTH_REDIRECT_STORAGE_KEY);
         navigate(redirectPath, { replace: true });
       }
