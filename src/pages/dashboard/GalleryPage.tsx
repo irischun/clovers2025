@@ -745,7 +745,7 @@ const GalleryPage = () => {
 
   const renderEmptyState = () => {
     const config: Record<ActiveTab, { icon: React.ReactNode; label: string; cta: string; path: string }> = {
-      images: { icon: <ImageIcon className="w-4 h-4" />, label: '圖像', cta: '前往圖像生成', path: '/dashboard/image-generating' },
+      images: { icon: <ImageIcon className="w-4 h-4" />, label: '圖像', cta: '前往圖像生成', path: '/dashboard/image-generating-and-editing' },
       videos: { icon: <Video className="w-4 h-4" />, label: '視頻', cta: '前往視頻生成', path: '/dashboard/video-generation' },
       audio: { icon: <Music className="w-4 h-4" />, label: '音頻', cta: '前往語音生成', path: '/dashboard/voice-generation' },
       subtitles: { icon: <FileText className="w-4 h-4" />, label: '字幕', cta: '前往語音轉字幕', path: '/dashboard/speech-to-text' },
