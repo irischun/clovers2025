@@ -249,20 +249,10 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative">
       <div className="w-full max-w-md">
-        <div className="flex justify-between items-center mb-4">
-          {/* Mute/Unmute toggle */}
-          <button
-            type="button"
-            onClick={toggleMute}
-            aria-label={isMuted ? 'Unmute background music' : 'Mute background music'}
-            title={isMuted ? 'Unmute' : 'Mute'}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-card/90 backdrop-blur border-2 border-primary/40 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors shadow-lg text-xs font-semibold uppercase tracking-wider animate-pulse-glow"
-          >
-            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-            <span>{isMuted ? 'Unmute' : 'Mute'}</span>
-          </button>
+        <div className="flex justify-end items-center mb-4">
           <LanguageSwitcher />
         </div>
+
 
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
@@ -275,6 +265,20 @@ const Auth = () => {
         </div>
 
         <div className="bg-card border border-border rounded-2xl p-6 shadow-xl">
+          {/* Mute/Unmute toggle — placed right above the sign-in form for easy access */}
+          <div className="flex justify-end mb-4">
+            <button
+              type="button"
+              onClick={toggleMute}
+              aria-label={isMuted ? 'Unmute background music' : 'Mute background music'}
+              title={isMuted ? 'Unmute' : 'Mute'}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-secondary border-2 border-primary/40 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors shadow-lg text-xs font-semibold uppercase tracking-wider animate-pulse-glow"
+            >
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              <span>{isMuted ? 'Unmute' : 'Mute'}</span>
+            </button>
+          </div>
+
           {recoveryMode ? (
             <form onSubmit={handleSetNewPassword} className="space-y-4">
               <div className="space-y-2">
