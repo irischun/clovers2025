@@ -30,6 +30,8 @@ const Auth = () => {
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSending, setForgotSending] = useState(false);
+  const [forgotCooldown, setForgotCooldown] = useState(0); // seconds remaining
+  const [forgotNotice, setForgotNotice] = useState<{ type: 'success' | 'error' | 'rate'; message: string } | null>(null);
 
   // Recovery (set new password)
   const [recoveryMode, setRecoveryMode] = useState(false);
