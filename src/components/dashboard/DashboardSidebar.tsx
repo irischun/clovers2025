@@ -39,7 +39,7 @@ const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
 
   const aiToolsItems = [
     { title: t('nav.item.aiCopywriting'), icon: Sparkles, path: '/dashboard/ai-copy-writing' },
-    { title: t('nav.item.imageGen'), icon: ImagePlus, path: '/dashboard/image-generating' },
+    { title: t('nav.item.imageGen'), icon: ImagePlus, path: '/dashboard/image-generating-and-editing' },
     { title: t('nav.item.imageResize'), icon: Maximize2, path: '/dashboard/image-resizing' },
     { title: t('nav.item.stickerMaker'), icon: Sticker, path: '/dashboard/sticker-maker-many-marvelous_styles' },
     { title: t('nav.item.voiceGen'), icon: Mic, path: '/dashboard/voice-generation' },
