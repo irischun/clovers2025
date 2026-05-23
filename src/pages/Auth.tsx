@@ -17,6 +17,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 const AUTH_REDIRECT_STORAGE_KEY = 'post-auth-redirect';
 const AUDIO_MUTED_KEY = 'auth-audio-muted';
 const FORGOT_PASSWORD_SAFE_RETRY_SECONDS = 60 * 60;
+const RECOVERY_ERROR_STORAGE_KEY = 'auth-recovery-error';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -39,6 +40,7 @@ const Auth = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
+  const [recoveryError, setRecoveryError] = useState<string | null>(null);
 
   // Audio
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -69,6 +71,31 @@ const Auth = () => {
     [basePath],
   );
 
+  const authPath = useMemo(() => `${basePath}/auth`, [basePath]);
+
+  const readRecoveryErrorFromUrl = () => {
+    const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+    const hashParams = new URLSearchParams(hash);
+    const searchError = searchParams.get('error');
+    const hashError = hashParams.get('error');
+    const description =
+      searchParams.get('error_description') ||
+      hashParams.get('error_description') ||
+      searchParams.get('error_code') ||
+      hashParams.get('error_code');
+
+    if (!searchError && !hashError) return null;
+
+    const normalized = decodeURIComponent(description || '').replace(/\+/g, ' ').trim().toLowerCase();
+    if (normalized.includes('expired') || normalized.includes('invalid')) {
+      return 'This password reset link is invalid or has expired. Please request a new reset email below.';
+    }
+
+    return description
+      ? `${decodeURIComponent(description).replace(/\+/g, ' ').trim()}. Please request a new reset email below.`
+      : 'Unable to verify this password reset link. Please request a new reset email below.';
+  };
+
   // Persist forgot redirect target
   useEffect(() => {
     const target = searchParams.get('redirect');
@@ -77,10 +104,51 @@ const Auth = () => {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    const storedRedirect = sessionStorage.getItem('spa-redirect');
+    if (!storedRedirect) return;
+
+    sessionStorage.removeItem('spa-redirect');
+    const normalized = storedRedirect.startsWith(basePath)
+      ? storedRedirect.slice(basePath.length) || '/'
+      : storedRedirect;
+
+    if (normalized.startsWith('/auth')) {
+      window.history.replaceState({}, '', `${basePath}${normalized}`);
+      return;
+    }
+
+    sessionStorage.setItem('spa-redirect', storedRedirect);
+  }, [basePath]);
+
+  useEffect(() => {
+    const messageFromUrl = readRecoveryErrorFromUrl();
+    const storedMessage = sessionStorage.getItem(RECOVERY_ERROR_STORAGE_KEY);
+    const nextMessage = messageFromUrl || storedMessage;
+
+    if (storedMessage) {
+      sessionStorage.removeItem(RECOVERY_ERROR_STORAGE_KEY);
+    }
+
+    if (!nextMessage) return;
+
+    setRecoveryMode(false);
+    setRecoveryError(nextMessage);
+    setForgotOpen(true);
+    toast({
+      title: 'Reset link expired',
+      description: nextMessage,
+      variant: 'destructive',
+    });
+
+    window.history.replaceState({}, '', authPath);
+  }, [authPath, searchParams, toast]);
+
   // Auth state listener — handles login + recovery
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
+        setRecoveryError(null);
         setRecoveryMode(true);
         return;
       }
@@ -90,8 +158,14 @@ const Auth = () => {
       }
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
+      const hasRecoveryError = Boolean(readRecoveryErrorFromUrl());
       const isRecovery = searchParams.get('type') === 'recovery' || window.location.hash.includes('type=recovery');
+      if (hasRecoveryError) {
+        setRecoveryMode(false);
+        return;
+      }
       if (isRecovery) {
+        setRecoveryError(null);
         setRecoveryMode(true);
         return;
       }
@@ -220,6 +294,7 @@ const Auth = () => {
     if (!forgotEmail || forgotCooldown > 0) return;
     setForgotSending(true);
     setForgotNotice(null);
+    setRecoveryError(null);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
         redirectTo: resetRedirectTo,
@@ -288,6 +363,7 @@ const Auth = () => {
       setRecoveryMode(false);
       setNewPassword('');
       setConfirmPassword('');
+      setRecoveryError(null);
       // Clean URL
       window.history.replaceState({}, '', `${basePath}/auth`);
     } finally {
@@ -327,6 +403,12 @@ const Auth = () => {
               <span>{isMuted ? 'Unmute' : 'Mute'}</span>
             </button>
           </div>
+
+          {recoveryError && !recoveryMode && (
+            <div className="mb-4 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive-foreground">
+              <p>{recoveryError}</p>
+            </div>
+          )}
 
           {recoveryMode ? (
             <form onSubmit={handleSetNewPassword} className="space-y-4">
