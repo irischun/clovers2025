@@ -179,53 +179,56 @@ const GalleryPage = () => {
     else { queryClient.invalidateQueries({ queryKey: DASHBOARD_STATS_KEY }); toast({ title: '字幕已刪除' }); }
   };
 
+  // Lightweight size probe — HEAD only, never downloads the full file.
+  // Base64 data URLs are sized from the string length (no network).
   const fetchRemoteFileSize = async (url: string): Promise<number> => {
+    if (!url) return -1;
+    if (url.startsWith('data:')) {
+      const base64 = url.split(',')[1] || '';
+      // base64 -> bytes: length * 3/4 minus padding
+      const padding = (base64.match(/=+$/) || [''])[0].length;
+      return Math.max(0, Math.floor(base64.length * 3 / 4) - padding);
+    }
     try {
       const head = await fetch(url, { method: 'HEAD' });
       const contentLength = head.headers.get('content-length');
       if (contentLength) return Number(contentLength);
     } catch {
-      // fallback below
+      // ignore — no full GET fallback (too expensive for galleries)
     }
-
-    try {
-      const res = await fetch(url);
-      const blob = await res.blob();
-      return blob.size;
-    } catch {
-      return -1;
-    }
+    return -1;
   };
 
-  // Fetch image file sizes
+  // Fetch image file sizes via HEAD (no canvas re-encode — that was the main bottleneck).
+  // Runs after paint, throttled, so the gallery is interactive immediately.
   useEffect(() => {
     if (generatedImages.length === 0) return;
+    let cancelled = false;
 
-    generatedImages.forEach((img) => {
-      if (fileSizes[img.id] !== undefined) return;
+    const pending = generatedImages.filter((img) => fileSizes[img.id] === undefined);
+    if (pending.length === 0) return;
 
-      const image = new Image();
-      image.crossOrigin = 'anonymous';
-      image.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = image.naturalWidth;
-          canvas.height = image.naturalHeight;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) return;
-          ctx.drawImage(image, 0, 0);
-          canvas.toBlob((blob) => {
-            setFileSizes(prev => ({ ...prev, [img.id]: blob?.size ?? -1 }));
-          }, 'image/png');
-        } catch {
-          const est = Math.round(image.naturalWidth * image.naturalHeight * 4 * 0.15);
-          setFileSizes(prev => ({ ...prev, [img.id]: est }));
-        }
-      };
-      image.onerror = () => setFileSizes(prev => ({ ...prev, [img.id]: -1 }));
-      image.src = img.image_url;
-    });
-  }, [generatedImages, fileSizes]);
+    const handle = window.setTimeout(async () => {
+      // Process in small concurrent batches to avoid burst
+      const BATCH = 4;
+      for (let i = 0; i < pending.length; i += BATCH) {
+        if (cancelled) return;
+        const slice = pending.slice(i, i + BATCH);
+        const results = await Promise.all(
+          slice.map(async (img) => ({ id: img.id, size: await fetchRemoteFileSize(img.image_url) }))
+        );
+        if (cancelled) return;
+        setFileSizes((prev) => {
+          const next = { ...prev };
+          results.forEach(({ id, size }) => { next[id] = size; });
+          return next;
+        });
+      }
+    }, 0);
+
+    return () => { cancelled = true; window.clearTimeout(handle); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generatedImages]);
 
   // Fetch audio file sizes
   useEffect(() => {
