@@ -444,13 +444,32 @@ const Auth = () => {
                      onChange={(e) => setForgotEmail(e.target.value)} required
                      className="bg-secondary border-border" />
             </div>
+
+            {forgotNotice && (
+              <div
+                role="alert"
+                className={`rounded-md border p-3 text-sm ${
+                  forgotNotice.type === 'success'
+                    ? 'border-primary/40 bg-primary/10 text-primary-foreground'
+                    : 'border-destructive/50 bg-destructive/10 text-destructive-foreground'
+                }`}
+              >
+                <p>{forgotNotice.message}</p>
+                {forgotCooldown > 0 && (
+                  <p className="mt-1 font-semibold">
+                    Try again in {formatCooldown(forgotCooldown)}.
+                  </p>
+                )}
+              </div>
+            )}
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setForgotOpen(false)} disabled={forgotSending}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={forgotSending}>
+              <Button type="submit" disabled={forgotSending || forgotCooldown > 0}>
                 {forgotSending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                Send reset link
+                {forgotCooldown > 0 ? `Wait ${formatCooldown(forgotCooldown)}` : 'Send reset link'}
               </Button>
             </DialogFooter>
           </form>
