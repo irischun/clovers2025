@@ -1,6 +1,8 @@
-// One-shot backfill: convert all base64 image_url rows in generated_images
-// into objects in the public 'generated-images' bucket and replace the column
-// with the small public URL. Idempotent — skips rows already migrated.
+// One-shot backfill: convert base64 image_url rows in generated_images into
+// objects in the public 'generated-images' bucket and replace the column with
+// the small public URL. Each invocation processes a tiny batch (rows are ~1.6MB
+// each, so we must stay under the edge-function memory limit). Caller should
+// re-invoke until { remaining: 0 }.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -20,51 +22,52 @@ serve(async (req) => {
     let migrated = 0;
     let failed = 0;
     let skipped = 0;
-    const batchSize = 20;
+    const batchSize = 3;
 
-    while (true) {
-      // Pull a batch of rows still containing data: URLs
-      const { data: rows, error } = await admin
-        .from("generated_images")
-        .select("id, user_id, image_url")
-        .like("image_url", "data:image/%")
-        .limit(batchSize);
+    const { data: rows, error } = await admin
+      .from("generated_images")
+      .select("id, user_id, image_url")
+      .like("image_url", "data:image/%")
+      .limit(batchSize);
 
-      if (error) throw error;
-      if (!rows || rows.length === 0) break;
+    if (error) throw error;
 
-      for (const row of rows) {
-        try {
-          const match = row.image_url.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
-          if (!match) { skipped++; continue; }
-          const mimeType = match[1];
-          const ext = mimeType.split("/")[1].split("+")[0] || "png";
-          const binary = Uint8Array.from(atob(match[2]), (c) => c.charCodeAt(0));
+    for (const row of rows || []) {
+      try {
+        const match = row.image_url.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+        if (!match) { skipped++; continue; }
+        const mimeType = match[1];
+        const ext = mimeType.split("/")[1].split("+")[0] || "png";
+        const binary = Uint8Array.from(atob(match[2]), (c) => c.charCodeAt(0));
 
-          const path = `${row.user_id}/${row.id}.${ext}`;
-          const { error: upErr } = await admin.storage
-            .from("generated-images")
-            .upload(path, binary, { contentType: mimeType, upsert: true });
-          if (upErr) throw upErr;
+        const path = `${row.user_id}/${row.id}.${ext}`;
+        const { error: upErr } = await admin.storage
+          .from("generated-images")
+          .upload(path, binary, { contentType: mimeType, upsert: true });
+        if (upErr) throw upErr;
 
-          const { data: pub } = admin.storage.from("generated-images").getPublicUrl(path);
+        const { data: pub } = admin.storage.from("generated-images").getPublicUrl(path);
 
-          const { error: updErr } = await admin
-            .from("generated_images")
-            .update({ image_url: pub.publicUrl })
-            .eq("id", row.id);
-          if (updErr) throw updErr;
+        const { error: updErr } = await admin
+          .from("generated_images")
+          .update({ image_url: pub.publicUrl })
+          .eq("id", row.id);
+        if (updErr) throw updErr;
 
-          migrated++;
-        } catch (e) {
-          console.error(`Row ${row.id} failed:`, e);
-          failed++;
-        }
+        migrated++;
+      } catch (e) {
+        console.error(`Row ${row.id} failed:`, e);
+        failed++;
       }
     }
 
+    const { count: remaining } = await admin
+      .from("generated_images")
+      .select("id", { count: "exact", head: true })
+      .like("image_url", "data:image/%");
+
     return new Response(
-      JSON.stringify({ ok: true, migrated, failed, skipped }),
+      JSON.stringify({ ok: true, migrated, failed, skipped, remaining: remaining ?? 0 }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
