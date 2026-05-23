@@ -125,7 +125,7 @@ function buildEnhancedPrompt(prompt: string, style: string, width?: number, heig
   return parts.join(', ');
 }
 
-function buildSystemMessage(hasReferenceImage: boolean, preserveFace: boolean): string {
+function buildSystemMessage(hasReferenceImage: boolean, preserveFace: boolean, isMultiImageEdit: boolean = false): string {
   let msg = `You are an expert AI image generator. Create exactly what the user requests with the following quality standards:
 
 1. COMPOSITION: Follow professional photography and art composition rules. Use rule of thirds, leading lines, and proper framing.
