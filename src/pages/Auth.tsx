@@ -334,6 +334,14 @@ const Auth = () => {
     return () => clearInterval(id);
   }, [forgotCooldown]);
 
+  useEffect(() => {
+    if (verificationCooldown <= 0) return;
+    const id = setInterval(() => {
+      setVerificationCooldown((s) => (s <= 1 ? 0 : s - 1));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [verificationCooldown]);
+
   const formatCooldown = (s: number) => {
     if (s >= 60) {
       const m = Math.floor(s / 60);
@@ -341,6 +349,48 @@ const Auth = () => {
       return r ? `${m}m ${r}s` : `${m}m`;
     }
     return `${s}s`;
+  };
+
+  const handleResendVerification = async () => {
+    const targetEmail = (verificationNotice?.email || email).trim();
+    if (!targetEmail || verificationSending || verificationCooldown > 0) return;
+
+    setVerificationSending(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: targetEmail,
+        options: { emailRedirectTo },
+      });
+
+      if (error) {
+        const msg = (error.message || '').toLowerCase();
+        const status = (error as any)?.status;
+        const isRate = status === 429 || msg.includes('rate limit') || msg.includes('too many');
+
+        if (isRate) {
+          const match = error.message?.match(/(\d+)\s*(second|seconds|sec|s)\b/i);
+          const wait = match
+            ? Math.max(parseInt(match[1], 10), 30)
+            : VERIFICATION_RESEND_SAFE_RETRY_SECONDS;
+          setVerificationCooldown(wait);
+          toast({
+            title: t('auth.verifyEmailWaitTitle'),
+            description: `${t('auth.verifyEmailWaitMessage')} ${formatCooldown(wait)}.`,
+            variant: 'destructive',
+          });
+        } else {
+          toast({ title: t('auth.error'), description: error.message, variant: 'destructive' });
+        }
+        return;
+      }
+
+      showVerificationNotice(targetEmail, t('auth.verifyEmailResentMessage'));
+      setVerificationCooldown(60);
+      toast({ title: t('auth.verifyEmailResentTitle'), description: t('auth.verifyEmailResentMessage') });
+    } finally {
+      setVerificationSending(false);
+    }
   };
 
   const handleForgotSubmit = async (e: React.FormEvent) => {
