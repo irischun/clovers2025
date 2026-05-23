@@ -264,13 +264,13 @@ serve(async (req) => {
       refCount: refImages.length, mode, preserveFace
     });
 
-    // For multi-image compositing (object swap, scene replacement, etc.), prefer the
-    // higher-quality "Nano Banana Pro" model which actually honors multi-image edit
-    // instructions instead of regenerating from scratch.
+    // For multi-image edits (object swap, scene replacement), ALWAYS use Nano Banana Pro
+    // — it is the only model that reliably honors compositing instructions instead of
+    // free-regenerating the frame.
     let aiModel = model || "google/gemini-3.1-flash-image-preview";
-    if (isMultiImageEdit && (aiModel === "google/gemini-2.5-flash-image" || aiModel === "google/gemini-2.5-flash-image-preview" || aiModel === "google/gemini-3.1-flash-image-preview")) {
+    if (isMultiImageEdit) {
       aiModel = "google/gemini-3-pro-image-preview";
-      console.log("Upgraded to nano-banana-pro for multi-image edit");
+      console.log("Forced model -> nano-banana-pro (multi-image edit)");
     }
     // For object-swap / multi-image edits, use the RAW user prompt — appending
     // "ultra HD 4K, masterpiece, professional photography" filler pushes the model to
