@@ -272,8 +272,14 @@ serve(async (req) => {
       aiModel = "google/gemini-3-pro-image-preview";
       console.log("Upgraded to nano-banana-pro for multi-image edit");
     }
-    const enhancedPrompt = buildEnhancedPrompt(prompt, style, width, height);
-    console.log("Enhanced prompt:", enhancedPrompt.substring(0, 200) + "...");
+    // For object-swap / multi-image edits, use the RAW user prompt — appending
+    // "ultra HD 4K, masterpiece, professional photography" filler pushes the model to
+    // regenerate the whole frame instead of doing a surgical swap.
+    const rawPrompt = (typeof prompt === "string" ? prompt : "").trim();
+    const enhancedPrompt = isMultiImageEdit
+      ? rawPrompt
+      : buildEnhancedPrompt(prompt, style, width, height);
+    console.log(isMultiImageEdit ? "Raw edit prompt:" : "Enhanced prompt:", enhancedPrompt.substring(0, 200) + "...");
 
     const messages: Array<{role: string; content: string | Array<{type: string; text?: string; image_url?: {url: string}}>}> = [];
     messages.push({ role: "system", content: buildSystemMessage(hasReferenceImage, preserveFace, isMultiImageEdit) });
@@ -287,20 +293,20 @@ serve(async (req) => {
 
       let referencePrompt: string;
       if (isMultiImageEdit) {
-        referencePrompt = `MULTI-IMAGE EDIT TASK. You are given ${refImages.length} reference images, in order:
-- IMAGE 1 = the SOURCE / asset to take from (e.g. the product, bottle, person, or object whose identity must be preserved EXACTLY).
-- IMAGE 2 = the SCENE / background to keep. Preserve its composition, lighting direction, colors, textures, depth of field, bokeh, splashes, props, and every surrounding detail EXACTLY as they are.
-${refImages.length > 2 ? `- IMAGE 3+ = additional references for style or details.\n` : ""}
-Your job is COMPOSITING / OBJECT REPLACEMENT, NOT free generation:
-1. Take the main subject from IMAGE 1 (exact shape, label, typography, glass shade, cap, collar, proportions).
-2. Place it into IMAGE 2 at the SAME position, scale, and orientation as whatever subject currently sits there.
-3. Remove the original subject from IMAGE 2 cleanly.
-4. Keep EVERYTHING ELSE in IMAGE 2 identical: water, splashes, droplets, lotuses, leaves, stones, ripples, bokeh, lighting, and color grading must remain pixel-faithful.
-5. Re-light the inserted subject from IMAGE 1 so that highlights, shadows, reflections, and refractions match IMAGE 2's lighting and environment.
-6. Do NOT invent a new bottle, a new scene, or a hybrid. Do NOT change the camera angle.
+        // Surgical, low-noise edit prompt. Repeats the contract so the model cannot
+        // shortcut by returning IMAGE 2 unchanged.
+        referencePrompt = `OBJECT REPLACEMENT EDIT.
 
-User instruction:
-${enhancedPrompt}`;
+Images you have just received, in order:
+- IMAGE 1 = SOURCE SUBJECT (the object to put INTO the output).
+- IMAGE 2 = TARGET SCENE (the background to KEEP).
+${refImages.length > 2 ? `- IMAGE 3+ = additional style/detail references.\n` : ""}
+Replace the foreground subject in IMAGE 2 with the SUBJECT from IMAGE 1. Keep IMAGE 2's scene, lighting, camera angle, depth of field, water, splashes, foliage, and props pixel-faithful. Match the inserted subject's lighting and shadows to IMAGE 2.
+
+The OUTPUT's foreground subject MUST visually match IMAGE 1 (same shape, label text, typography, color, material, cap, collar, proportions). The OUTPUT must NOT contain the foreground subject that was originally in IMAGE 2.
+
+User's additional instruction:
+${rawPrompt || "(none — perform the swap as described above)"}`;
       } else if (isImageToImageMode) {
         referencePrompt = `IMPORTANT: This reference image contains the EXACT subject I want you to use. The subject(s) MUST appear with the SAME identity and key features.\n\nYour task: Take the subject(s) and generate a new image applying:\n\n${enhancedPrompt}\n\nPreserve the subject's identity while applying the requested style.`;
       } else {
@@ -316,7 +322,8 @@ ${enhancedPrompt}`;
       model: aiModel,
       messages,
       modalities: ["image", "text"],
-      temperature: 0.8,
+      // Low temperature for edits keeps the model from drifting away from the inputs.
+      temperature: isMultiImageEdit ? 0.2 : 0.8,
     }, LOVABLE_API_KEY);
 
     if (!response.ok) {
