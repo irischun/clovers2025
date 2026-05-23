@@ -18,6 +18,8 @@ const AUTH_REDIRECT_STORAGE_KEY = 'post-auth-redirect';
 const AUDIO_MUTED_KEY = 'auth-audio-muted';
 const FORGOT_PASSWORD_SAFE_RETRY_SECONDS = 60 * 60;
 const RECOVERY_ERROR_STORAGE_KEY = 'auth-recovery-error';
+const EMAIL_VERIFICATION_STORAGE_KEY = 'auth-pending-email-verification';
+const VERIFICATION_RESEND_SAFE_RETRY_SECONDS = 60;
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -34,6 +36,9 @@ const Auth = () => {
   const [forgotSending, setForgotSending] = useState(false);
   const [forgotCooldown, setForgotCooldown] = useState(0); // seconds remaining
   const [forgotNotice, setForgotNotice] = useState<{ type: 'success' | 'error' | 'rate'; message: string } | null>(null);
+  const [verificationNotice, setVerificationNotice] = useState<{ email: string; message: string } | null>(null);
+  const [verificationSending, setVerificationSending] = useState(false);
+  const [verificationCooldown, setVerificationCooldown] = useState(0);
 
   // Recovery (set new password)
   const [recoveryMode, setRecoveryMode] = useState(false);
@@ -73,6 +78,15 @@ const Auth = () => {
 
   const authPath = useMemo(() => `${basePath}/auth`, [basePath]);
 
+  const showVerificationNotice = (targetEmail: string, message: string) => {
+    const normalizedEmail = targetEmail.trim();
+    if (!normalizedEmail) return;
+
+    sessionStorage.setItem(EMAIL_VERIFICATION_STORAGE_KEY, normalizedEmail);
+    setVerificationNotice({ email: normalizedEmail, message });
+    setEmail((currentEmail) => currentEmail || normalizedEmail);
+  };
+
   const readRecoveryErrorFromUrl = () => {
     const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
     const hashParams = new URLSearchParams(hash);
@@ -103,6 +117,17 @@ const Auth = () => {
       sessionStorage.setItem(AUTH_REDIRECT_STORAGE_KEY, target);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const pendingEmail = sessionStorage.getItem(EMAIL_VERIFICATION_STORAGE_KEY);
+    if (!pendingEmail) return;
+
+    setVerificationNotice({
+      email: pendingEmail,
+      message: t('auth.verifyEmailPending'),
+    });
+    setEmail((currentEmail) => currentEmail || pendingEmail);
+  }, [t]);
 
   useEffect(() => {
     const storedRedirect = sessionStorage.getItem('spa-redirect');
@@ -153,6 +178,8 @@ const Auth = () => {
         return;
       }
       if (session && !recoveryMode && searchParams.get('type') !== 'recovery') {
+        sessionStorage.removeItem(EMAIL_VERIFICATION_STORAGE_KEY);
+        setVerificationNotice(null);
         sessionStorage.removeItem(AUTH_REDIRECT_STORAGE_KEY);
         navigate(redirectPath, { replace: true });
       }
@@ -170,6 +197,8 @@ const Auth = () => {
         return;
       }
       if (session) {
+        sessionStorage.removeItem(EMAIL_VERIFICATION_STORAGE_KEY);
+        setVerificationNotice(null);
         sessionStorage.removeItem(AUTH_REDIRECT_STORAGE_KEY);
         navigate(redirectPath, { replace: true });
       }
@@ -220,16 +249,30 @@ const Auth = () => {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
-          if (error.message === 'Invalid login credentials') {
+          const pendingEmail = sessionStorage.getItem(EMAIL_VERIFICATION_STORAGE_KEY);
+          const normalizedError = (error.message || '').toLowerCase();
+          const isPendingVerification = pendingEmail?.trim().toLowerCase() === email.trim().toLowerCase();
+
+          if (normalizedError.includes('email not confirmed') || isPendingVerification) {
+            showVerificationNotice(email, t('auth.verifyEmailPending'));
+            toast({
+              title: t('auth.verifyEmailTitle'),
+              description: t('auth.verifyEmailPending'),
+              variant: 'destructive',
+            });
+          } else if (error.message === 'Invalid login credentials') {
             toast({ title: t('auth.loginFailed'), description: t('auth.wrongCredentials'), variant: 'destructive' });
           } else {
             toast({ title: t('auth.error'), description: error.message, variant: 'destructive' });
           }
           return;
         }
+
+        sessionStorage.removeItem(EMAIL_VERIFICATION_STORAGE_KEY);
+        setVerificationNotice(null);
         toast({ title: t('auth.loginSuccess'), description: t('auth.welcomeBack') });
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email, password,
           options: { emailRedirectTo, data: { full_name: fullName } },
         });
@@ -241,6 +284,17 @@ const Auth = () => {
           }
           return;
         }
+
+        if (!data.session) {
+          showVerificationNotice(email, t('auth.verifyEmailNotice'));
+          setIsLogin(true);
+          setPassword('');
+          toast({ title: t('auth.verifyEmailTitle'), description: t('auth.verifyEmailNotice') });
+          return;
+        }
+
+        sessionStorage.removeItem(EMAIL_VERIFICATION_STORAGE_KEY);
+        setVerificationNotice(null);
         toast({ title: t('auth.signupSuccess'), description: t('auth.welcomeJoin') });
       }
     } catch (error) {
@@ -280,6 +334,14 @@ const Auth = () => {
     return () => clearInterval(id);
   }, [forgotCooldown]);
 
+  useEffect(() => {
+    if (verificationCooldown <= 0) return;
+    const id = setInterval(() => {
+      setVerificationCooldown((s) => (s <= 1 ? 0 : s - 1));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [verificationCooldown]);
+
   const formatCooldown = (s: number) => {
     if (s >= 60) {
       const m = Math.floor(s / 60);
@@ -287,6 +349,48 @@ const Auth = () => {
       return r ? `${m}m ${r}s` : `${m}m`;
     }
     return `${s}s`;
+  };
+
+  const handleResendVerification = async () => {
+    const targetEmail = (verificationNotice?.email || email).trim();
+    if (!targetEmail || verificationSending || verificationCooldown > 0) return;
+
+    setVerificationSending(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: targetEmail,
+        options: { emailRedirectTo },
+      });
+
+      if (error) {
+        const msg = (error.message || '').toLowerCase();
+        const status = (error as any)?.status;
+        const isRate = status === 429 || msg.includes('rate limit') || msg.includes('too many');
+
+        if (isRate) {
+          const match = error.message?.match(/(\d+)\s*(second|seconds|sec|s)\b/i);
+          const wait = match
+            ? Math.max(parseInt(match[1], 10), 30)
+            : VERIFICATION_RESEND_SAFE_RETRY_SECONDS;
+          setVerificationCooldown(wait);
+          toast({
+            title: t('auth.verifyEmailWaitTitle'),
+            description: `${t('auth.verifyEmailWaitMessage')} ${formatCooldown(wait)}.`,
+            variant: 'destructive',
+          });
+        } else {
+          toast({ title: t('auth.error'), description: error.message, variant: 'destructive' });
+        }
+        return;
+      }
+
+      showVerificationNotice(targetEmail, t('auth.verifyEmailResentMessage'));
+      setVerificationCooldown(60);
+      toast({ title: t('auth.verifyEmailResentTitle'), description: t('auth.verifyEmailResentMessage') });
+    } finally {
+      setVerificationSending(false);
+    }
   };
 
   const handleForgotSubmit = async (e: React.FormEvent) => {
@@ -407,6 +511,27 @@ const Auth = () => {
           {recoveryError && !recoveryMode && (
             <div className="mb-4 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive-foreground">
               <p>{recoveryError}</p>
+            </div>
+          )}
+
+          {verificationNotice && !recoveryMode && (
+            <div className="mb-4 rounded-md border border-primary/40 bg-primary/10 p-3 text-sm text-foreground">
+              <p className="font-semibold">{t('auth.verifyEmailTitle')}</p>
+              <p className="mt-1">{verificationNotice.message}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{verificationNotice.email}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleResendVerification}
+                  disabled={verificationSending || verificationCooldown > 0}
+                >
+                  {verificationSending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {verificationCooldown > 0
+                    ? `${t('auth.verifyEmailResend')} (${formatCooldown(verificationCooldown)})`
+                    : t('auth.verifyEmailResend')}
+                </Button>
+              </div>
             </div>
           )}
 
