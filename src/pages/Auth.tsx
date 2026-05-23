@@ -248,20 +248,19 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative">
-      {/* Mute/Unmute toggle */}
-      <button
-        type="button"
-        onClick={toggleMute}
-        aria-label={isMuted ? 'Unmute background music' : 'Mute background music'}
-        title={isMuted ? 'Unmute' : 'Mute'}
-        className="fixed top-4 left-4 z-[60] inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-card/90 backdrop-blur border-2 border-primary/40 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors shadow-lg text-xs font-semibold uppercase tracking-wider animate-pulse-glow"
-      >
-        {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-        <span>{isMuted ? 'Unmute' : 'Mute'}</span>
-      </button>
-
       <div className="w-full max-w-md">
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-between items-center mb-4">
+          {/* Mute/Unmute toggle */}
+          <button
+            type="button"
+            onClick={toggleMute}
+            aria-label={isMuted ? 'Unmute background music' : 'Mute background music'}
+            title={isMuted ? 'Unmute' : 'Mute'}
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-card/90 backdrop-blur border-2 border-primary/40 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors shadow-lg text-xs font-semibold uppercase tracking-wider animate-pulse-glow"
+          >
+            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            <span>{isMuted ? 'Unmute' : 'Mute'}</span>
+          </button>
           <LanguageSwitcher />
         </div>
 
