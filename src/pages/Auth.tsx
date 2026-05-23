@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Loader2, Volume2, VolumeX } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
@@ -15,11 +15,29 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const AUTH_REDIRECT_STORAGE_KEY = 'post-auth-redirect';
-const AUDIO_MUTED_KEY = 'auth-audio-muted';
 const FORGOT_PASSWORD_SAFE_RETRY_SECONDS = 60 * 60;
+const EMAIL_SEND_RATE_LIMIT_SAFE_RETRY_SECONDS = 60 * 60;
 const RECOVERY_ERROR_STORAGE_KEY = 'auth-recovery-error';
 const EMAIL_VERIFICATION_STORAGE_KEY = 'auth-pending-email-verification';
 const VERIFICATION_RESEND_SAFE_RETRY_SECONDS = 60;
+
+const normalizeEmail = (value: string) => value.trim().toLowerCase();
+
+const isEmailSendRateLimitError = (error?: { message?: string; status?: number } | null) => {
+  const message = (error?.message || '').toLowerCase();
+
+  return (
+    error?.status === 429 ||
+    message.includes('over_email_send_rate_limit') ||
+    message.includes('email rate limit') ||
+    message.includes('too many')
+  );
+};
+
+const extractRetryAfterSeconds = (message: string | undefined, fallback: number) => {
+  const match = message?.match(/(\d+)\s*(second|seconds|sec|s)\b/i);
+  return match ? Math.max(parseInt(match[1], 10), 30) : fallback;
+};
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -46,10 +64,6 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [savingPassword, setSavingPassword] = useState(false);
   const [recoveryError, setRecoveryError] = useState<string | null>(null);
-
-  // Audio
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isMuted, setIsMuted] = useState(true);
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -206,55 +220,24 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate, redirectPath, searchParams, recoveryMode]);
 
-  // Audio init
-  useEffect(() => {
-    const audio = new Audio(`${basePath}/audio/Midnight_Facets.mp3`);
-    audio.loop = true;
-    audio.volume = 0.1;
-    audioRef.current = audio;
-
-    const stored = localStorage.getItem(AUDIO_MUTED_KEY);
-    const startMuted = stored === null ? true : stored === 'true';
-    setIsMuted(startMuted);
-
-    if (!startMuted) {
-      audio.play().catch(() => { /* autoplay blocked — wait for user gesture */ });
-    }
-    return () => {
-      audio.pause();
-      audio.src = '';
-    };
-  }, [basePath]);
-
-  const toggleMute = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    const next = !isMuted;
-    setIsMuted(next);
-    localStorage.setItem(AUDIO_MUTED_KEY, String(next));
-    if (next) {
-      audio.pause();
-    } else {
-      audio.play().catch((err) => {
-        console.warn('Audio play failed:', err);
-        toast({ title: t('auth.error') || 'Audio', description: 'Unable to play audio.', variant: 'destructive' });
-      });
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      const normalizedEmail = normalizeEmail(email);
+      if (normalizedEmail !== email) {
+        setEmail(normalizedEmail);
+      }
+
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
         if (error) {
           const pendingEmail = sessionStorage.getItem(EMAIL_VERIFICATION_STORAGE_KEY);
           const normalizedError = (error.message || '').toLowerCase();
-          const isPendingVerification = pendingEmail?.trim().toLowerCase() === email.trim().toLowerCase();
+          const isPendingVerification = pendingEmail?.trim().toLowerCase() === normalizedEmail;
 
           if (normalizedError.includes('email not confirmed') || isPendingVerification) {
-            showVerificationNotice(email, t('auth.verifyEmailPending'));
+            showVerificationNotice(normalizedEmail, t('auth.verifyEmailPending'));
             toast({
               title: t('auth.verifyEmailTitle'),
               description: t('auth.verifyEmailPending'),
@@ -273,11 +256,18 @@ const Auth = () => {
         toast({ title: t('auth.loginSuccess'), description: t('auth.welcomeBack') });
       } else {
         const { data, error } = await supabase.auth.signUp({
-          email, password,
+          email: normalizedEmail, password,
           options: { emailRedirectTo, data: { full_name: fullName } },
         });
         if (error) {
-          if (error.message.includes('already registered')) {
+          if (isEmailSendRateLimitError(error)) {
+            const wait = extractRetryAfterSeconds(error.message, EMAIL_SEND_RATE_LIMIT_SAFE_RETRY_SECONDS);
+            toast({
+              title: t('auth.verifyEmailWaitTitle'),
+              description: `${t('auth.verifyEmailWaitMessage')} ${formatCooldown(wait)}.`,
+              variant: 'destructive',
+            });
+          } else if (error.message.includes('already registered')) {
             toast({ title: t('auth.signupFailed'), description: t('auth.emailExists'), variant: 'destructive' });
           } else {
             toast({ title: t('auth.error'), description: error.message, variant: 'destructive' });
@@ -286,7 +276,7 @@ const Auth = () => {
         }
 
         if (!data.session) {
-          showVerificationNotice(email, t('auth.verifyEmailNotice'));
+          showVerificationNotice(normalizedEmail, t('auth.verifyEmailNotice'));
           setIsLogin(true);
           setPassword('');
           toast({ title: t('auth.verifyEmailTitle'), description: t('auth.verifyEmailNotice') });
@@ -352,7 +342,7 @@ const Auth = () => {
   };
 
   const handleResendVerification = async () => {
-    const targetEmail = (verificationNotice?.email || email).trim();
+    const targetEmail = normalizeEmail(verificationNotice?.email || email);
     if (!targetEmail || verificationSending || verificationCooldown > 0) return;
 
     setVerificationSending(true);
@@ -364,15 +354,15 @@ const Auth = () => {
       });
 
       if (error) {
-        const msg = (error.message || '').toLowerCase();
-        const status = (error as any)?.status;
-        const isRate = status === 429 || msg.includes('rate limit') || msg.includes('too many');
+        const isRate = isEmailSendRateLimitError(error) || (error.message || '').toLowerCase().includes('rate limit');
 
         if (isRate) {
-          const match = error.message?.match(/(\d+)\s*(second|seconds|sec|s)\b/i);
-          const wait = match
-            ? Math.max(parseInt(match[1], 10), 30)
-            : VERIFICATION_RESEND_SAFE_RETRY_SECONDS;
+          const wait = extractRetryAfterSeconds(
+            error.message,
+            isEmailSendRateLimitError(error)
+              ? EMAIL_SEND_RATE_LIMIT_SAFE_RETRY_SECONDS
+              : VERIFICATION_RESEND_SAFE_RETRY_SECONDS,
+          );
           setVerificationCooldown(wait);
           toast({
             title: t('auth.verifyEmailWaitTitle'),
@@ -395,29 +385,26 @@ const Auth = () => {
 
   const handleForgotSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!forgotEmail || forgotCooldown > 0) return;
+    const normalizedForgotEmail = normalizeEmail(forgotEmail);
+    if (!normalizedForgotEmail || forgotCooldown > 0) return;
+
+    if (normalizedForgotEmail !== forgotEmail) {
+      setForgotEmail(normalizedForgotEmail);
+    }
+
     setForgotSending(true);
     setForgotNotice(null);
     setRecoveryError(null);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      const { error } = await supabase.auth.resetPasswordForEmail(normalizedForgotEmail, {
         redirectTo: resetRedirectTo,
       });
       if (error) {
-        const msg = (error.message || '').toLowerCase();
-        const status = (error as any)?.status;
-        const isRate =
-          status === 429 ||
-          msg.includes('rate limit') ||
-          msg.includes('over_email_send_rate_limit') ||
-          msg.includes('too many');
+        const isRate = isEmailSendRateLimitError(error) || (error.message || '').toLowerCase().includes('rate limit');
         if (isRate) {
-          const match = error.message?.match(/(\d+)\s*(second|seconds|sec|s)\b/i);
-          const wait = match
-            ? Math.max(parseInt(match[1], 10), 30)
-            : FORGOT_PASSWORD_SAFE_RETRY_SECONDS;
+          const wait = extractRetryAfterSeconds(error.message, FORGOT_PASSWORD_SAFE_RETRY_SECONDS);
           setForgotCooldown(wait);
-          const notice = match
+          const notice = /\d+\s*(second|seconds|sec|s)\b/i.test(error.message || '')
             ? `You've reached the email send limit. Please wait ${formatCooldown(wait)} before requesting another reset link on this page.`
             : `Password reset emails are temporarily unavailable because the email send limit has been reached. Please wait up to ${formatCooldown(wait)} before trying again.`;
           setForgotNotice({ type: 'rate', message: notice });
@@ -494,20 +481,6 @@ const Auth = () => {
         </div>
 
         <div className="bg-card border border-border rounded-2xl p-6 shadow-xl">
-          {/* Mute/Unmute toggle — placed right above the sign-in form for easy access */}
-          <div className="flex justify-end mb-4">
-            <button
-              type="button"
-              onClick={toggleMute}
-              aria-label={isMuted ? 'Unmute background music' : 'Mute background music'}
-              title={isMuted ? 'Unmute' : 'Mute'}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-secondary border-2 border-primary/40 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors shadow-lg text-xs font-semibold uppercase tracking-wider animate-pulse-glow"
-            >
-              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-              <span>{isMuted ? 'Unmute' : 'Mute'}</span>
-            </button>
-          </div>
-
           {recoveryError && !recoveryMode && (
             <div className="mb-4 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive-foreground">
               <p>{recoveryError}</p>
@@ -539,13 +512,13 @@ const Auth = () => {
             <form onSubmit={handleSetNewPassword} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New password</Label>
-                <Input id="newPassword" type="password" placeholder="••••••••" value={newPassword}
+                <Input id="newPassword" type="password" placeholder="••••••••" value={newPassword} autoComplete="new-password"
                        onChange={(e) => setNewPassword(e.target.value)} required minLength={6}
                        className="bg-secondary border-border" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm password</Label>
-                <Input id="confirmPassword" type="password" placeholder="••••••••" value={confirmPassword}
+                <Input id="confirmPassword" type="password" placeholder="••••••••" value={confirmPassword} autoComplete="new-password"
                        onChange={(e) => setConfirmPassword(e.target.value)} required minLength={6}
                        className="bg-secondary border-border" />
               </div>
@@ -560,14 +533,14 @@ const Auth = () => {
                 {!isLogin && (
                   <div className="space-y-2">
                     <Label htmlFor="fullName">{t('auth.name')}</Label>
-                    <Input id="fullName" type="text" placeholder={t('auth.namePlaceholder')} value={fullName}
+                     <Input id="fullName" type="text" placeholder={t('auth.namePlaceholder')} value={fullName} autoComplete="name"
                            onChange={(e) => setFullName(e.target.value)} required={!isLogin}
                            className="bg-secondary border-border" />
                   </div>
                 )}
                 <div className="space-y-2">
                   <Label htmlFor="email">{t('auth.email')}</Label>
-                  <Input id="email" type="email" placeholder="your@email.com" value={email}
+                   <Input id="email" type="email" placeholder="your@email.com" value={email} autoComplete="email" autoCapitalize="none" autoCorrect="off"
                          onChange={(e) => setEmail(e.target.value)} required className="bg-secondary border-border" />
                 </div>
                 <div className="space-y-2">
@@ -581,7 +554,7 @@ const Auth = () => {
                     )}
                   </div>
                   <div className="relative">
-                    <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password}
+                     <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} autoComplete={isLogin ? 'current-password' : 'new-password'}
                            onChange={(e) => setPassword(e.target.value)} required minLength={6}
                            className="bg-secondary border-border pr-10" />
                     <button type="button" onClick={() => setShowPassword(!showPassword)}
@@ -632,7 +605,7 @@ const Auth = () => {
         </div>
 
         <div className="text-center mt-6">
-          <a href="/" className="text-muted-foreground hover:text-foreground text-sm transition-colors">
+          <a href={`${basePath}/main`} className="text-muted-foreground hover:text-foreground text-sm transition-colors">
             {t('auth.backHome')}
           </a>
         </div>
@@ -650,7 +623,7 @@ const Auth = () => {
           <form onSubmit={handleForgotSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="forgotEmail">Email</Label>
-              <Input id="forgotEmail" type="email" placeholder="your@email.com" value={forgotEmail}
+               <Input id="forgotEmail" type="email" placeholder="your@email.com" value={forgotEmail} autoComplete="email" autoCapitalize="none" autoCorrect="off"
                      onChange={(e) => setForgotEmail(e.target.value)} required
                      className="bg-secondary border-border" />
             </div>
