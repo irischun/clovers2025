@@ -249,16 +249,30 @@ const Auth = () => {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
-          if (error.message === 'Invalid login credentials') {
+          const pendingEmail = sessionStorage.getItem(EMAIL_VERIFICATION_STORAGE_KEY);
+          const normalizedError = (error.message || '').toLowerCase();
+          const isPendingVerification = pendingEmail?.trim().toLowerCase() === email.trim().toLowerCase();
+
+          if (normalizedError.includes('email not confirmed') || isPendingVerification) {
+            showVerificationNotice(email, t('auth.verifyEmailPending'));
+            toast({
+              title: t('auth.verifyEmailTitle'),
+              description: t('auth.verifyEmailPending'),
+              variant: 'destructive',
+            });
+          } else if (error.message === 'Invalid login credentials') {
             toast({ title: t('auth.loginFailed'), description: t('auth.wrongCredentials'), variant: 'destructive' });
           } else {
             toast({ title: t('auth.error'), description: error.message, variant: 'destructive' });
           }
           return;
         }
+
+        sessionStorage.removeItem(EMAIL_VERIFICATION_STORAGE_KEY);
+        setVerificationNotice(null);
         toast({ title: t('auth.loginSuccess'), description: t('auth.welcomeBack') });
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email, password,
           options: { emailRedirectTo, data: { full_name: fullName } },
         });
@@ -270,6 +284,17 @@ const Auth = () => {
           }
           return;
         }
+
+        if (!data.session) {
+          showVerificationNotice(email, t('auth.verifyEmailNotice'));
+          setIsLogin(true);
+          setPassword('');
+          toast({ title: t('auth.verifyEmailTitle'), description: t('auth.verifyEmailNotice') });
+          return;
+        }
+
+        sessionStorage.removeItem(EMAIL_VERIFICATION_STORAGE_KEY);
+        setVerificationNotice(null);
         toast({ title: t('auth.signupSuccess'), description: t('auth.welcomeJoin') });
       }
     } catch (error) {
