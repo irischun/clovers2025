@@ -157,6 +157,17 @@ You MUST preserve ALL facial features from the reference image with extreme prec
 The face in the generated image must be IDENTICAL to the reference.`;
   }
 
+  if (isMultiImageEdit) {
+    msg += `
+
+MULTI-IMAGE COMPOSITING MODE:
+You have been given multiple reference images, presented in order (IMAGE 1, IMAGE 2, ...).
+- Treat IMAGE 1 as the SOURCE asset whose identity, shape, labels, typography, color, material, and proportions must be preserved EXACTLY.
+- Treat IMAGE 2 as the SCENE / BACKGROUND. Preserve its composition, lighting, environment, props, textures, and color grading EXACTLY.
+- Your task is COMPOSITING / OBJECT REPLACEMENT, not free generation. Insert the subject from IMAGE 1 into IMAGE 2 at the location currently occupied by the analogous subject (or as the user specifies), removing the original. Re-light the inserted subject to match IMAGE 2.
+- DO NOT invent a new hybrid object. DO NOT change the camera angle, background, splashes, or surrounding props.`;
+  }
+
   msg += `\n\nGenerate the image now with these principles in mind.`;
   return msg;
 }
