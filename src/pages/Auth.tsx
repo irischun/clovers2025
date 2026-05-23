@@ -16,6 +16,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const AUTH_REDIRECT_STORAGE_KEY = 'post-auth-redirect';
 const AUDIO_MUTED_KEY = 'auth-audio-muted';
+const FORGOT_PASSWORD_SAFE_RETRY_SECONDS = 60 * 60;
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -232,12 +233,14 @@ const Auth = () => {
           msg.includes('over_email_send_rate_limit') ||
           msg.includes('too many');
         if (isRate) {
-          // Supabase default email rate window is ~60s per address.
-          // Parse "after N seconds" if present, otherwise default to 60s.
           const match = error.message?.match(/(\d+)\s*(second|seconds|sec|s)\b/i);
-          const wait = match ? Math.max(parseInt(match[1], 10), 30) : 60;
+          const wait = match
+            ? Math.max(parseInt(match[1], 10), 30)
+            : FORGOT_PASSWORD_SAFE_RETRY_SECONDS;
           setForgotCooldown(wait);
-          const notice = `You've reached the email send limit. Please wait ${formatCooldown(wait)} before requesting another reset link on this page.`;
+          const notice = match
+            ? `You've reached the email send limit. Please wait ${formatCooldown(wait)} before requesting another reset link on this page.`
+            : `Password reset emails are temporarily unavailable because the email send limit has been reached. Please wait up to ${formatCooldown(wait)} before trying again.`;
           setForgotNotice({ type: 'rate', message: notice });
           toast({ title: 'Please wait', description: notice, variant: 'destructive' });
         } else {
@@ -246,7 +249,7 @@ const Auth = () => {
         }
         return;
       }
-      // Success — apply a 60s client cooldown to prevent immediate re-trigger
+      // Success — apply a short client cooldown to prevent accidental repeat clicks.
       setForgotCooldown(60);
       setForgotNotice({
         type: 'success',
