@@ -16,7 +16,7 @@ const GenerationFloatingIndicator = () => {
   }, [currentJob?.id, currentJob?.status]);
 
   // Don't show on the image generation page itself
-  const isOnImageGenPage = location.pathname.includes('/image-generation');
+  const isOnImageGenPage = location.pathname.includes('/image-generating');
   
   if (!currentJob || dismissed) return null;
   if (isOnImageGenPage && currentJob.status === 'generating') return null;
@@ -56,7 +56,7 @@ const GenerationFloatingIndicator = () => {
             )}
             {isCompleted && !isOnImageGenPage && (
               <Link 
-                to="/dashboard/image-generation"
+                to="/dashboard/image-generating"
                 className="text-xs text-primary hover:underline mt-1 inline-block"
               >
                 查看結果 →

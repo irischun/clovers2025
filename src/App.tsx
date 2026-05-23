@@ -59,7 +59,8 @@ const App = () => (
                 <Route path="media" element={<MediaPage />} />
                 <Route path="ai-copy-writing" element={<AIToolsPage />} />
                 <Route path="settings" element={<SettingsPage />} />
-                <Route path="image-generation" element={<ImageGenerationPage />} />
+                <Route path="image-generating" element={<ImageGenerationPage />} />
+                <Route path="image-generation" element={<Navigate to="/dashboard/image-generating" replace />} />
                 <Route path="image-resizing" element={<ImageResizingPage />} />
                 <Route path="voice-generation" element={<VoiceGenerationPage />} />
                 <Route path="speech-to-text" element={<SpeechToTextPage />} />
