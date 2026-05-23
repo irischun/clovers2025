@@ -514,6 +514,27 @@ const Auth = () => {
             </div>
           )}
 
+          {verificationNotice && !recoveryMode && (
+            <div className="mb-4 rounded-md border border-primary/40 bg-primary/10 p-3 text-sm text-foreground">
+              <p className="font-semibold">{t('auth.verifyEmailTitle')}</p>
+              <p className="mt-1">{verificationNotice.message}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{verificationNotice.email}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleResendVerification}
+                  disabled={verificationSending || verificationCooldown > 0}
+                >
+                  {verificationSending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {verificationCooldown > 0
+                    ? `${t('auth.verifyEmailResend')} (${formatCooldown(verificationCooldown)})`
+                    : t('auth.verifyEmailResend')}
+                </Button>
+              </div>
+            </div>
+          )}
+
           {recoveryMode ? (
             <form onSubmit={handleSetNewPassword} className="space-y-4">
               <div className="space-y-2">
