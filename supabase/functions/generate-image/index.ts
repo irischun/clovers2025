@@ -125,7 +125,7 @@ function buildEnhancedPrompt(prompt: string, style: string, width?: number, heig
   return parts.join(', ');
 }
 
-function buildSystemMessage(hasReferenceImage: boolean, preserveFace: boolean): string {
+function buildSystemMessage(hasReferenceImage: boolean, preserveFace: boolean, isMultiImageEdit: boolean = false): string {
   let msg = `You are an expert AI image generator. Create exactly what the user requests with the following quality standards:
 
 1. COMPOSITION: Follow professional photography and art composition rules. Use rule of thirds, leading lines, and proper framing.
@@ -155,6 +155,17 @@ You have been provided with a reference image. You MUST use this reference image
 FACE PRESERVATION MODE ACTIVE:
 You MUST preserve ALL facial features from the reference image with extreme precision.
 The face in the generated image must be IDENTICAL to the reference.`;
+  }
+
+  if (isMultiImageEdit) {
+    msg += `
+
+MULTI-IMAGE COMPOSITING MODE:
+You have been given multiple reference images, presented in order (IMAGE 1, IMAGE 2, ...).
+- Treat IMAGE 1 as the SOURCE asset whose identity, shape, labels, typography, color, material, and proportions must be preserved EXACTLY.
+- Treat IMAGE 2 as the SCENE / BACKGROUND. Preserve its composition, lighting, environment, props, textures, and color grading EXACTLY.
+- Your task is COMPOSITING / OBJECT REPLACEMENT, not free generation. Insert the subject from IMAGE 1 into IMAGE 2 at the location currently occupied by the analogous subject (or as the user specifies), removing the original. Re-light the inserted subject to match IMAGE 2.
+- DO NOT invent a new hybrid object. DO NOT change the camera angle, background, splashes, or surrounding props.`;
   }
 
   msg += `\n\nGenerate the image now with these principles in mind.`;
@@ -221,40 +232,69 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, style = "realistic", model, width, height, referenceImage, mode, preserveFace = false } = await req.json();
+    const { prompt, style = "realistic", model, width, height, referenceImage, referenceImages, mode, preserveFace = false } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const hasReferenceImage = !!referenceImage;
+    // Normalize reference images into a single array (supports multi-image compositing / object swap)
+    const refImages: string[] = Array.isArray(referenceImages) && referenceImages.length > 0
+      ? referenceImages.filter((u: unknown): u is string => typeof u === "string" && u.length > 0)
+      : (referenceImage ? [referenceImage] : []);
+
+    const hasReferenceImage = refImages.length > 0;
+    const isMultiImageEdit = refImages.length >= 2;
     const isImageToImageMode = mode === 'image-to-image';
     
     console.log("Image generation request from user:", auth.userId, { 
       prompt: prompt?.substring(0, 100), style, model, width, height,
-      hasReference: hasReferenceImage, mode, preserveFace
+      refCount: refImages.length, mode, preserveFace
     });
 
-    const aiModel = model || "google/gemini-3.1-flash-image-preview";
+    // For multi-image compositing (object swap, scene replacement, etc.), prefer the
+    // higher-quality "Nano Banana Pro" model which actually honors multi-image edit
+    // instructions instead of regenerating from scratch.
+    let aiModel = model || "google/gemini-3.1-flash-image-preview";
+    if (isMultiImageEdit && (aiModel === "google/gemini-2.5-flash-image" || aiModel === "google/gemini-2.5-flash-image-preview" || aiModel === "google/gemini-3.1-flash-image-preview")) {
+      aiModel = "google/gemini-3-pro-image-preview";
+      console.log("Upgraded to nano-banana-pro for multi-image edit");
+    }
     const enhancedPrompt = buildEnhancedPrompt(prompt, style, width, height);
     console.log("Enhanced prompt:", enhancedPrompt.substring(0, 200) + "...");
 
     const messages: Array<{role: string; content: string | Array<{type: string; text?: string; image_url?: {url: string}}>}> = [];
-    messages.push({ role: "system", content: buildSystemMessage(hasReferenceImage, preserveFace) });
+    messages.push({ role: "system", content: buildSystemMessage(hasReferenceImage, preserveFace, isMultiImageEdit) });
     
-    if (referenceImage) {
+    if (refImages.length > 0) {
+      const content: Array<{type: string; text?: string; image_url?: {url: string}}> = [];
+      // Attach all reference images in order; the system message labels them IMAGE 1, IMAGE 2, ...
+      refImages.forEach((url) => {
+        content.push({ type: "image_url", image_url: { url } });
+      });
+
       let referencePrompt: string;
-      if (isImageToImageMode) {
+      if (isMultiImageEdit) {
+        referencePrompt = `MULTI-IMAGE EDIT TASK. You are given ${refImages.length} reference images, in order:
+- IMAGE 1 = the SOURCE / asset to take from (e.g. the product, bottle, person, or object whose identity must be preserved EXACTLY).
+- IMAGE 2 = the SCENE / background to keep. Preserve its composition, lighting direction, colors, textures, depth of field, bokeh, splashes, props, and every surrounding detail EXACTLY as they are.
+${refImages.length > 2 ? `- IMAGE 3+ = additional references for style or details.\n` : ""}
+Your job is COMPOSITING / OBJECT REPLACEMENT, NOT free generation:
+1. Take the main subject from IMAGE 1 (exact shape, label, typography, glass shade, cap, collar, proportions).
+2. Place it into IMAGE 2 at the SAME position, scale, and orientation as whatever subject currently sits there.
+3. Remove the original subject from IMAGE 2 cleanly.
+4. Keep EVERYTHING ELSE in IMAGE 2 identical: water, splashes, droplets, lotuses, leaves, stones, ripples, bokeh, lighting, and color grading must remain pixel-faithful.
+5. Re-light the inserted subject from IMAGE 1 so that highlights, shadows, reflections, and refractions match IMAGE 2's lighting and environment.
+6. Do NOT invent a new bottle, a new scene, or a hybrid. Do NOT change the camera angle.
+
+User instruction:
+${enhancedPrompt}`;
+      } else if (isImageToImageMode) {
         referencePrompt = `IMPORTANT: This reference image contains the EXACT subject I want you to use. The subject(s) MUST appear with the SAME identity and key features.\n\nYour task: Take the subject(s) and generate a new image applying:\n\n${enhancedPrompt}\n\nPreserve the subject's identity while applying the requested style.`;
       } else {
         referencePrompt = `Use this reference image as inspiration for the style and composition. Generate: ${enhancedPrompt}`;
       }
-      messages.push({
-        role: "user",
-        content: [
-          { type: "image_url", image_url: { url: referenceImage } },
-          { type: "text", text: referencePrompt }
-        ]
-      });
+      content.push({ type: "text", text: referencePrompt });
+      messages.push({ role: "user", content });
     } else {
       messages.push({ role: "user", content: enhancedPrompt });
     }

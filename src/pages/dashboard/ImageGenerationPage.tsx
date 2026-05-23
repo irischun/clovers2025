@@ -676,18 +676,27 @@ const ImageGenerationPage = () => {
     });
   };
 
-  // Get reference image as base64 for the API
+  // Get reference image as base64 for the API (legacy - first image only)
   const getReferenceImage = async (): Promise<string | null> => {
-    // Priority: uploaded images first, then gallery selection
     if (uploadedImages.length > 0) {
-      // Use the first uploaded image as the primary reference
       return await fileToBase64(uploadedImages[0].file);
     }
     if (selectedGalleryImage) {
-      // Gallery images are already URLs, return as-is
       return selectedGalleryImage;
     }
     return null;
+  };
+
+  // Get ALL reference images (multi-image compositing / object swap support)
+  const getReferenceImages = async (): Promise<string[]> => {
+    const imgs: string[] = [];
+    for (const img of uploadedImages) {
+      imgs.push(await fileToBase64(img.file));
+    }
+    if (selectedGalleryImage) {
+      imgs.push(selectedGalleryImage);
+    }
+    return imgs;
   };
 
   // Sync results from background job back into local state
@@ -744,10 +753,12 @@ const ImageGenerationPage = () => {
     const capturedSelectedModel = selectedModel;
     const capturedSelectedAspectRatio = selectedAspectRatio;
 
-    // Get reference image before starting background job
+    // Get reference image(s) before starting background job
     let referenceImage: string | null = null;
+    let referenceImages: string[] = [];
     if (capturedMode === 'image-to-image') {
-      referenceImage = await getReferenceImage();
+      referenceImages = await getReferenceImages();
+      referenceImage = referenceImages[0] ?? null;
       if (!referenceImage) {
         toast({ title: '無法讀取參考圖片', variant: 'destructive' });
         setIsGenerating(false);
@@ -789,6 +800,7 @@ const ImageGenerationPage = () => {
                     width: capturedAspectRatio.width,
                     height: capturedAspectRatio.height,
                     referenceImage,
+                    referenceImages,
                     mode: capturedMode,
                     preserveFace: capturedPreserveFace,
                   }
