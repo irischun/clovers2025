@@ -753,10 +753,12 @@ const ImageGenerationPage = () => {
     const capturedSelectedModel = selectedModel;
     const capturedSelectedAspectRatio = selectedAspectRatio;
 
-    // Get reference image before starting background job
+    // Get reference image(s) before starting background job
     let referenceImage: string | null = null;
+    let referenceImages: string[] = [];
     if (capturedMode === 'image-to-image') {
-      referenceImage = await getReferenceImage();
+      referenceImages = await getReferenceImages();
+      referenceImage = referenceImages[0] ?? null;
       if (!referenceImage) {
         toast({ title: '無法讀取參考圖片', variant: 'destructive' });
         setIsGenerating(false);
