@@ -9,7 +9,7 @@ import {
 import { 
   LayoutDashboard, FileText, Image, Sparkles, Settings, LogOut, ChevronDown, ChevronRight,
   ImagePlus, Mic, AudioLines, Video, Tv, Youtube, GalleryHorizontalEnd, BookOpen, Rss,
-  FolderEdit, Sticker, Rocket, Send, CreditCard, Coins, History, Home, Maximize2
+  FolderEdit, Sticker, Rocket, Send, CreditCard, Coins, History, Home, Maximize2, ArrowUpToLine
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -46,6 +46,7 @@ const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
     { title: t('nav.item.speechToText'), icon: AudioLines, path: '/dashboard/speech-to-text' },
     { title: t('nav.item.videoGen'), icon: Video, path: '/dashboard/video-generation' },
     { title: t('nav.item.videoGen2'), icon: Video, path: '/dashboard/video-generation-2' },
+    { title: 'Video Upscale', icon: ArrowUpToLine, path: '/dashboard/video-upscale' },
     { title: t('nav.item.lipSync'), icon: Tv, path: '/dashboard/lip-sync' },
   ];
 

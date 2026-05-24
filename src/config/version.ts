@@ -1,9 +1,10 @@
 // Application version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "69.1.0";
-// Version 69.1.0: Renamed image generation route to
-// /dashboard/image-generating-and-editing. Old paths
-// (image-generation, image-generating) redirect for backward compat.
+export const APP_VERSION = "70.0.0";
+// Version 70.0.0: Added Video Upscale page at
+// /dashboard/video-upscale with model (Sora 2 Enhancer, Higgsfield
+// Upscale, Topaz Video), scale factor (1080p/4K), creativity (Subtle/Bold),
+// and Frame Interpolation controls.
 export const VERSION_NAME = "Version";
-export const VERSION_DATE = "2026-05-23";
+export const VERSION_DATE = "2026-05-24";
