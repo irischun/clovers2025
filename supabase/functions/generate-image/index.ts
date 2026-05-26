@@ -318,48 +318,123 @@ ${rawPrompt || "(none — perform the swap as described above)"}`;
       messages.push({ role: "user", content: enhancedPrompt });
     }
 
-    const response = await callAIGateway({
-      model: aiModel,
-      messages,
-      modalities: ["image", "text"],
-      // Low temperature for edits keeps the model from drifting away from the inputs.
-      temperature: isMultiImageEdit ? 0.2 : 0.8,
-    }, LOVABLE_API_KEY);
+    // ───── Refusal-aware generation with model fallback ─────
+    // Some prompts (e.g. "remove watermark", "remove logo") trigger Gemini's
+    // safety filter, which returns text only ("I'm just a language model and
+    // can't help with that.") instead of an image. We detect refusals,
+    // rephrase the prompt into a neutral inpainting instruction, and retry
+    // with stronger fallback models before giving up.
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+    const FALLBACK_MODELS = [
+      aiModel,
+      "google/gemini-3-pro-image-preview",
+      "google/gemini-2.5-flash-image",
+    ].filter((m, i, arr) => arr.indexOf(m) === i);
+
+    const REFUSAL_PATTERNS = [
+      /can'?t help/i,
+      /cannot help/i,
+      /unable to (help|assist|generate|create|produce)/i,
+      /i'?m (just )?a (large )?language model/i,
+      /i (can'?t|cannot|won'?t) (generate|create|produce|make)/i,
+      /violates? (our |the )?(policy|guidelines|terms)/i,
+      /against (my|our) (policy|guidelines)/i,
+      /not able to (generate|create|help)/i,
+    ];
+    const isRefusalText = (txt: unknown): boolean =>
+      typeof txt === "string" && !!txt && REFUSAL_PATTERNS.some((re) => re.test(txt));
+
+    const rephraseForSafety = (p: string): string => {
+      let s = p;
+      s = s.replace(/remove (the )?watermark[^.,;]*/gi,
+        "seamlessly inpaint and reconstruct the corner area using the surrounding pixels, matching texture, color and lighting");
+      s = s.replace(/remove (the )?logo[^.,;]*/gi,
+        "seamlessly inpaint that region using the surrounding background, matching texture and lighting");
+      s = s.replace(/remove (the )?(text|caption|subtitle|writing)[^.,;]*/gi,
+        "seamlessly inpaint that region using the surrounding background, matching texture and lighting");
+      s = s.replace(/\berase\b/gi, "inpaint");
+      s = s.replace(/\bdelete\b/gi, "inpaint");
+      return s;
+    };
+
+    let response: Response | null = null;
+    let data: any = null;
+    let rawImageUrl: string | undefined;
+    let textContent: string | undefined;
+    let lastModelTried = aiModel;
+    let lastRefused = false;
+
+    for (let i = 0; i < FALLBACK_MODELS.length; i++) {
+      const tryModel = FALLBACK_MODELS[i];
+      lastModelTried = tryModel;
+
+      let attemptMessages = messages;
+      if (i > 0) {
+        attemptMessages = messages.map((m) => {
+          if (m.role !== "user") return m;
+          if (typeof m.content === "string") {
+            return { ...m, content: rephraseForSafety(m.content) };
+          }
+          return {
+            ...m,
+            content: m.content.map((c) =>
+              c.type === "text" ? { ...c, text: rephraseForSafety(c.text || "") } : c
+            ),
+          };
+        });
+        console.log(`Retry with model=${tryModel} and safety-rephrased prompt`);
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "AI credits exhausted. Please add credits to continue." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+
+      response = await callAIGateway({
+        model: tryModel,
+        messages: attemptMessages,
+        modalities: ["image", "text"],
+        temperature: isMultiImageEdit ? 0.2 : 0.8,
+      }, LOVABLE_API_KEY);
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          return new Response(
+            JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        if (response.status === 402) {
+          return new Response(
+            JSON.stringify({ error: "AI credits exhausted. Please add credits to continue." }),
+            { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        const errorText = await response.text();
+        console.error(`AI gateway error (model=${tryModel}):`, response.status, errorText);
+        continue;
       }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      return new Response(
-        JSON.stringify({ error: "Image generation failed" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+
+      data = await response.json();
+      rawImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      textContent = data.choices?.[0]?.message?.content;
+      lastRefused = isRefusalText(textContent);
+
+      if (rawImageUrl) {
+        console.log(`Image generation succeeded with model=${tryModel}`);
+        break;
+      }
+      console.warn(`No image from model=${tryModel}. refused=${lastRefused} text="${typeof textContent === "string" ? textContent.substring(0, 200) : ""}"`);
     }
-
-    const data = await response.json();
-    console.log("Image generation response received successfully");
-    
-    const rawImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    const textContent = data.choices?.[0]?.message?.content;
 
     if (!rawImageUrl) {
-      console.error("No image URL in response:", JSON.stringify(data).substring(0, 500));
+      const userMessage = lastRefused
+        ? "The AI model declined this prompt because it triggered its safety filter (often caused by words like 'remove watermark', 'remove logo', or copyrighted character names). No points were charged — please rephrase and try again."
+        : "The AI model returned no image after multiple retries. No points were charged — please try again or simplify your prompt.";
+      console.error("All model fallbacks exhausted. refused=", lastRefused, "last=", lastModelTried);
       return new Response(
-        JSON.stringify({ error: "No image generated. The AI model returned text only. Please try again or use a different model." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: userMessage, refused: lastRefused, lastModelTried }),
+        { status: lastRefused ? 422 : 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log("Image generation response received successfully");
+
 
     // ───── Decode → upscale to requested dimensions → upload to Storage ─────
     let finalUrl = rawImageUrl;
