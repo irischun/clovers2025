@@ -257,6 +257,8 @@ const zhTW = {
   'points.unit': '點',
 
   // Sticker Maker
+  'sticker.style.keepUploaded': '保留上傳圖片風格',
+  'sticker.style.keepUploaded.needImage': '請先上傳參考圖片以保留其風格',
   'sticker.title': 'WhatsApp 貼圖製作器',
   'sticker.subtitle': '選擇多張圖片，製作 WebP 貼圖',
   'sticker.pointsCost': '點數消耗：1點/次',
