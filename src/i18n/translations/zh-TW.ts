@@ -31,7 +31,7 @@ const zhTW = {
   'nav.item.aiCopywriting': 'AI 文案創作',
   'nav.item.imageGen': '圖片生成',
   'nav.item.imageResize': '圖片調整尺寸',
-  'nav.item.stickerMaker': '貼圖製作器',
+  'nav.item.stickerMaker': '貼圖製作圖書館',
   'nav.item.voiceGen': '語音生成',
   'nav.item.speechToText': '語音轉字幕',
   'nav.item.videoGen': '視頻生成',
