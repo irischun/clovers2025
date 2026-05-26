@@ -31,7 +31,7 @@ const en = {
   'nav.item.aiCopywriting': 'AI Copywriting',
   'nav.item.imageGen': 'Image Generation',
   'nav.item.imageResize': 'Image Resizer',
-  'nav.item.stickerMaker': 'Sticker Maker',
+  'nav.item.stickerMaker': 'Sticker Maker Library',
   'nav.item.voiceGen': 'Voice Generation',
   'nav.item.speechToText': 'Speech to Subtitle',
   'nav.item.videoGen': 'Video Generation',
