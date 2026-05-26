@@ -41,7 +41,10 @@ const styleCategories = [
 ];
 
 const textStyles: StyleOption[] = [
-  // Graffiti first
+  // Keep uploaded image style — must always be the first option (Version 72)
+  { id: 'keep_uploaded_style', label: 'sticker.style.keepUploaded', emoji: '🪞', category: 'popular' },
+
+  // Graffiti
   { id: 'graffiti', label: 'Graffiti', emoji: '🧱', category: 'painting' },
 
   // 型格Cyberpunk second (per Version 54 request)
