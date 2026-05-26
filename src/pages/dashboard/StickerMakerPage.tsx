@@ -428,6 +428,10 @@ const StickerMakerPage = () => {
       toast({ title: '請輸入文字或上傳圖片', variant: 'destructive' });
       return;
     }
+    if (textStyle === 'keep_uploaded_style' && textStickerImages.length === 0) {
+      toast({ title: t('sticker.style.keepUploaded.needImage' as any), variant: 'destructive' });
+      return;
+    }
     setIsTextGenerating(true);
     try {
       // Convert uploaded images to base64 for reference
