@@ -288,7 +288,7 @@ async function encodeToTargetSize(
   let curBlob = png;
   let lastUnderCanvas = canvas;
   let lastUnderBlob = png;
-  const MAX_DIM = 16384; // hard safety cap
+  const MAX_DIM = SAFE_MAX_DIM; // hard safety cap (browser encoder limit)
   for (let i = 0; i < 8; i++) {
     if (curBlob.size >= targetBytes) break;
     // Pixel count scales roughly linearly with PNG size for natural images.
