@@ -31,7 +31,7 @@ const zhTW = {
   'nav.item.aiCopywriting': 'AI 文案創作',
   'nav.item.imageGen': '圖片生成',
   'nav.item.imageResize': '圖片調整尺寸',
-  'nav.item.stickerMaker': '貼圖製作器',
+  'nav.item.stickerMaker': '貼圖製作圖書館',
   'nav.item.voiceGen': '語音生成',
   'nav.item.speechToText': '語音轉字幕',
   'nav.item.videoGen': '視頻生成',
@@ -259,7 +259,7 @@ const zhTW = {
   // Sticker Maker
   'sticker.style.keepUploaded': '保留上傳圖片風格',
   'sticker.style.keepUploaded.needImage': '請先上傳參考圖片以保留其風格',
-  'sticker.title': 'WhatsApp 貼圖製作器',
+  'sticker.title': 'WhatsApp 貼圖製作圖書館',
   'sticker.subtitle': '選擇多張圖片，製作 WebP 貼圖',
   'sticker.pointsCost': '點數消耗：1點/次',
   'sticker.imageFrames': '圖片幀',

@@ -31,7 +31,7 @@ const zhCN = {
   'nav.item.aiCopywriting': 'AI 文案创作',
   'nav.item.imageGen': '图片生成',
   'nav.item.imageResize': '图片调整尺寸',
-  'nav.item.stickerMaker': '贴图制作器',
+  'nav.item.stickerMaker': '贴图制作图书馆',
   'nav.item.voiceGen': '语音生成',
   'nav.item.speechToText': '语音转字幕',
   'nav.item.videoGen': '视频生成',
@@ -259,7 +259,7 @@ const zhCN = {
   // Sticker Maker
   'sticker.style.keepUploaded': '保留上传图片风格',
   'sticker.style.keepUploaded.needImage': '请先上传参考图片以保留其风格',
-  'sticker.title': 'WhatsApp 贴图制作器',
+  'sticker.title': 'WhatsApp 贴图制作图书馆',
   'sticker.subtitle': '选择多张图片，制作 WebP 贴图',
   'sticker.pointsCost': '点数消耗：1点/次',
   'sticker.imageFrames': '图片帧',
