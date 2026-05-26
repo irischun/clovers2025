@@ -36,6 +36,7 @@ const zhCN = {
   'nav.item.speechToText': '语音转字幕',
   'nav.item.videoGen': '视频生成',
   'nav.item.videoGen2': '视频生成 2.0',
+  'nav.item.videoUpscale': '视频升频与降频',
   'nav.item.lipSync': 'LipSync 视频',
   'nav.item.youtubeSearch': 'YouTube 搜索',
   'nav.item.xiaohongshuSearch': '小红书搜索',

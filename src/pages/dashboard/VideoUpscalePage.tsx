@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import PointsBalanceCard from "@/components/dashboard/PointsBalanceCard";
 
 type ModelId = "sora-2-enhancer" | "higgsfield-upscale" | "topaz-video";
-type ScaleFactor = "1080p" | "4K";
+type ScaleFactor = "720p" | "1080p" | "4K";
 type Creativity = "subtle" | "bold";
 
 const MODEL_OPTIONS: { id: ModelId; label: string; description: string; points: number }[] = [
@@ -39,8 +39,9 @@ const VideoUpscalePage = () => {
   const [progress, setProgress] = useState(0);
 
   const selectedModel = MODEL_OPTIONS.find((m) => m.id === model)!;
+  const resolutionExtra = scaleFactor === "4K" ? 10 : scaleFactor === "1080p" ? 4 : 0;
   const totalPoints =
-    selectedModel.points + (scaleFactor === "4K" ? 10 : 0) + (frameInterpolation ? 5 : 0) + (creativity === "bold" ? 3 : 0);
+    selectedModel.points + resolutionExtra + (frameInterpolation ? 5 : 0) + (creativity === "bold" ? 3 : 0);
 
   const handleFile = useCallback((f: File) => {
     if (!f.type.startsWith("video/")) {
@@ -237,8 +238,8 @@ const VideoUpscalePage = () => {
 
             <div className="space-y-2">
               <Label>Scale factor</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {(["1080p", "4K"] as ScaleFactor[]).map((s) => (
+              <div className="grid grid-cols-3 gap-2">
+                {(["720p", "1080p", "4K"] as ScaleFactor[]).map((s) => (
                   <Button
                     key={s}
                     type="button"

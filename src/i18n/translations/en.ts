@@ -36,6 +36,7 @@ const en = {
   'nav.item.speechToText': 'Speech to Subtitle',
   'nav.item.videoGen': 'Video Generation',
   'nav.item.videoGen2': 'Video Generation 2.0',
+  'nav.item.videoUpscale': 'Video Upscale & Downscale',
   'nav.item.lipSync': 'LipSync Video',
   'nav.item.youtubeSearch': 'YouTube Search',
   'nav.item.xiaohongshuSearch': 'Xiaohongshu Search',
