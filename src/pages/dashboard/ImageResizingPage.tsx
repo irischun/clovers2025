@@ -167,13 +167,54 @@ function generativeEnhance(canvas: HTMLCanvasElement): HTMLCanvasElement {
   return out;
 }
 
-async function canvasToBlob(canvas: HTMLCanvasElement, format: OutputFormat, quality?: number): Promise<Blob> {
-  return new Promise((resolve, reject) =>
+// Detect the largest canvas size the current browser can actually encode.
+// Browsers (esp. Safari/iOS) silently fail toBlob above device-specific caps.
+// Conservative cross-browser cap: 8192 on the long edge.
+const SAFE_MAX_DIM = 8192;
+
+async function tryToBlob(
+  canvas: HTMLCanvasElement,
+  format: OutputFormat,
+  quality?: number,
+): Promise<Blob | null> {
+  return new Promise((resolve) =>
     canvas.toBlob(
-      (b) => (b ? resolve(b) : reject(new Error('Encoding failed'))),
+      (b) => resolve(b),
       format,
       format === 'image/png' ? undefined : quality,
     ),
+  );
+}
+
+async function canvasToBlob(canvas: HTMLCanvasElement, format: OutputFormat, quality?: number): Promise<Blob> {
+  // Primary attempt
+  let blob = await tryToBlob(canvas, format, quality);
+  if (blob) return blob;
+
+  // Fallback 1: try JPEG (most permissive encoder across browsers)
+  if (format !== 'image/jpeg') {
+    blob = await tryToBlob(canvas, 'image/jpeg', quality ?? 0.92);
+    if (blob) {
+      console.warn(`[resize] ${format} encoding failed at ${canvas.width}x${canvas.height}; fell back to JPEG`);
+      return blob;
+    }
+  }
+
+  // Fallback 2: downscale to SAFE_MAX_DIM and retry
+  const long = Math.max(canvas.width, canvas.height);
+  if (long > SAFE_MAX_DIM) {
+    const scale = SAFE_MAX_DIM / long;
+    const small = resampleCanvas(canvas, canvas.width * scale, canvas.height * scale);
+    blob = await tryToBlob(small, format, quality);
+    if (!blob) blob = await tryToBlob(small, 'image/jpeg', 0.92);
+    if (blob) {
+      console.warn(`[resize] downscaled to ${small.width}x${small.height} to satisfy browser encoder cap`);
+      return blob;
+    }
+  }
+
+  throw new Error(
+    `Encoding failed at ${canvas.width}×${canvas.height}. Try a smaller target size or JPEG format.`,
   );
 }
 
