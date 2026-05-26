@@ -409,11 +409,33 @@ const ImageResizingPage = () => {
     }
     const url = URL.createObjectURL(file);
     const img = new Image();
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      const isHeic = /heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name);
+      toast({
+        title: language === 'en' ? 'Could not read image' : language === 'zh-CN' ? '无法读取图片' : '無法讀取圖片',
+        description: isHeic
+          ? (language === 'en'
+              ? 'HEIC/HEIF is not supported by your browser. Please convert to JPEG or PNG first.'
+              : language === 'zh-CN'
+              ? 'HEIC/HEIF 格式浏览器不支持，请先转换为 JPEG 或 PNG。'
+              : 'HEIC/HEIF 格式瀏覽器不支援，請先轉換為 JPEG 或 PNG。')
+          : (language === 'en'
+              ? 'The file appears to be corrupted or in an unsupported format.'
+              : language === 'zh-CN' ? '文件已损坏或格式不受支持。' : '檔案已損毀或格式不支援。'),
+        variant: 'destructive',
+      });
+    };
     img.onload = async () => {
       let bitmap: ImageBitmap | HTMLImageElement = img;
-      try { bitmap = await createImageBitmap(file); } catch { /* fallback */ }
+      try { bitmap = await createImageBitmap(file); } catch { /* fallback to HTMLImageElement */ }
       const w = (bitmap as any).width ?? img.naturalWidth;
       const h = (bitmap as any).height ?? img.naturalHeight;
+      if (!w || !h) {
+        toast({ title: 'Error', description: 'Image has zero dimensions.', variant: 'destructive' });
+        URL.revokeObjectURL(url);
+        return;
+      }
       setImage({ file, url, width: w, height: h, bitmap });
       setTargetW(w); setTargetH(h); setScalePct(100);
       setPreviewUrl(null); setOutputBlob(null); setOutputSize(null);
