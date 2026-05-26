@@ -589,7 +589,7 @@ const StickerMakerPage = () => {
           <Sparkles className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h1 className="heading-display text-2xl mb-0">WhatsApp 貼圖製作器</h1>
+          <h1 className="heading-display text-2xl mb-0">{t('sticker.title')}</h1>
           <p className="text-muted-foreground text-sm">選擇多張圖片，製作 WebP 貼圖</p>
         </div>
       </div>
