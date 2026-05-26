@@ -605,7 +605,7 @@ const ImageResizingPage = () => {
     } finally {
       setProcessing(false);
     }
-  }, [image, targetW, targetH, fitMode, format, quality, bgColor, model, targetSizeMb, toast, L.done]);
+  }, [image, targetW, targetH, fitMode, format, quality, bgColor, model, targetSizeMb, toast, L.done, language]);
 
   const download = () => {
     if (!outputBlob || !image || !previewUrl) return;
