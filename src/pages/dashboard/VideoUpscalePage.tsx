@@ -39,8 +39,9 @@ const VideoUpscalePage = () => {
   const [progress, setProgress] = useState(0);
 
   const selectedModel = MODEL_OPTIONS.find((m) => m.id === model)!;
+  const resolutionExtra = scaleFactor === "4K" ? 10 : scaleFactor === "1080p" ? 4 : 0;
   const totalPoints =
-    selectedModel.points + (scaleFactor === "4K" ? 10 : 0) + (frameInterpolation ? 5 : 0) + (creativity === "bold" ? 3 : 0);
+    selectedModel.points + resolutionExtra + (frameInterpolation ? 5 : 0) + (creativity === "bold" ? 3 : 0);
 
   const handleFile = useCallback((f: File) => {
     if (!f.type.startsWith("video/")) {
