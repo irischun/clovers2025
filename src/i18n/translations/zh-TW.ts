@@ -36,6 +36,7 @@ const zhTW = {
   'nav.item.speechToText': '語音轉字幕',
   'nav.item.videoGen': '視頻生成',
   'nav.item.videoGen2': '視頻生成 2.0',
+  'nav.item.videoUpscale': '影片升頻與降頻',
   'nav.item.lipSync': 'LipSync 影片',
   'nav.item.youtubeSearch': 'YouTube 搜尋',
   'nav.item.xiaohongshuSearch': '小紅書搜尋',

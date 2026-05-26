@@ -46,7 +46,7 @@ const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
     { title: t('nav.item.speechToText'), icon: AudioLines, path: '/dashboard/speech-to-text' },
     { title: t('nav.item.videoGen'), icon: Video, path: '/dashboard/video-generation' },
     { title: t('nav.item.videoGen2'), icon: Video, path: '/dashboard/video-generation-2' },
-    { title: 'Video Upscale', icon: ArrowUpToLine, path: '/dashboard/video-upscale' },
+    { title: t('nav.item.videoUpscale'), icon: ArrowUpToLine, path: '/dashboard/video-upscale_and_downscale' },
     { title: t('nav.item.lipSync'), icon: Tv, path: '/dashboard/lip-sync' },
   ];
 

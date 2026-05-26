@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import PointsBalanceCard from "@/components/dashboard/PointsBalanceCard";
 
 type ModelId = "sora-2-enhancer" | "higgsfield-upscale" | "topaz-video";
-type ScaleFactor = "1080p" | "4K";
+type ScaleFactor = "720p" | "1080p" | "4K";
 type Creativity = "subtle" | "bold";
 
 const MODEL_OPTIONS: { id: ModelId; label: string; description: string; points: number }[] = [
