@@ -34,6 +34,7 @@ const stylePromptMap: Record<string, string> = {
 
   // New: Original & Realistic
   original: "faithful reproduction of the original image style, maintain original colors and composition, clean and accurate rendering, high fidelity, preserve all details exactly as they are",
+  keep_uploaded_style: "CRITICAL: replicate the exact artistic style, medium, color palette, line quality, shading technique, texture, and overall visual aesthetic of the uploaded reference image. Match the rendering style precisely as if drawn by the same artist using the same tools. Do NOT switch to a different art style. Preserve the look-and-feel, brushwork, level of detail, lighting, and mood of the uploaded image while adapting the subject/pose to fit the requested sticker theme",
   realistic: "photorealistic rendering, ultra-realistic detail, lifelike textures, natural lighting, accurate shadows, sharp focus, professional photography quality, hyperrealism",
 
   // Kling AI Style Library — Fun/Cartoon
