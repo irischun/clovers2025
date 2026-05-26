@@ -68,7 +68,8 @@ const App = () => (
                 <Route path="speech-to-text" element={<SpeechToTextPage />} />
                 <Route path="video-generation" element={<VideoGenerationPage />} />
                 <Route path="video-generation-2" element={<VideoGeneration2Page />} />
-                <Route path="video-upscale" element={<VideoUpscalePage />} />
+                <Route path="video-upscale_and_downscale" element={<VideoUpscalePage />} />
+                <Route path="video-upscale" element={<Navigate to="/dashboard/video-upscale_and_downscale" replace />} />
                 <Route path="lip-sync" element={<LipSyncPage />} />
                 <Route path="youtube-search" element={<YouTubeSearchPage />} />
                 <Route path="xiaohongshu-search" element={<XiaohongshuSearchPage />} />
