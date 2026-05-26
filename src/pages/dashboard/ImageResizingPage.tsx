@@ -167,13 +167,54 @@ function generativeEnhance(canvas: HTMLCanvasElement): HTMLCanvasElement {
   return out;
 }
 
-async function canvasToBlob(canvas: HTMLCanvasElement, format: OutputFormat, quality?: number): Promise<Blob> {
-  return new Promise((resolve, reject) =>
+// Detect the largest canvas size the current browser can actually encode.
+// Browsers (esp. Safari/iOS) silently fail toBlob above device-specific caps.
+// Conservative cross-browser cap: 8192 on the long edge.
+const SAFE_MAX_DIM = 8192;
+
+async function tryToBlob(
+  canvas: HTMLCanvasElement,
+  format: OutputFormat,
+  quality?: number,
+): Promise<Blob | null> {
+  return new Promise((resolve) =>
     canvas.toBlob(
-      (b) => (b ? resolve(b) : reject(new Error('Encoding failed'))),
+      (b) => resolve(b),
       format,
       format === 'image/png' ? undefined : quality,
     ),
+  );
+}
+
+async function canvasToBlob(canvas: HTMLCanvasElement, format: OutputFormat, quality?: number): Promise<Blob> {
+  // Primary attempt
+  let blob = await tryToBlob(canvas, format, quality);
+  if (blob) return blob;
+
+  // Fallback 1: try JPEG (most permissive encoder across browsers)
+  if (format !== 'image/jpeg') {
+    blob = await tryToBlob(canvas, 'image/jpeg', quality ?? 0.92);
+    if (blob) {
+      console.warn(`[resize] ${format} encoding failed at ${canvas.width}x${canvas.height}; fell back to JPEG`);
+      return blob;
+    }
+  }
+
+  // Fallback 2: downscale to SAFE_MAX_DIM and retry
+  const long = Math.max(canvas.width, canvas.height);
+  if (long > SAFE_MAX_DIM) {
+    const scale = SAFE_MAX_DIM / long;
+    const small = resampleCanvas(canvas, canvas.width * scale, canvas.height * scale);
+    blob = await tryToBlob(small, format, quality);
+    if (!blob) blob = await tryToBlob(small, 'image/jpeg', 0.92);
+    if (blob) {
+      console.warn(`[resize] downscaled to ${small.width}x${small.height} to satisfy browser encoder cap`);
+      return blob;
+    }
+  }
+
+  throw new Error(
+    `Encoding failed at ${canvas.width}×${canvas.height}. Try a smaller target size or JPEG format.`,
   );
 }
 
@@ -247,7 +288,7 @@ async function encodeToTargetSize(
   let curBlob = png;
   let lastUnderCanvas = canvas;
   let lastUnderBlob = png;
-  const MAX_DIM = 16384; // hard safety cap
+  const MAX_DIM = SAFE_MAX_DIM; // hard safety cap (browser encoder limit)
   for (let i = 0; i < 8; i++) {
     if (curBlob.size >= targetBytes) break;
     // Pixel count scales roughly linearly with PNG size for natural images.
@@ -368,11 +409,33 @@ const ImageResizingPage = () => {
     }
     const url = URL.createObjectURL(file);
     const img = new Image();
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      const isHeic = /heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name);
+      toast({
+        title: language === 'en' ? 'Could not read image' : language === 'zh-CN' ? '无法读取图片' : '無法讀取圖片',
+        description: isHeic
+          ? (language === 'en'
+              ? 'HEIC/HEIF is not supported by your browser. Please convert to JPEG or PNG first.'
+              : language === 'zh-CN'
+              ? 'HEIC/HEIF 格式浏览器不支持，请先转换为 JPEG 或 PNG。'
+              : 'HEIC/HEIF 格式瀏覽器不支援，請先轉換為 JPEG 或 PNG。')
+          : (language === 'en'
+              ? 'The file appears to be corrupted or in an unsupported format.'
+              : language === 'zh-CN' ? '文件已损坏或格式不受支持。' : '檔案已損毀或格式不支援。'),
+        variant: 'destructive',
+      });
+    };
     img.onload = async () => {
       let bitmap: ImageBitmap | HTMLImageElement = img;
-      try { bitmap = await createImageBitmap(file); } catch { /* fallback */ }
+      try { bitmap = await createImageBitmap(file); } catch { /* fallback to HTMLImageElement */ }
       const w = (bitmap as any).width ?? img.naturalWidth;
       const h = (bitmap as any).height ?? img.naturalHeight;
+      if (!w || !h) {
+        toast({ title: 'Error', description: 'Image has zero dimensions.', variant: 'destructive' });
+        URL.revokeObjectURL(url);
+        return;
+      }
       setImage({ file, url, width: w, height: h, bitmap });
       setTargetW(w); setTargetH(h); setScalePct(100);
       setPreviewUrl(null); setOutputBlob(null); setOutputSize(null);
@@ -465,8 +528,23 @@ const ImageResizingPage = () => {
     if (!image) return;
     setProcessing(true); setPreviewUrl(null); setOutputBlob(null);
     try {
-      const W = Math.max(1, Math.round(targetW));
-      const H = Math.max(1, Math.round(targetH));
+      let W = Math.max(1, Math.round(targetW));
+      let H = Math.max(1, Math.round(targetH));
+      // Clamp to safe browser encoder cap to avoid silent canvas.toBlob failures.
+      const longEdge = Math.max(W, H);
+      if (longEdge > SAFE_MAX_DIM) {
+        const k = SAFE_MAX_DIM / longEdge;
+        W = Math.max(1, Math.round(W * k));
+        H = Math.max(1, Math.round(H * k));
+        toast({
+          title: language === 'en' ? 'Size capped' : language === 'zh-CN' ? '尺寸已限制' : '尺寸已限制',
+          description: language === 'en'
+            ? `Target exceeded the browser encoder limit (${SAFE_MAX_DIM}px). Output clamped to ${W}×${H}.`
+            : language === 'zh-CN'
+            ? `目标超过浏览器编码上限 (${SAFE_MAX_DIM}px)，已限制为 ${W}×${H}。`
+            : `目標超過瀏覽器編碼上限 (${SAFE_MAX_DIM}px)，已限制為 ${W}×${H}。`,
+        });
+      }
       const srcRatio = image.width / image.height;
       const dstRatio = W / H;
 
@@ -527,7 +605,7 @@ const ImageResizingPage = () => {
     } finally {
       setProcessing(false);
     }
-  }, [image, targetW, targetH, fitMode, format, quality, bgColor, model, targetSizeMb, toast, L.done]);
+  }, [image, targetW, targetH, fitMode, format, quality, bgColor, model, targetSizeMb, toast, L.done, language]);
 
   const download = () => {
     if (!outputBlob || !image || !previewUrl) return;
