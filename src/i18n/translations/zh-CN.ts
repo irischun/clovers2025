@@ -259,7 +259,7 @@ const zhCN = {
   // Sticker Maker
   'sticker.style.keepUploaded': '保留上传图片风格',
   'sticker.style.keepUploaded.needImage': '请先上传参考图片以保留其风格',
-  'sticker.title': 'WhatsApp 贴图制作器',
+  'sticker.title': 'WhatsApp 贴图制作图书馆',
   'sticker.subtitle': '选择多张图片，制作 WebP 贴图',
   'sticker.pointsCost': '点数消耗：1点/次',
   'sticker.imageFrames': '图片帧',
