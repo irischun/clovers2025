@@ -257,6 +257,8 @@ const en = {
   'points.unit': 'pts',
 
   // Sticker Maker
+  'sticker.style.keepUploaded': 'Keep the Uploaded Image Style',
+  'sticker.style.keepUploaded.needImage': 'Please upload a reference image first to keep its style',
   'sticker.title': 'WhatsApp Sticker Maker',
   'sticker.subtitle': 'Select multiple images to create WebP stickers',
   'sticker.pointsCost': 'Points Cost: 1 pt/use',
