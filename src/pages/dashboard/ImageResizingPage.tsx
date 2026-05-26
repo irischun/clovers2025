@@ -528,8 +528,23 @@ const ImageResizingPage = () => {
     if (!image) return;
     setProcessing(true); setPreviewUrl(null); setOutputBlob(null);
     try {
-      const W = Math.max(1, Math.round(targetW));
-      const H = Math.max(1, Math.round(targetH));
+      let W = Math.max(1, Math.round(targetW));
+      let H = Math.max(1, Math.round(targetH));
+      // Clamp to safe browser encoder cap to avoid silent canvas.toBlob failures.
+      const longEdge = Math.max(W, H);
+      if (longEdge > SAFE_MAX_DIM) {
+        const k = SAFE_MAX_DIM / longEdge;
+        W = Math.max(1, Math.round(W * k));
+        H = Math.max(1, Math.round(H * k));
+        toast({
+          title: language === 'en' ? 'Size capped' : language === 'zh-CN' ? '尺寸已限制' : '尺寸已限制',
+          description: language === 'en'
+            ? `Target exceeded the browser encoder limit (${SAFE_MAX_DIM}px). Output clamped to ${W}×${H}.`
+            : language === 'zh-CN'
+            ? `目标超过浏览器编码上限 (${SAFE_MAX_DIM}px)，已限制为 ${W}×${H}。`
+            : `目標超過瀏覽器編碼上限 (${SAFE_MAX_DIM}px)，已限制為 ${W}×${H}。`,
+        });
+      }
       const srcRatio = image.width / image.height;
       const dstRatio = W / H;
 
