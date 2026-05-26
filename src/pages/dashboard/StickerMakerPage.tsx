@@ -41,7 +41,10 @@ const styleCategories = [
 ];
 
 const textStyles: StyleOption[] = [
-  // Graffiti first
+  // Keep uploaded image style — must always be the first option (Version 72)
+  { id: 'keep_uploaded_style', label: 'sticker.style.keepUploaded', emoji: '🪞', category: 'popular' },
+
+  // Graffiti
   { id: 'graffiti', label: 'Graffiti', emoji: '🧱', category: 'painting' },
 
   // 型格Cyberpunk second (per Version 54 request)
@@ -423,6 +426,10 @@ const StickerMakerPage = () => {
   const handleTextStickerGenerate = async () => {
     if (!stickerText.trim() && textStickerImages.length === 0) {
       toast({ title: '請輸入文字或上傳圖片', variant: 'destructive' });
+      return;
+    }
+    if (textStyle === 'keep_uploaded_style' && textStickerImages.length === 0) {
+      toast({ title: t('sticker.style.keepUploaded.needImage' as any), variant: 'destructive' });
       return;
     }
     setIsTextGenerating(true);
@@ -964,11 +971,12 @@ const StickerMakerPage = () => {
                     className="h-8 text-xs"
                     onClick={() => setTextStyle(s.id)}
                   >
-                    {s.emoji} {s.label}
+                    {s.emoji} {s.label.startsWith('sticker.') ? t(s.label as any) : s.label}
                   </Button>
                 ))}
               </div>
             </div>
+
             
             <Button 
               onClick={handleTextStickerGenerate} 
