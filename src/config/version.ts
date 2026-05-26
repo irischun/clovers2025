@@ -1,14 +1,17 @@
 // Application version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "74.0.0";
-// Version 74.0.0: Hardened image generation against safety-filter refusals.
-// The generate-image edge function now detects refusal responses (text-only
-// "I'm just a language model..." replies), auto-rephrases trigger phrases
-// like "remove watermark/logo/text" into neutral inpainting instructions,
-// and falls back through gemini-3.1-flash → gemini-3-pro → gemini-2.5-flash
-// before returning a clear, actionable error to the user. Failures now
-// return 422 (refused) or 502 (no image) so the client refunds points
-// instead of charging for a non-result.
+export const APP_VERSION = "75.0.0";
+// Version 75.0.0: Hardened the local Image Upscale & Resize pipeline.
+// - Added img.onerror handling with a clear, trilingual message for
+//   unsupported (e.g. HEIC/HEIF) or corrupted files.
+// - canvas.toBlob now has a 3-layer fallback chain: original format ->
+//   JPEG fallback -> downscale-then-retry, so encoding never fails
+//   silently on Safari/iOS or for very large canvases.
+// - Target dimensions are clamped to SAFE_MAX_DIM (8192px on the long
+//   edge), the conservative cross-browser canvas encoder cap, with a
+//   user-visible notice when the cap is applied.
+// - encodeToTargetSize uses the same 8192px cap, preventing the upscale
+//   loop from producing canvases that the browser cannot encode.
 export const VERSION_NAME = "Version";
 export const VERSION_DATE = "2026-05-26";
