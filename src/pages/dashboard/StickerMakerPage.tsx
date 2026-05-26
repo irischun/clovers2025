@@ -967,11 +967,12 @@ const StickerMakerPage = () => {
                     className="h-8 text-xs"
                     onClick={() => setTextStyle(s.id)}
                   >
-                    {s.emoji} {s.label}
+                    {s.emoji} {s.label.startsWith('sticker.') ? t(s.label as any) : s.label}
                   </Button>
                 ))}
               </div>
             </div>
+
             
             <Button 
               onClick={handleTextStickerGenerate} 
