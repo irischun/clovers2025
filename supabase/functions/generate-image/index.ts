@@ -394,7 +394,18 @@ ${rawPrompt || "(none — perform the swap as described above)"}`;
       lastModelTried = tryModel;
 
       let attemptMessages = messages;
-      if (i > 0) {
+      // Extract the user's raw prompt text to detect preemptive triggers.
+      const rawUserText = (() => {
+        const last = messages[messages.length - 1];
+        if (!last || last.role !== "user") return "";
+        if (typeof last.content === "string") return last.content;
+        return (last.content as any[])
+          .filter((c) => c.type === "text")
+          .map((c) => c.text || "")
+          .join(" ");
+      })();
+      const shouldPreRephrase = i === 0 && PREEMPTIVE_TRIGGERS.test(rawUserText);
+      if (i > 0 || shouldPreRephrase) {
         attemptMessages = messages.map((m) => {
           if (m.role !== "user") return m;
           if (typeof m.content === "string") {
@@ -407,7 +418,11 @@ ${rawPrompt || "(none — perform the swap as described above)"}`;
             ),
           };
         });
-        console.log(`Retry with model=${tryModel} and safety-rephrased prompt`);
+        if (i === 0) {
+          console.log(`Preemptive safety rephrase applied for model=${tryModel}`);
+        } else {
+          console.log(`Retry with model=${tryModel} and safety-rephrased prompt`);
+        }
       }
 
       response = await callAIGateway({
