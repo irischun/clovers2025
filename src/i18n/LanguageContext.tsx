@@ -2,11 +2,8 @@ import { createContext, useContext, useState, useCallback, ReactNode } from 'rea
 import en from './translations/en';
 import zhTW from './translations/zh-TW';
 import zhCN from './translations/zh-CN';
-import { Language, languageLabels, languageNames } from './languages';
+import { Language } from './languages';
 
-// Re-export for backward compatibility with existing imports
-export { languageLabels, languageNames };
-export type { Language };
 
 type TranslationKey = keyof typeof en;
 
