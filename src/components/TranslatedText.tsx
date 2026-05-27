@@ -1,5 +1,6 @@
 import { useState, useEffect, memo } from 'react';
-import { useLanguage, Language } from '@/i18n/LanguageContext';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { Language } from '@/i18n/LanguageContext';
 import { translationCacheManager } from '@/i18n/translationCache';
 
 interface TranslatedTextProps {
