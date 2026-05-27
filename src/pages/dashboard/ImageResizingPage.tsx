@@ -55,6 +55,7 @@ const DIMENSION_PRESETS: { label: string; w: number; h: number; group: string }[
   { group: 'Social', label: 'IG Reels 9:16 1080×1920', w: 1080, h: 1920 },
   { group: 'Social', label: 'IG Landscape 1.91:1 1080×566', w: 1080, h: 566 },
   { group: 'Social', label: 'TikTok 9:16 1080×1920', w: 1080, h: 1920 },
+  { group: 'Social', label: 'YouTube Watermark 150×150', w: 150, h: 150 },
   { group: 'Social', label: 'YouTube Thumb 1280×720', w: 1280, h: 720 },
   { group: 'Social', label: 'YouTube Banner 2560×1440', w: 2560, h: 1440 },
   { group: 'Social', label: 'Facebook Cover 820×312', w: 820, h: 312 },
