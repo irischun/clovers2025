@@ -1,5 +1,6 @@
 import { Globe } from 'lucide-react';
-import { useLanguage, Language, languageLabels, languageNames } from '@/i18n/LanguageContext';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { Language, languageLabels, languageNames } from '@/i18n/languages';
 import {
   DropdownMenu,
   DropdownMenuContent,
