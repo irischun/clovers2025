@@ -1,4 +1,4 @@
-import { Language } from './LanguageContext';
+import { Language } from './languages';
 import { supabase } from '@/integrations/supabase/client';
 
 const STORAGE_KEY = 'clovers-translation-cache';
