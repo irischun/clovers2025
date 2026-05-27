@@ -92,7 +92,7 @@ const DIMENSION_PRESETS: { label: string; w: number; h: number; group: string }[
 ];
 
 // File-size target buttons (MB). null = "Other" (custom).
-const SIZE_TARGETS_MB = [2, 5, 10, 15, 20, 30, 50, 70, 80, 100];
+const SIZE_TARGETS_MB = [2, 4, 5, 10, 15, 20, 30, 50, 70, 80, 100];
 // Resolution long-side targets (px)
 const RES_TARGETS: { label: string; long: number }[] = [
   { label: '1K', long: 1024 },
