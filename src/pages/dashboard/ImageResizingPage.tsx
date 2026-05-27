@@ -940,6 +940,19 @@ const ImageResizingPage = () => {
                 <Button onClick={download} disabled={!outputBlob} className="w-full" size="lg">
                   <Download className="w-4 h-4 mr-2" /> {L.download}
                 </Button>
+                <Button
+                  onClick={doResize}
+                  disabled={processing || !image}
+                  variant="outline"
+                  className="w-full"
+                  size="lg"
+                >
+                  {processing ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {L.processing}</>
+                  ) : (
+                    <><RefreshCw className="w-4 h-4 mr-2" /> {L.regenerate}</>
+                  )}
+                </Button>
               </CardContent>
             </Card>
           </div>
