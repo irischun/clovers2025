@@ -371,6 +371,7 @@ const ImageResizingPage = () => {
     topazGenDesc: language === 'en' ? 'Detail-enhanced generative upscale' : language === 'zh-CN' ? '细节增强的生成式放大' : '細節增強的生成式放大',
     aspectRatio: language === 'en' ? 'Aspect Ratio' : language === 'zh-CN' ? '宽高比' : '寬高比',
     auto: language === 'en' ? 'Auto' : language === 'zh-CN' ? '自动' : '自動',
+    regenerate: language === 'en' ? 'Refresh to Generate New Image' : language === 'zh-CN' ? '刷新以重新生成图片' : '重新整理以生成新圖片',
   }), [language]);
 
   const handleFile = useCallback(async (file: File) => {
@@ -938,6 +939,19 @@ const ImageResizingPage = () => {
                 )}
                 <Button onClick={download} disabled={!outputBlob} className="w-full" size="lg">
                   <Download className="w-4 h-4 mr-2" /> {L.download}
+                </Button>
+                <Button
+                  onClick={doResize}
+                  disabled={processing || !image}
+                  variant="outline"
+                  className="w-full"
+                  size="lg"
+                >
+                  {processing ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {L.processing}</>
+                  ) : (
+                    <><RefreshCw className="w-4 h-4 mr-2" /> {L.regenerate}</>
+                  )}
                 </Button>
               </CardContent>
             </Card>
