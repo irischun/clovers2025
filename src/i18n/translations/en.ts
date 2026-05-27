@@ -32,6 +32,7 @@ const en = {
   'nav.item.imageGen': 'Image Generation',
   'nav.item.imageResize': 'Image Resizing & Rescaling',
   'nav.item.stickerMaker': 'Sticker Maker Library',
+  'nav.item.imageLayerSplit': 'Image Layer Splitter',
   'nav.item.voiceGen': 'Voice Generation',
   'nav.item.speechToText': 'Speech to Subtitle',
   'nav.item.videoGen': 'Video Generation',
