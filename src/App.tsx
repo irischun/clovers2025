@@ -63,7 +63,8 @@ const App = () => (
                 <Route path="image-generating-and-editing" element={<ImageGenerationPage />} />
                 <Route path="image-generating" element={<Navigate to="/dashboard/image-generating-and-editing" replace />} />
                 <Route path="image-generation" element={<Navigate to="/dashboard/image-generating-and-editing" replace />} />
-                <Route path="image-resizing" element={<ImageResizingPage />} />
+                <Route path="image-resizing_image-rescaling" element={<ImageResizingPage />} />
+                <Route path="image-resizing" element={<Navigate to="/dashboard/image-resizing_image-rescaling" replace />} />
                 <Route path="voice-generation" element={<VoiceGenerationPage />} />
                 <Route path="speech-to-text" element={<SpeechToTextPage />} />
                 <Route path="video-generation" element={<VideoGenerationPage />} />
