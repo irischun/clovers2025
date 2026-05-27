@@ -32,6 +32,7 @@ const zhTW = {
   'nav.item.imageGen': '圖片生成',
   'nav.item.imageResize': '圖片尺寸調整與縮放',
   'nav.item.stickerMaker': '貼圖製作圖書館',
+  'nav.item.imageLayerSplit': '圖片自動分層神器',
   'nav.item.voiceGen': '語音生成',
   'nav.item.speechToText': '語音轉字幕',
   'nav.item.videoGen': '視頻生成',
