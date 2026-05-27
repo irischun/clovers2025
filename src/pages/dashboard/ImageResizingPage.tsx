@@ -371,6 +371,7 @@ const ImageResizingPage = () => {
     topazGenDesc: language === 'en' ? 'Detail-enhanced generative upscale' : language === 'zh-CN' ? '细节增强的生成式放大' : '細節增強的生成式放大',
     aspectRatio: language === 'en' ? 'Aspect Ratio' : language === 'zh-CN' ? '宽高比' : '寬高比',
     auto: language === 'en' ? 'Auto' : language === 'zh-CN' ? '自动' : '自動',
+    regenerate: language === 'en' ? 'Refresh to Generate New Image' : language === 'zh-CN' ? '刷新以重新生成图片' : '重新整理以生成新圖片',
   }), [language]);
 
   const handleFile = useCallback(async (file: File) => {
