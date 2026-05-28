@@ -509,6 +509,21 @@ export default function WatermarkGeneratorPage() {
                 onChange={(e) => handleImageWmFiles(e.target.files)}
               />
             </div>
+            <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={useOrigAsWm}
+                onChange={(e) => setUseOrigAsWm(e.target.checked)}
+                className="rounded"
+              />
+              {L.removeBg}
+            </label>
+            <Button variant="secondary" className="w-full" onClick={useCurrentAsWatermark}
+              disabled={!current || bgRemovingIds.size > 0}>
+              {bgRemovingIds.size > 0
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.removingBg}</>
+                : <><Eraser className="w-4 h-4 mr-2" />{L.useOriginal}</>}
+            </Button>
 
             <div className="space-y-2 max-h-[40vh] overflow-y-auto">
               <Label className="text-xs uppercase tracking-wide">{L.watermarks}</Label>
