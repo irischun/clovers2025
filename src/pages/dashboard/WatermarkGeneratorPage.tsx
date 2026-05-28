@@ -98,6 +98,11 @@ export default function WatermarkGeneratorPage() {
       pageOf: (a: number, b: number) => `${a} / ${b}`,
       dragHint: '在預覽圖上拖曳可移動單個浮水印',
       yourText: '您的文字',
+      useOriginal: '使用原圖作為浮水印(去背)',
+      removeBg: '移除背景並透明化',
+      removingBg: '正在移除背景...',
+      bgRemoved: '背景已移除',
+      bgRemoveFailed: '背景移除失敗',
     };
     if (isCN) return {
       title: '水印生成器',
