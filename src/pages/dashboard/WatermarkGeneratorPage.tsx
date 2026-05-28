@@ -103,6 +103,7 @@ export default function WatermarkGeneratorPage() {
       removingBg: '正在移除背景...',
       bgRemoved: '背景已移除',
       bgRemoveFailed: '背景移除失敗',
+      generate: '一鍵生成浮水印',
     };
     if (isCN) return {
       title: '水印生成器',
@@ -138,6 +139,7 @@ export default function WatermarkGeneratorPage() {
       removingBg: '正在移除背景...',
       bgRemoved: '背景已移除',
       bgRemoveFailed: '背景移除失败',
+      generate: '一键生成水印',
     };
     return {
       title: 'Watermark Generator',
@@ -173,6 +175,7 @@ export default function WatermarkGeneratorPage() {
       removingBg: 'Removing background...',
       bgRemoved: 'Background removed',
       bgRemoveFailed: 'Background removal failed',
+      generate: 'To Generate a Watermark',
     };
   }, [language]);
 
@@ -649,6 +652,24 @@ export default function WatermarkGeneratorPage() {
               {processing
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
                 : <><Download className="w-4 h-4 mr-2" />{L.apply}</>}
+            </Button>
+            <Button
+              className="w-full mt-2"
+              size="lg"
+              variant="secondary"
+              onClick={async () => {
+                if (!images.length) { toast.error(L.noImages); return; }
+                // Force auto-generate: clear existing watermarks so exportAll regenerates from original image with bg removed
+                setWatermarks([]);
+                setSelectedWmId(null);
+                // Wait a tick so state propagates, then run export which will auto-create a fresh watermark
+                setTimeout(() => { exportAll(); }, 0);
+              }}
+              disabled={processing}
+            >
+              {processing
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
+                : <><Download className="w-4 h-4 mr-2" />{L.generate}</>}
             </Button>
           </Card>
         </div>
