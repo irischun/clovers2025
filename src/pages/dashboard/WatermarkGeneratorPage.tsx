@@ -187,6 +187,19 @@ export default function WatermarkGeneratorPage() {
   const [bgRemovingIds, setBgRemovingIds] = useState<Set<string>>(new Set());
   const [useOrigAsWm, setUseOrigAsWm] = useState(false);
 
+  // One-click generator defaults
+  type Pos = 'tl'|'tc'|'tr'|'cl'|'cc'|'cr'|'bl'|'bc'|'br';
+  const POS_MAP: Record<Pos, { xRel: number; yRel: number }> = {
+    tl: { xRel: 0.15, yRel: 0.15 }, tc: { xRel: 0.5, yRel: 0.15 }, tr: { xRel: 0.85, yRel: 0.15 },
+    cl: { xRel: 0.15, yRel: 0.5 },  cc: { xRel: 0.5, yRel: 0.5 },  cr: { xRel: 0.85, yRel: 0.5 },
+    bl: { xRel: 0.15, yRel: 0.85 }, bc: { xRel: 0.5, yRel: 0.85 }, br: { xRel: 0.85, yRel: 0.85 },
+  };
+  const [autoSize, setAutoSize] = useState(40);       // % of image
+  const [autoOpacity, setAutoOpacity] = useState(85); // %
+  const [autoRotation, setAutoRotation] = useState(0); // degrees
+  const [autoPos, setAutoPos] = useState<Pos>('cc');
+  const [autoOptionsOpen, setAutoOptionsOpen] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageWmInputRef = useRef<HTMLInputElement>(null);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -414,9 +427,14 @@ export default function WatermarkGeneratorPage() {
         const baseSrc = images[0];
         const transparent = await removeBgFromDataUrl(baseSrc.src);
         const imgEl = await loadImage(transparent);
+        const pos = POS_MAP[autoPos];
         const wm: Watermark = {
           id: uid(), type: 'image', imgSrc: transparent, imgEl,
-          xRel: 0.5, yRel: 0.5, scale: 0.4, rotation: 0, opacity: 0.85, mode: 'single', tileGap: 0.5,
+          xRel: pos.xRel, yRel: pos.yRel,
+          scale: Math.max(0.05, Math.min(1, autoSize / 100)),
+          rotation: autoRotation,
+          opacity: Math.max(0.05, Math.min(1, autoOpacity / 100)),
+          mode: 'single', tileGap: 0.5,
         };
         activeWatermarks = [wm];
         setWatermarks([wm]);
