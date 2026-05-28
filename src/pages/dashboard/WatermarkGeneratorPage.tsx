@@ -226,14 +226,73 @@ export default function WatermarkGeneratorPage() {
     if (!files || !files.length) return;
     for (const f of Array.from(files)) {
       if (!/image\//.test(f.type)) continue;
-      const src = await fileToDataURL(f);
+      let src = await fileToDataURL(f);
+      if (useOrigAsWm) {
+        try {
+          src = await removeBgFromDataUrl(src);
+        } catch (e) {
+          console.error(e);
+          toast.error(L.bgRemoveFailed);
+        }
+      }
       const imgEl = await loadImage(src);
       const wm: Watermark = {
         id: uid(), type: 'image', imgSrc: src, imgEl,
-        xRel: 0.5, yRel: 0.5, scale: 0.25, rotation: 0, opacity: 0.6, mode: 'single', tileGap: 0.5,
+        xRel: 0.5, yRel: 0.5, scale: 0.25, rotation: 0, opacity: 0.85, mode: 'single', tileGap: 0.5,
       };
       setWatermarks(p => [...p, wm]);
       setSelectedWmId(wm.id);
+    }
+  };
+
+  const removeBgFromDataUrl = async (dataUrl: string): Promise<string> => {
+    const blob = await (await fetch(dataUrl)).blob();
+    const outBlob = await removeBackground(blob);
+    return await new Promise<string>((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result as string);
+      r.onerror = rej;
+      r.readAsDataURL(outBlob);
+    });
+  };
+
+  const handleRemoveBgFor = async (wmId: string) => {
+    const wm = watermarks.find(w => w.id === wmId);
+    if (!wm || wm.type !== 'image' || !wm.imgSrc) return;
+    setBgRemovingIds(prev => new Set(prev).add(wmId));
+    try {
+      const transparent = await removeBgFromDataUrl(wm.imgSrc);
+      const imgEl = await loadImage(transparent);
+      updateWm(wmId, { imgSrc: transparent, imgEl });
+      toast.success(L.bgRemoved);
+    } catch (e) {
+      console.error(e);
+      toast.error(L.bgRemoveFailed);
+    } finally {
+      setBgRemovingIds(prev => { const n = new Set(prev); n.delete(wmId); return n; });
+    }
+  };
+
+  const useCurrentAsWatermark = async () => {
+    if (!current) { toast.error(L.noImages); return; }
+    const tmpId = uid();
+    setBgRemovingIds(prev => new Set(prev).add(tmpId));
+    const loadingToast = toast.loading(L.removingBg);
+    try {
+      const transparent = await removeBgFromDataUrl(current.src);
+      const imgEl = await loadImage(transparent);
+      const wm: Watermark = {
+        id: tmpId, type: 'image', imgSrc: transparent, imgEl,
+        xRel: 0.5, yRel: 0.5, scale: 0.4, rotation: 0, opacity: 0.85, mode: 'single', tileGap: 0.5,
+      };
+      setWatermarks(p => [...p, wm]);
+      setSelectedWmId(wm.id);
+      toast.success(L.bgRemoved, { id: loadingToast });
+    } catch (e) {
+      console.error(e);
+      toast.error(L.bgRemoveFailed, { id: loadingToast });
+    } finally {
+      setBgRemovingIds(prev => { const n = new Set(prev); n.delete(tmpId); return n; });
     }
   };
 
