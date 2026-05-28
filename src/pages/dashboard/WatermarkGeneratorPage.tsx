@@ -168,6 +168,11 @@ export default function WatermarkGeneratorPage() {
       pageOf: (a: number, b: number) => `${a} / ${b}`,
       dragHint: 'Drag on the preview to move a single watermark',
       yourText: 'Your Text',
+      useOriginal: 'Use original image as watermark (remove background)',
+      removeBg: 'Remove background & make transparent',
+      removingBg: 'Removing background...',
+      bgRemoved: 'Background removed',
+      bgRemoveFailed: 'Background removal failed',
     };
   }, [language]);
 
