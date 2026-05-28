@@ -402,12 +402,13 @@ export default function WatermarkGeneratorPage() {
   const onPreviewPointerUp = () => { dragRef.current = null; };
 
   // Export all images
-  const exportAll = async () => {
+  const exportAll = async (opts?: { forceAuto?: boolean }) => {
     if (!images.length) { toast.error(L.noImages); return; }
     setProcessing(true);
-    const loadingToast = !watermarks.length ? toast.loading(L.removingBg) : null;
+    const needsAuto = opts?.forceAuto || !watermarks.length;
+    const loadingToast = needsAuto ? toast.loading(L.removingBg) : null;
     try {
-      let activeWatermarks = watermarks;
+      let activeWatermarks = opts?.forceAuto ? [] : watermarks;
       // If no watermark added, auto-create one by removing background from the first uploaded image
       if (!activeWatermarks.length) {
         const baseSrc = images[0];
@@ -648,7 +649,7 @@ export default function WatermarkGeneratorPage() {
               </div>
             )}
 
-            <Button className="w-full" size="lg" onClick={exportAll} disabled={processing}>
+            <Button className="w-full" size="lg" onClick={() => exportAll()} disabled={processing}>
               {processing
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
                 : <><Download className="w-4 h-4 mr-2" />{L.apply}</>}
@@ -657,14 +658,7 @@ export default function WatermarkGeneratorPage() {
               className="w-full mt-2"
               size="lg"
               variant="secondary"
-              onClick={async () => {
-                if (!images.length) { toast.error(L.noImages); return; }
-                // Force auto-generate: clear existing watermarks so exportAll regenerates from original image with bg removed
-                setWatermarks([]);
-                setSelectedWmId(null);
-                // Wait a tick so state propagates, then run export which will auto-create a fresh watermark
-                setTimeout(() => { exportAll(); }, 0);
-              }}
+              onClick={() => exportAll({ forceAuto: true })}
               disabled={processing}
             >
               {processing
