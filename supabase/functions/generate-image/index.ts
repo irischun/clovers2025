@@ -99,15 +99,11 @@ function buildEnhancedPrompt(prompt: string, style: string, width?: number, heig
     else if (Math.abs(ratio - 1) < 0.1) parts.push(resolutionGuide['1:1']);
     else parts.push(resolutionGuide['4:3']);
 
-    // Explicit dimensional directive — request a BIG-SCREEN render. We ask for at least
-    // 2560px on the long side (4K-class), preserving the requested aspect ratio. The
-    // edge function additionally upscales any smaller native output to guarantee this.
-    const longTarget = Math.max(width, height, 2560);
-    const aspect = width / height;
-    const targetW = aspect >= 1 ? longTarget : Math.round(longTarget * aspect);
-    const targetH = aspect >= 1 ? Math.round(longTarget / aspect) : longTarget;
+    // Request the model to fill the canvas at the requested aspect; do NOT
+    // demand 2560+ px — that produced oversized PNGs that exceeded the edge
+    // runtime memory cap during post-processing.
     parts.push(
-      `OUTPUT DIMENSIONS: render at the highest possible native resolution, target ${targetW} x ${targetH} pixels (width x height) or larger, full-bleed, no letterboxing, no padding, no borders, fill the entire canvas, suitable for very large 4K displays`
+      `OUTPUT: render at the requested ${width} x ${height} aspect, full-bleed, no letterboxing, no padding, no borders, fill the entire canvas`
     );
   }
 
