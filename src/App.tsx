@@ -30,6 +30,7 @@ import RSSPage from "./pages/dashboard/RSSPage";
 import ContentOrganizePage from "./pages/dashboard/ContentOrganizePage";
 import StickerMakerPage from "./pages/dashboard/StickerMakerPage";
 import ImageLayerSplittingPage from "./pages/dashboard/ImageLayerSplittingPage";
+import WatermarkGeneratorPage from "./pages/dashboard/WatermarkGeneratorPage";
 import SmartPublishPage from "./pages/dashboard/SmartPublishPage";
 import GalleryPage from "./pages/dashboard/GalleryPage";
 import SubscriptionPage from "./pages/dashboard/SubscriptionPage";
@@ -80,6 +81,8 @@ const App = () => (
                 <Route path="sticker-maker-library" element={<StickerMakerPage />} />
                 <Route path="sticker-maker-many-marvelous_styles" element={<Navigate to="/dashboard/sticker-maker-library" replace />} />
                 <Route path="sticker-maker" element={<Navigate to="/dashboard/sticker-maker-library" replace />} />
+                <Route path="watermark_generator" element={<WatermarkGeneratorPage />} />
+                <Route path="watermark-generator" element={<Navigate to="/dashboard/watermark_generator" replace />} />
                 <Route path="image_layers_splitting" element={<ImageLayerSplittingPage />} />
                 <Route path="image-layer-splitting" element={<Navigate to="/dashboard/image_layers_splitting" replace />} />
                 <Route path="smart-publish" element={<SmartPublishPage />} />
