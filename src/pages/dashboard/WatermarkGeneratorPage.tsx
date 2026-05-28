@@ -687,6 +687,60 @@ export default function WatermarkGeneratorPage() {
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
                 : <><Download className="w-4 h-4 mr-2" />{L.apply}</>}
             </Button>
+            <div className="mt-3 rounded-md border border-border bg-muted/30">
+              <button
+                type="button"
+                className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium hover:bg-muted/50 transition rounded-md"
+                onClick={() => setAutoOptionsOpen(o => !o)}
+                aria-expanded={autoOptionsOpen}
+              >
+                <span>{L.autoOptions}</span>
+                <span className="text-xs text-muted-foreground">{autoOptionsOpen ? '▲' : '▼'}</span>
+              </button>
+              {autoOptionsOpen && (
+                <div className="px-3 pb-3 space-y-3">
+                  <div>
+                    <Label className="text-xs">{L.size} · {autoSize}%</Label>
+                    <Slider min={5} max={100} step={1} value={[autoSize]} onValueChange={([v]) => setAutoSize(v)} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">{L.opacity} · {autoOpacity}%</Label>
+                    <Slider min={5} max={100} step={1} value={[autoOpacity]} onValueChange={([v]) => setAutoOpacity(v)} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">{L.rotation} · {autoRotation}°</Label>
+                    <Slider min={-180} max={180} step={1} value={[autoRotation]} onValueChange={([v]) => setAutoRotation(v)} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">{L.position}</Label>
+                    <div className="grid grid-cols-3 gap-1 mt-1">
+                      {(['tl','tc','tr','cl','cc','cr','bl','bc','br'] as Pos[]).map(p => {
+                        const labelMap: Record<Pos, string> = {
+                          tl: L.posTL, tc: L.posTC, tr: L.posTR,
+                          cl: L.posCL, cc: L.posCC, cr: L.posCR,
+                          bl: L.posBL, bc: L.posBC, br: L.posBR,
+                        };
+                        const active = autoPos === p;
+                        return (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => setAutoPos(p)}
+                            className={`text-xs px-2 py-1.5 rounded border transition ${
+                              active
+                                ? 'bg-primary text-primary-foreground border-primary'
+                                : 'bg-background border-border hover:bg-muted'
+                            }`}
+                          >
+                            {labelMap[p]}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
             <Button
               className="w-full mt-2"
               size="lg"
