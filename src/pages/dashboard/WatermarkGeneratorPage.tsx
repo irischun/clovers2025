@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Upload, Type, Image as ImageIcon, Trash2, Download, Plus, Loader2 } from 'lucide-react';
+import { Upload, Type, Image as ImageIcon, Trash2, Download, Plus, Loader2, Eraser } from 'lucide-react';
+import { removeBackground } from '@imgly/background-removal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
