@@ -133,6 +133,11 @@ export default function WatermarkGeneratorPage() {
       pageOf: (a: number, b: number) => `${a} / ${b}`,
       dragHint: '在预览图上拖动可移动单个水印',
       yourText: '您的文字',
+      useOriginal: '使用原图作为水印(去背)',
+      removeBg: '移除背景并透明化',
+      removingBg: '正在移除背景...',
+      bgRemoved: '背景已移除',
+      bgRemoveFailed: '背景移除失败',
     };
     return {
       title: 'Watermark Generator',
