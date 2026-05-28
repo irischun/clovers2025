@@ -489,8 +489,11 @@ ${rawPrompt || "(none — perform the swap as described above)"}`;
           let outputMime = "image/png";
           let outputExt = "png";
 
-          // Upscale if model returned an image smaller than what the user requested.
-          // "Bigger is better" — never deliver below requested dimensions.
+          // Upscale ONLY if model output is smaller than the user's explicit request.
+          // We intentionally do NOT enforce a 2560px minimum here — that previously
+          // caused "Memory limit exceeded" crashes in the edge runtime because
+          // Lanczos resize of large RGBA buffers blows past Deno edge memory limits.
+          // Cap the upscale factor at 2x to stay within edge memory budget.
           try {
             const decoded = await Image.decode(binary);
             const srcW = decoded.width;
@@ -498,24 +501,15 @@ ${rawPrompt || "(none — perform the swap as described above)"}`;
             finalWidth = srcW;
             finalHeight = srcH;
 
-          // Target dimensions: at least the requested width/height; preserve the model's aspect.
-            // BIG-SCREEN GUARANTEE: enforce a minimum long-side of 2560px so every output is
-            // suitable for very large displays (4K/retina) regardless of the model's native size.
-            const MIN_LONG_SIDE = 2560;
-            const srcLong = Math.max(srcW, srcH);
-            const minLongScale = MIN_LONG_SIDE / srcLong;
-
             const reqW = typeof width === "number" && width > 0 ? width : srcW;
             const reqH = typeof height === "number" && height > 0 ? height : srcH;
 
-            // Scale factor required so BOTH dimensions meet or exceed the request,
-            // AND the long side meets the big-screen minimum.
-            const scale = Math.max(reqW / srcW, reqH / srcH, minLongScale, 1);
+            const neededScale = Math.max(reqW / srcW, reqH / srcH, 1);
+            const scale = Math.min(neededScale, 2);
 
-            if (scale > 1.001) {
+            if (scale > 1.01) {
               const targetW = Math.round(srcW * scale);
               const targetH = Math.round(srcH * scale);
-              // ImageScript's resize uses Lanczos (RESIZE_AUTO -> high quality) by default.
               decoded.resize(targetW, targetH);
               finalWidth = targetW;
               finalHeight = targetH;
@@ -524,7 +518,7 @@ ${rawPrompt || "(none — perform the swap as described above)"}`;
               outputExt = "png";
               console.log(`Upscaled image ${srcW}x${srcH} -> ${targetW}x${targetH} (requested ${reqW}x${reqH})`);
             } else {
-              console.log(`Native size ${srcW}x${srcH} already meets requested ${reqW}x${reqH}`);
+              console.log(`Native size ${srcW}x${srcH} kept (requested ${reqW}x${reqH})`);
             }
           } catch (decodeErr) {
             console.warn("Image decode/upscale skipped:", decodeErr);
