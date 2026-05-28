@@ -103,6 +103,7 @@ export default function WatermarkGeneratorPage() {
       removingBg: '正在移除背景...',
       bgRemoved: '背景已移除',
       bgRemoveFailed: '背景移除失敗',
+      generate: '一鍵生成浮水印',
     };
     if (isCN) return {
       title: '水印生成器',
@@ -138,6 +139,7 @@ export default function WatermarkGeneratorPage() {
       removingBg: '正在移除背景...',
       bgRemoved: '背景已移除',
       bgRemoveFailed: '背景移除失败',
+      generate: '一键生成水印',
     };
     return {
       title: 'Watermark Generator',
@@ -173,6 +175,7 @@ export default function WatermarkGeneratorPage() {
       removingBg: 'Removing background...',
       bgRemoved: 'Background removed',
       bgRemoveFailed: 'Background removal failed',
+      generate: 'To Generate a Watermark',
     };
   }, [language]);
 
@@ -399,12 +402,13 @@ export default function WatermarkGeneratorPage() {
   const onPreviewPointerUp = () => { dragRef.current = null; };
 
   // Export all images
-  const exportAll = async () => {
+  const exportAll = async (opts?: { forceAuto?: boolean }) => {
     if (!images.length) { toast.error(L.noImages); return; }
     setProcessing(true);
-    const loadingToast = !watermarks.length ? toast.loading(L.removingBg) : null;
+    const needsAuto = opts?.forceAuto || !watermarks.length;
+    const loadingToast = needsAuto ? toast.loading(L.removingBg) : null;
     try {
-      let activeWatermarks = watermarks;
+      let activeWatermarks = opts?.forceAuto ? [] : watermarks;
       // If no watermark added, auto-create one by removing background from the first uploaded image
       if (!activeWatermarks.length) {
         const baseSrc = images[0];
@@ -645,10 +649,21 @@ export default function WatermarkGeneratorPage() {
               </div>
             )}
 
-            <Button className="w-full" size="lg" onClick={exportAll} disabled={processing}>
+            <Button className="w-full" size="lg" onClick={() => exportAll()} disabled={processing}>
               {processing
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
                 : <><Download className="w-4 h-4 mr-2" />{L.apply}</>}
+            </Button>
+            <Button
+              className="w-full mt-2"
+              size="lg"
+              variant="secondary"
+              onClick={() => exportAll({ forceAuto: true })}
+              disabled={processing}
+            >
+              {processing
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
+                : <><Download className="w-4 h-4 mr-2" />{L.generate}</>}
             </Button>
           </Card>
         </div>
