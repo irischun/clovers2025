@@ -582,6 +582,16 @@ export default function WatermarkGeneratorPage() {
                   </>
                 )}
 
+                {selectedWm.type === 'image' && (
+                  <Button variant="outline" size="sm" className="w-full"
+                    onClick={() => handleRemoveBgFor(selectedWm.id)}
+                    disabled={bgRemovingIds.has(selectedWm.id)}>
+                    {bgRemovingIds.has(selectedWm.id)
+                      ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.removingBg}</>
+                      : <><Eraser className="w-4 h-4 mr-2" />{L.removeBg}</>}
+                  </Button>
+                )}
+
                 <div>
                   <Label className="text-xs">{L.mode}</Label>
                   <Select value={selectedWm.mode}
