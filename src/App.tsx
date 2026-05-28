@@ -30,6 +30,7 @@ import RSSPage from "./pages/dashboard/RSSPage";
 import ContentOrganizePage from "./pages/dashboard/ContentOrganizePage";
 import StickerMakerPage from "./pages/dashboard/StickerMakerPage";
 import ImageLayerSplittingPage from "./pages/dashboard/ImageLayerSplittingPage";
+import WatermarkGeneratorPage from "./pages/dashboard/WatermarkGeneratorPage";
 import SmartPublishPage from "./pages/dashboard/SmartPublishPage";
 import GalleryPage from "./pages/dashboard/GalleryPage";
 import SubscriptionPage from "./pages/dashboard/SubscriptionPage";
