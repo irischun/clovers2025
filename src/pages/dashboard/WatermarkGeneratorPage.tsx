@@ -687,7 +687,18 @@ export default function WatermarkGeneratorPage() {
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
                 : <><Download className="w-4 h-4 mr-2" />{L.apply}</>}
             </Button>
-            <div className="mt-3 rounded-md border border-border bg-muted/30">
+            <Button
+              className="w-full"
+              size="lg"
+              variant="secondary"
+              onClick={() => exportAll({ forceAuto: true })}
+              disabled={processing}
+            >
+              {processing
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
+                : <><Download className="w-4 h-4 mr-2" />{L.generate}</>}
+            </Button>
+            <div className="rounded-md border border-border bg-muted/30">
               <button
                 type="button"
                 className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium hover:bg-muted/50 transition rounded-md"
@@ -741,17 +752,6 @@ export default function WatermarkGeneratorPage() {
                 </div>
               )}
             </div>
-            <Button
-              className="w-full mt-2"
-              size="lg"
-              variant="secondary"
-              onClick={() => exportAll({ forceAuto: true })}
-              disabled={processing}
-            >
-              {processing
-                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
-                : <><Download className="w-4 h-4 mr-2" />{L.generate}</>}
-            </Button>
           </Card>
         </div>
       )}
