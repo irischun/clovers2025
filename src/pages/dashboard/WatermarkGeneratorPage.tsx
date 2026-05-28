@@ -401,12 +401,27 @@ export default function WatermarkGeneratorPage() {
   // Export all images
   const exportAll = async () => {
     if (!images.length) { toast.error(L.noImages); return; }
-    if (!watermarks.length) { toast.error(L.noWatermarks); return; }
     setProcessing(true);
+    const loadingToast = !watermarks.length ? toast.loading(L.removingBg) : null;
     try {
+      let activeWatermarks = watermarks;
+      // If no watermark added, auto-create one by removing background from the first uploaded image
+      if (!activeWatermarks.length) {
+        const baseSrc = images[0];
+        const transparent = await removeBgFromDataUrl(baseSrc.src);
+        const imgEl = await loadImage(transparent);
+        const wm: Watermark = {
+          id: uid(), type: 'image', imgSrc: transparent, imgEl,
+          xRel: 0.5, yRel: 0.5, scale: 0.4, rotation: 0, opacity: 0.85, mode: 'single', tileGap: 0.5,
+        };
+        activeWatermarks = [wm];
+        setWatermarks([wm]);
+        setSelectedWmId(wm.id);
+        if (loadingToast) toast.success(L.bgRemoved, { id: loadingToast });
+      }
       for (const src of images) {
         const c = document.createElement('canvas');
-        renderToCanvas(c, src, watermarks);
+        renderToCanvas(c, src, activeWatermarks);
         const isPng = /\.png$/i.test(src.name);
         const blob: Blob = await new Promise(res =>
           c.toBlob(b => res(b!), isPng ? 'image/png' : 'image/jpeg', 0.95)!
@@ -424,7 +439,8 @@ export default function WatermarkGeneratorPage() {
       toast.success('Done');
     } catch (err) {
       console.error(err);
-      toast.error('Failed to export');
+      if (loadingToast) toast.error(L.bgRemoveFailed, { id: loadingToast });
+      else toast.error('Failed to export');
     } finally {
       setProcessing(false);
     }
