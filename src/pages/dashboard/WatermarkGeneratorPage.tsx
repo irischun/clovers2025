@@ -459,15 +459,17 @@ export default function WatermarkGeneratorPage() {
       for (const src of images) {
         const c = document.createElement('canvas');
         renderToCanvas(c, src, activeWatermarks);
-        const isPng = /\.png$/i.test(src.name);
+        // Always export as PNG to preserve transparency (alpha channel).
+        // JPEG has no alpha and would bake a white/checker background into
+        // images that originally had transparent regions.
         const blob: Blob = await new Promise(res =>
-          c.toBlob(b => res(b!), isPng ? 'image/png' : 'image/jpeg', 0.95)!
+          c.toBlob(b => res(b!), 'image/png')!
         );
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         const base = src.name.replace(/\.[^.]+$/, '');
-        a.download = `${base}_watermarked.${isPng ? 'png' : 'jpg'}`;
+        a.download = `${base}_watermarked.png`;
         document.body.appendChild(a);
         a.click();
         a.remove();
