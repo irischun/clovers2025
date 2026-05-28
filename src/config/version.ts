@@ -7,5 +7,3 @@ export const APP_VERSION = "83.0.0";
 // background-removed watermark from the uploaded image and downloads the result.
 export const VERSION_NAME = "Version";
 export const VERSION_DATE = "2026-05-28";
-export const VERSION_NAME = "Version";
-export const VERSION_DATE = "2026-05-28";
