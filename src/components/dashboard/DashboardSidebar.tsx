@@ -9,7 +9,7 @@ import {
 import { 
   LayoutDashboard, FileText, Image, Sparkles, Settings, LogOut, ChevronDown, ChevronRight,
   ImagePlus, Mic, AudioLines, Video, Tv, Youtube, GalleryHorizontalEnd, BookOpen, Rss,
-  FolderEdit, Sticker, Rocket, Send, CreditCard, Coins, History, Home, Maximize2, ArrowUpToLine, Layers
+  FolderEdit, Sticker, Rocket, Send, CreditCard, Coins, History, Home, Maximize2, ArrowUpToLine, Layers, Stamp
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
