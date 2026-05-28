@@ -104,6 +104,11 @@ export default function WatermarkGeneratorPage() {
       bgRemoved: '背景已移除',
       bgRemoveFailed: '背景移除失敗',
       generate: '一鍵生成浮水印',
+      autoOptions: '一鍵生成選項',
+      position: '位置',
+      posTL: '左上', posTC: '上中', posTR: '右上',
+      posCL: '左中', posCC: '正中', posCR: '右中',
+      posBL: '左下', posBC: '下中', posBR: '右下',
     };
     if (isCN) return {
       title: '水印生成器',
@@ -140,6 +145,11 @@ export default function WatermarkGeneratorPage() {
       bgRemoved: '背景已移除',
       bgRemoveFailed: '背景移除失败',
       generate: '一键生成水印',
+      autoOptions: '一键生成选项',
+      position: '位置',
+      posTL: '左上', posTC: '上中', posTR: '右上',
+      posCL: '左中', posCC: '正中', posCR: '右中',
+      posBL: '左下', posBC: '下中', posBR: '右下',
     };
     return {
       title: 'Watermark Generator',
@@ -176,6 +186,11 @@ export default function WatermarkGeneratorPage() {
       bgRemoved: 'Background removed',
       bgRemoveFailed: 'Background removal failed',
       generate: 'To Generate a Watermark',
+      autoOptions: 'One-click options',
+      position: 'Position',
+      posTL: 'Top-Left', posTC: 'Top-Center', posTR: 'Top-Right',
+      posCL: 'Middle-Left', posCC: 'Center', posCR: 'Middle-Right',
+      posBL: 'Bottom-Left', posBC: 'Bottom-Center', posBR: 'Bottom-Right',
     };
   }, [language]);
 
@@ -186,6 +201,19 @@ export default function WatermarkGeneratorPage() {
   const [processing, setProcessing] = useState(false);
   const [bgRemovingIds, setBgRemovingIds] = useState<Set<string>>(new Set());
   const [useOrigAsWm, setUseOrigAsWm] = useState(false);
+
+  // One-click generator defaults
+  type Pos = 'tl'|'tc'|'tr'|'cl'|'cc'|'cr'|'bl'|'bc'|'br';
+  const POS_MAP: Record<Pos, { xRel: number; yRel: number }> = {
+    tl: { xRel: 0.15, yRel: 0.15 }, tc: { xRel: 0.5, yRel: 0.15 }, tr: { xRel: 0.85, yRel: 0.15 },
+    cl: { xRel: 0.15, yRel: 0.5 },  cc: { xRel: 0.5, yRel: 0.5 },  cr: { xRel: 0.85, yRel: 0.5 },
+    bl: { xRel: 0.15, yRel: 0.85 }, bc: { xRel: 0.5, yRel: 0.85 }, br: { xRel: 0.85, yRel: 0.85 },
+  };
+  const [autoSize, setAutoSize] = useState(40);       // % of image
+  const [autoOpacity, setAutoOpacity] = useState(85); // %
+  const [autoRotation, setAutoRotation] = useState(0); // degrees
+  const [autoPos, setAutoPos] = useState<Pos>('cc');
+  const [autoOptionsOpen, setAutoOptionsOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageWmInputRef = useRef<HTMLInputElement>(null);
@@ -414,9 +442,14 @@ export default function WatermarkGeneratorPage() {
         const baseSrc = images[0];
         const transparent = await removeBgFromDataUrl(baseSrc.src);
         const imgEl = await loadImage(transparent);
+        const pos = POS_MAP[autoPos];
         const wm: Watermark = {
           id: uid(), type: 'image', imgSrc: transparent, imgEl,
-          xRel: 0.5, yRel: 0.5, scale: 0.4, rotation: 0, opacity: 0.85, mode: 'single', tileGap: 0.5,
+          xRel: pos.xRel, yRel: pos.yRel,
+          scale: Math.max(0.05, Math.min(1, autoSize / 100)),
+          rotation: autoRotation,
+          opacity: Math.max(0.05, Math.min(1, autoOpacity / 100)),
+          mode: 'single', tileGap: 0.5,
         };
         activeWatermarks = [wm];
         setWatermarks([wm]);
@@ -654,6 +687,60 @@ export default function WatermarkGeneratorPage() {
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
                 : <><Download className="w-4 h-4 mr-2" />{L.apply}</>}
             </Button>
+            <div className="mt-3 rounded-md border border-border bg-muted/30">
+              <button
+                type="button"
+                className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium hover:bg-muted/50 transition rounded-md"
+                onClick={() => setAutoOptionsOpen(o => !o)}
+                aria-expanded={autoOptionsOpen}
+              >
+                <span>{L.autoOptions}</span>
+                <span className="text-xs text-muted-foreground">{autoOptionsOpen ? '▲' : '▼'}</span>
+              </button>
+              {autoOptionsOpen && (
+                <div className="px-3 pb-3 space-y-3">
+                  <div>
+                    <Label className="text-xs">{L.size} · {autoSize}%</Label>
+                    <Slider min={5} max={100} step={1} value={[autoSize]} onValueChange={([v]) => setAutoSize(v)} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">{L.opacity} · {autoOpacity}%</Label>
+                    <Slider min={5} max={100} step={1} value={[autoOpacity]} onValueChange={([v]) => setAutoOpacity(v)} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">{L.rotation} · {autoRotation}°</Label>
+                    <Slider min={-180} max={180} step={1} value={[autoRotation]} onValueChange={([v]) => setAutoRotation(v)} />
+                  </div>
+                  <div>
+                    <Label className="text-xs">{L.position}</Label>
+                    <div className="grid grid-cols-3 gap-1 mt-1">
+                      {(['tl','tc','tr','cl','cc','cr','bl','bc','br'] as Pos[]).map(p => {
+                        const labelMap: Record<Pos, string> = {
+                          tl: L.posTL, tc: L.posTC, tr: L.posTR,
+                          cl: L.posCL, cc: L.posCC, cr: L.posCR,
+                          bl: L.posBL, bc: L.posBC, br: L.posBR,
+                        };
+                        const active = autoPos === p;
+                        return (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => setAutoPos(p)}
+                            className={`text-xs px-2 py-1.5 rounded border transition ${
+                              active
+                                ? 'bg-primary text-primary-foreground border-primary'
+                                : 'bg-background border-border hover:bg-muted'
+                            }`}
+                          >
+                            {labelMap[p]}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
             <Button
               className="w-full mt-2"
               size="lg"
