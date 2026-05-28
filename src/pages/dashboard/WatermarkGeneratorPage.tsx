@@ -104,6 +104,11 @@ export default function WatermarkGeneratorPage() {
       bgRemoved: '背景已移除',
       bgRemoveFailed: '背景移除失敗',
       generate: '一鍵生成浮水印',
+      autoOptions: '一鍵生成選項',
+      position: '位置',
+      posTL: '左上', posTC: '上中', posTR: '右上',
+      posCL: '左中', posCC: '正中', posCR: '右中',
+      posBL: '左下', posBC: '下中', posBR: '右下',
     };
     if (isCN) return {
       title: '水印生成器',
@@ -140,6 +145,11 @@ export default function WatermarkGeneratorPage() {
       bgRemoved: '背景已移除',
       bgRemoveFailed: '背景移除失败',
       generate: '一键生成水印',
+      autoOptions: '一键生成选项',
+      position: '位置',
+      posTL: '左上', posTC: '上中', posTR: '右上',
+      posCL: '左中', posCC: '正中', posCR: '右中',
+      posBL: '左下', posBC: '下中', posBR: '右下',
     };
     return {
       title: 'Watermark Generator',
@@ -176,6 +186,11 @@ export default function WatermarkGeneratorPage() {
       bgRemoved: 'Background removed',
       bgRemoveFailed: 'Background removal failed',
       generate: 'To Generate a Watermark',
+      autoOptions: 'One-click options',
+      position: 'Position',
+      posTL: 'Top-Left', posTC: 'Top-Center', posTR: 'Top-Right',
+      posCL: 'Middle-Left', posCC: 'Center', posCR: 'Middle-Right',
+      posBL: 'Bottom-Left', posBC: 'Bottom-Center', posBR: 'Bottom-Right',
     };
   }, [language]);
 
