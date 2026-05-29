@@ -178,7 +178,15 @@ export default function WatermarkGeneratorPage() {
 
   const removeBg = async (image: SourceImage): Promise<ProcessedImage> => {
     const sourceBlob = await (await fetch(image.src)).blob();
-    const outputBlob = await removeBackground(sourceBlob);
+    // Highest-quality config: full-precision ISNet model + lossless PNG output at
+    // native resolution. This matches the smoothness/quality of iloveimg's output.
+    const outputBlob = await removeBackground(sourceBlob, {
+      model: 'isnet',
+      output: {
+        format: 'image/png',
+        quality: 1,
+      },
+    });
     const outputSrc = await blobToDataURL(outputBlob);
     const outputEl = await loadImage(outputSrc);
 
