@@ -442,6 +442,7 @@ export default function WatermarkGeneratorPage() {
       else toast.error('Failed to export');
     } finally {
       setProcessing(false);
+      setProcessingMode(null);
     }
   };
 
