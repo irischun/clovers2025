@@ -102,6 +102,7 @@ export default function WatermarkGeneratorPage() {
       bgRemoved: '背景已移除', bgRemoveFailed: '背景移除失敗',
       generate: '一鍵生成浮水印', position: '位置',
       output: '輸出格式', outOriginal: '與原檔相同', outPng: 'PNG (透明)', outJpg: 'JPG',
+      needWatermark: '請先加入圖片或文字浮水印',
     };
     if (isCN) return {
       title: '水印生成器',
