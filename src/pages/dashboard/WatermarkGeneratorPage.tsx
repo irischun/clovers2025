@@ -236,26 +236,43 @@ export default function WatermarkGeneratorPage() {
     const data = imageData.data;
 
     // Distance thresholds in RGB Euclidean space (0..~441).
-    // <= NEAR  → fully transparent
-    // >= FAR   → fully opaque
-    // between  → smoothstep alpha (1px anti-aliased rim)
-    const NEAR = 18;
-    const FAR = 60;
+    // After alpha is set, DECONTAMINATE color by un-premultiplying against the
+    // white background. This mathematically removes the white halo baked into
+    // soft edge pixels — exactly what iloveimg does.
+    const NEAR = 24;
+    const FAR = 90;
     const RANGE = FAR - NEAR;
 
     for (let i = 0; i < data.length; i += 4) {
-      const dr = data[i] - bgR;
-      const dg = data[i + 1] - bgG;
-      const db = data[i + 2] - bgB;
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const dr = r - bgR;
+      const dg = g - bgG;
+      const db = b - bgB;
       const dist = Math.sqrt(dr * dr + dg * dg + db * db);
+
+      let alpha: number;
       if (dist <= NEAR) {
-        data[i + 3] = 0;
+        alpha = 0;
       } else if (dist >= FAR) {
-        // keep alpha at 255 (it already is for an opaque source)
-        data[i + 3] = 255;
+        alpha = 255;
       } else {
         const t = (dist - NEAR) / RANGE;
-        data[i + 3] = Math.round(255 * (t * t * (3 - 2 * t)));
+        alpha = Math.round(255 * (t * t * (3 - 2 * t)));
+      }
+      data[i + 3] = alpha;
+
+      // Un-premultiply: observed = fg*a + bg*(1-a) => fg = (observed - bg*(1-a)) / a
+      if (alpha > 0 && alpha < 255) {
+        const a = alpha / 255;
+        const inv = 1 - a;
+        const nr = (r - bgR * inv) / a;
+        const ng = (g - bgG * inv) / a;
+        const nb = (b - bgB * inv) / a;
+        data[i] = Math.max(0, Math.min(255, Math.round(nr)));
+        data[i + 1] = Math.max(0, Math.min(255, Math.round(ng)));
+        data[i + 2] = Math.max(0, Math.min(255, Math.round(nb)));
       }
     }
     ctx.putImageData(imageData, 0, 0);
