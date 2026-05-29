@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Upload, Type, Image as ImageIcon, Trash2, Download, Plus, Loader2, Eraser } from 'lucide-react';
+import { Upload, Type, Image as ImageIcon, Trash2, Download, Plus, Loader2, Eraser, Bold, Italic, Underline } from 'lucide-react';
+import JSZip from 'jszip';
 import { removeBackground } from '@imgly/background-removal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,8 @@ import { toast } from 'sonner';
 
 type WMType = 'text' | 'image';
 type Mode = 'single' | 'mosaic';
+type OutputFormat = 'original' | 'png' | 'jpg';
+type Pos = 'tl'|'tc'|'tr'|'cl'|'cc'|'cr'|'bl'|'bc'|'br';
 
 interface Watermark {
   id: string;
@@ -20,6 +23,9 @@ interface Watermark {
   text?: string;
   fontFamily?: string;
   color?: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
   // image
   imgSrc?: string;
   imgEl?: HTMLImageElement;
@@ -30,19 +36,26 @@ interface Watermark {
   rotation: number;  // degrees
   opacity: number;   // 0..1
   mode: Mode;
-  tileGap: number;   // for mosaic, in scale units (1 = watermark size)
+  tileGapX: number;  // mosaic horizontal gap (in scale units)
+  tileGapY: number;  // mosaic vertical gap
 }
 
 interface SourceImage {
   id: string;
   name: string;
   src: string;
+  type: string;
   el: HTMLImageElement;
   width: number;
   height: number;
 }
 
 const FONTS = ['Arial', 'Helvetica', 'Times New Roman', 'Georgia', 'Courier New', 'Verdana', 'Playfair Display', 'DM Sans'];
+const POS_MAP: Record<Pos, { xRel: number; yRel: number }> = {
+  tl: { xRel: 0.1, yRel: 0.1 }, tc: { xRel: 0.5, yRel: 0.1 }, tr: { xRel: 0.9, yRel: 0.1 },
+  cl: { xRel: 0.1, yRel: 0.5 }, cc: { xRel: 0.5, yRel: 0.5 }, cr: { xRel: 0.9, yRel: 0.5 },
+  bl: { xRel: 0.1, yRel: 0.9 }, bc: { xRel: 0.5, yRel: 0.9 }, br: { xRel: 0.9, yRel: 0.9 },
+};
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -64,7 +77,7 @@ const fileToDataURL = (file: File): Promise<string> =>
   });
 
 export default function WatermarkGeneratorPage() {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
 
   const L = useMemo(() => {
     const isCN = language === 'zh-CN';
@@ -72,125 +85,65 @@ export default function WatermarkGeneratorPage() {
     if (isTW) return {
       title: '浮水印生成器',
       subtitle: '為 JPG、PNG 或 GIF 圖片加上浮水印。一次為您的圖片蓋上圖片或文字浮水印。',
-      selectImages: '選擇圖片',
-      orDrop: '或將圖片拖曳到此處',
-      watermarks: '浮水印',
-      addImage: '加入圖片',
-      addText: '加入文字',
-      textWM: '文字浮水印',
-      imageWM: '圖片浮水印',
-      textContent: '文字內容',
-      font: '字型',
-      color: '顏色',
-      mode: '位置模式',
-      single: '單個位置',
-      mosaic: '馬賽克(平鋪)',
-      opacity: '透明度',
-      rotation: '旋轉',
-      size: '大小',
-      gap: '間距',
-      remove: '移除',
-      apply: '套用浮水印',
-      processing: '處理中...',
-      noImages: '請先上傳圖片',
-      noWatermarks: '請先加入至少一個浮水印',
-      preview: '預覽',
+      selectImages: '選擇圖片', orDrop: '或將圖片拖曳到此處',
+      watermarks: '浮水印', addImage: '加入圖片', addText: '加入文字',
+      textWM: '文字浮水印', imageWM: '圖片浮水印',
+      textContent: '文字內容', font: '字型', color: '顏色', style: '樣式',
+      mode: '位置模式', single: '單個位置', mosaic: '馬賽克(平鋪)',
+      opacity: '透明度', rotation: '旋轉', size: '大小',
+      gapX: '橫向間距', gapY: '縱向間距',
+      remove: '移除', apply: '套用浮水印', processing: '處理中...',
+      noImages: '請先上傳圖片', preview: '預覽',
       pageOf: (a: number, b: number) => `${a} / ${b}`,
-      dragHint: '在預覽圖上拖曳可移動單個浮水印',
+      dragHint: '在預覽圖上拖曳可移動浮水印',
       yourText: '您的文字',
       useOriginal: '使用原圖作為浮水印(去背)',
-      removeBg: '移除背景並透明化',
-      removingBg: '正在移除背景...',
-      bgRemoved: '背景已移除',
-      bgRemoveFailed: '背景移除失敗',
-      generate: '一鍵生成浮水印',
-      autoOptions: '一鍵生成選項',
-      position: '位置',
-      posTL: '左上', posTC: '上中', posTR: '右上',
-      posCL: '左中', posCC: '正中', posCR: '右中',
-      posBL: '左下', posBC: '下中', posBR: '右下',
+      removeBg: '移除背景', removingBg: '正在移除背景...',
+      bgRemoved: '背景已移除', bgRemoveFailed: '背景移除失敗',
+      generate: '一鍵生成浮水印', position: '位置',
+      output: '輸出格式', outOriginal: '與原檔相同', outPng: 'PNG (透明)', outJpg: 'JPG',
     };
     if (isCN) return {
       title: '水印生成器',
       subtitle: '为 JPG、PNG 或 GIF 图片添加水印。一次为您的图片盖上图片或文字水印。',
-      selectImages: '选择图片',
-      orDrop: '或将图片拖到此处',
-      watermarks: '水印',
-      addImage: '添加图片',
-      addText: '添加文字',
-      textWM: '文字水印',
-      imageWM: '图片水印',
-      textContent: '文字内容',
-      font: '字体',
-      color: '颜色',
-      mode: '位置模式',
-      single: '单个位置',
-      mosaic: '马赛克(平铺)',
-      opacity: '透明度',
-      rotation: '旋转',
-      size: '大小',
-      gap: '间距',
-      remove: '移除',
-      apply: '应用水印',
-      processing: '处理中...',
-      noImages: '请先上传图片',
-      noWatermarks: '请先添加至少一个水印',
-      preview: '预览',
+      selectImages: '选择图片', orDrop: '或将图片拖到此处',
+      watermarks: '水印', addImage: '添加图片', addText: '添加文字',
+      textWM: '文字水印', imageWM: '图片水印',
+      textContent: '文字内容', font: '字体', color: '颜色', style: '样式',
+      mode: '位置模式', single: '单个位置', mosaic: '马赛克(平铺)',
+      opacity: '透明度', rotation: '旋转', size: '大小',
+      gapX: '横向间距', gapY: '纵向间距',
+      remove: '移除', apply: '应用水印', processing: '处理中...',
+      noImages: '请先上传图片', preview: '预览',
       pageOf: (a: number, b: number) => `${a} / ${b}`,
-      dragHint: '在预览图上拖动可移动单个水印',
+      dragHint: '在预览图上拖动可移动水印',
       yourText: '您的文字',
       useOriginal: '使用原图作为水印(去背)',
-      removeBg: '移除背景并透明化',
-      removingBg: '正在移除背景...',
-      bgRemoved: '背景已移除',
-      bgRemoveFailed: '背景移除失败',
-      generate: '一键生成水印',
-      autoOptions: '一键生成选项',
-      position: '位置',
-      posTL: '左上', posTC: '上中', posTR: '右上',
-      posCL: '左中', posCC: '正中', posCR: '右中',
-      posBL: '左下', posBC: '下中', posBR: '右下',
+      removeBg: '移除背景', removingBg: '正在移除背景...',
+      bgRemoved: '背景已移除', bgRemoveFailed: '背景移除失败',
+      generate: '一键生成水印', position: '位置',
+      output: '输出格式', outOriginal: '与原档相同', outPng: 'PNG (透明)', outJpg: 'JPG',
     };
     return {
       title: 'Watermark Generator',
       subtitle: 'Watermark JPG, PNG or GIF images. Stamp images or text over your images at once.',
-      selectImages: 'Select images',
-      orDrop: 'or drop images here',
-      watermarks: 'Watermarks',
-      addImage: 'Add image',
-      addText: 'Add text',
-      textWM: 'Text watermark',
-      imageWM: 'Image watermark',
-      textContent: 'Text content',
-      font: 'Font',
-      color: 'Color',
-      mode: 'Position mode',
-      single: 'Single position',
-      mosaic: 'Mosaic (tiled)',
-      opacity: 'Opacity',
-      rotation: 'Rotation',
-      size: 'Size',
-      gap: 'Gap',
-      remove: 'Remove',
-      apply: 'Watermark IMAGES',
-      processing: 'Processing...',
-      noImages: 'Please upload at least one image',
-      noWatermarks: 'Please add at least one watermark',
-      preview: 'Preview',
+      selectImages: 'Select images', orDrop: 'or drop images here',
+      watermarks: 'Watermarks', addImage: 'Add image', addText: 'Add text',
+      textWM: 'Text watermark', imageWM: 'Image watermark',
+      textContent: 'Text content', font: 'Font', color: 'Color', style: 'Style',
+      mode: 'Position mode', single: 'Single position', mosaic: 'Mosaic (tiled)',
+      opacity: 'Transparency', rotation: 'Rotation', size: 'Size',
+      gapX: 'Horizontal margin', gapY: 'Vertical margin',
+      remove: 'Remove', apply: 'Watermark IMAGES', processing: 'Processing...',
+      noImages: 'Please upload at least one image', preview: 'Preview',
       pageOf: (a: number, b: number) => `${a} / ${b}`,
-      dragHint: 'Drag on the preview to move a single watermark',
+      dragHint: 'Drag on the preview to move the watermark',
       yourText: 'Your Text',
       useOriginal: 'Use original image as watermark (remove background)',
-      removeBg: 'Remove background & make transparent',
-      removingBg: 'Removing background...',
-      bgRemoved: 'Background removed',
-      bgRemoveFailed: 'Background removal failed',
-      generate: 'To Generate a Watermark',
-      autoOptions: 'One-click options',
-      position: 'Position',
-      posTL: 'Top-Left', posTC: 'Top-Center', posTR: 'Top-Right',
-      posCL: 'Middle-Left', posCC: 'Center', posCR: 'Middle-Right',
-      posBL: 'Bottom-Left', posBC: 'Bottom-Center', posBR: 'Bottom-Right',
+      removeBg: 'Remove background', removingBg: 'Removing background...',
+      bgRemoved: 'Background removed', bgRemoveFailed: 'Background removal failed',
+      generate: 'To Generate a Watermark', position: 'Position',
+      output: 'Output format', outOriginal: 'Same as original', outPng: 'PNG (transparent)', outJpg: 'JPG',
     };
   }, [language]);
 
@@ -201,19 +154,7 @@ export default function WatermarkGeneratorPage() {
   const [processing, setProcessing] = useState(false);
   const [bgRemovingIds, setBgRemovingIds] = useState<Set<string>>(new Set());
   const [useOrigAsWm, setUseOrigAsWm] = useState(false);
-
-  // One-click generator defaults
-  type Pos = 'tl'|'tc'|'tr'|'cl'|'cc'|'cr'|'bl'|'bc'|'br';
-  const POS_MAP: Record<Pos, { xRel: number; yRel: number }> = {
-    tl: { xRel: 0.15, yRel: 0.15 }, tc: { xRel: 0.5, yRel: 0.15 }, tr: { xRel: 0.85, yRel: 0.15 },
-    cl: { xRel: 0.15, yRel: 0.5 },  cc: { xRel: 0.5, yRel: 0.5 },  cr: { xRel: 0.85, yRel: 0.5 },
-    bl: { xRel: 0.15, yRel: 0.85 }, bc: { xRel: 0.5, yRel: 0.85 }, br: { xRel: 0.85, yRel: 0.85 },
-  };
-  const [autoSize, setAutoSize] = useState(40);       // % of image
-  const [autoOpacity, setAutoOpacity] = useState(85); // %
-  const [autoRotation, setAutoRotation] = useState(0); // degrees
-  const [autoPos, setAutoPos] = useState<Pos>('cc');
-  const [autoOptionsOpen, setAutoOptionsOpen] = useState(false);
+  const [outputFormat, setOutputFormat] = useState<OutputFormat>('original');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageWmInputRef = useRef<HTMLInputElement>(null);
@@ -223,31 +164,27 @@ export default function WatermarkGeneratorPage() {
   const current = images[currentIdx];
   const selectedWm = watermarks.find(w => w.id === selectedWmId) || null;
 
-  // Upload source images
   const handleFiles = async (files: FileList | null) => {
     if (!files || !files.length) return;
     const accepted = Array.from(files).filter(f => /image\/(jpeg|jpg|png|gif|webp)/.test(f.type));
-    if (!accepted.length) {
-      toast.error('Only JPG/PNG/GIF/WEBP supported');
-      return;
-    }
+    if (!accepted.length) { toast.error('Only JPG/PNG/GIF/WEBP supported'); return; }
     const loaded: SourceImage[] = [];
     for (const f of accepted) {
       try {
         const src = await fileToDataURL(f);
         const el = await loadImage(src);
-        loaded.push({ id: uid(), name: f.name, src, el, width: el.naturalWidth, height: el.naturalHeight });
+        loaded.push({ id: uid(), name: f.name, src, type: f.type, el, width: el.naturalWidth, height: el.naturalHeight });
       } catch {/* skip */}
     }
     setImages(prev => [...prev, ...loaded]);
     if (!images.length && loaded.length) setCurrentIdx(0);
   };
 
-  // Add watermarks
   const addTextWatermark = () => {
     const wm: Watermark = {
       id: uid(), type: 'text', text: L.yourText, fontFamily: 'Arial', color: '#ffffff',
-      xRel: 0.5, yRel: 0.5, scale: 0.15, rotation: 0, opacity: 0.6, mode: 'single', tileGap: 0.5,
+      bold: true, italic: false, underline: false,
+      xRel: 0.5, yRel: 0.5, scale: 0.12, rotation: 0, opacity: 0.7, mode: 'single', tileGapX: 0.5, tileGapY: 0.5,
     };
     setWatermarks(p => [...p, wm]);
     setSelectedWmId(wm.id);
@@ -259,17 +196,13 @@ export default function WatermarkGeneratorPage() {
       if (!/image\//.test(f.type)) continue;
       let src = await fileToDataURL(f);
       if (useOrigAsWm) {
-        try {
-          src = await removeBgFromDataUrl(src);
-        } catch (e) {
-          console.error(e);
-          toast.error(L.bgRemoveFailed);
-        }
+        try { src = await removeBgFromDataUrl(src); }
+        catch (e) { console.error(e); toast.error(L.bgRemoveFailed); }
       }
       const imgEl = await loadImage(src);
       const wm: Watermark = {
         id: uid(), type: 'image', imgSrc: src, imgEl,
-        xRel: 0.5, yRel: 0.5, scale: 0.25, rotation: 0, opacity: 0.85, mode: 'single', tileGap: 0.5,
+        xRel: 0.5, yRel: 0.5, scale: 0.25, rotation: 0, opacity: 0.85, mode: 'single', tileGapX: 0.5, tileGapY: 0.5,
       };
       setWatermarks(p => [...p, wm]);
       setSelectedWmId(wm.id);
@@ -297,8 +230,7 @@ export default function WatermarkGeneratorPage() {
       updateWm(wmId, { imgSrc: transparent, imgEl });
       toast.success(L.bgRemoved);
     } catch (e) {
-      console.error(e);
-      toast.error(L.bgRemoveFailed);
+      console.error(e); toast.error(L.bgRemoveFailed);
     } finally {
       setBgRemovingIds(prev => { const n = new Set(prev); n.delete(wmId); return n; });
     }
@@ -314,14 +246,13 @@ export default function WatermarkGeneratorPage() {
       const imgEl = await loadImage(transparent);
       const wm: Watermark = {
         id: tmpId, type: 'image', imgSrc: transparent, imgEl,
-        xRel: 0.5, yRel: 0.5, scale: 0.4, rotation: 0, opacity: 0.85, mode: 'single', tileGap: 0.5,
+        xRel: 0.5, yRel: 0.5, scale: 0.4, rotation: 0, opacity: 0.85, mode: 'single', tileGapX: 0.5, tileGapY: 0.5,
       };
       setWatermarks(p => [...p, wm]);
       setSelectedWmId(wm.id);
       toast.success(L.bgRemoved, { id: loadingToast });
     } catch (e) {
-      console.error(e);
-      toast.error(L.bgRemoveFailed, { id: loadingToast });
+      console.error(e); toast.error(L.bgRemoveFailed, { id: loadingToast });
     } finally {
       setBgRemovingIds(prev => { const n = new Set(prev); n.delete(tmpId); return n; });
     }
@@ -334,6 +265,11 @@ export default function WatermarkGeneratorPage() {
     setWatermarks(prev => prev.filter(w => w.id !== id));
     if (selectedWmId === id) setSelectedWmId(null);
   };
+  const setPosForSelected = (p: Pos) => {
+    if (!selectedWm) return;
+    const pos = POS_MAP[p];
+    updateWm(selectedWm.id, { xRel: pos.xRel, yRel: pos.yRel, mode: 'single' });
+  };
 
   // === Render watermarks onto canvas ===
   const renderToCanvas = useCallback((canvas: HTMLCanvasElement, src: SourceImage, wms: Watermark[]) => {
@@ -345,6 +281,12 @@ export default function WatermarkGeneratorPage() {
 
     const baseUnit = Math.min(src.width, src.height);
 
+    const fontStringFor = (wm: Watermark, fontPx: number) => {
+      const weight = wm.bold ? 'bold' : 'normal';
+      const style = wm.italic ? 'italic' : 'normal';
+      return `${style} ${weight} ${fontPx}px ${wm.fontFamily || 'Arial'}`;
+    };
+
     for (const wm of wms) {
       ctx.save();
       ctx.globalAlpha = wm.opacity;
@@ -355,13 +297,21 @@ export default function WatermarkGeneratorPage() {
         ctx.rotate((wm.rotation * Math.PI) / 180);
         if (wm.type === 'text') {
           const fontPx = Math.max(8, baseUnit * wm.scale);
-          ctx.font = `bold ${fontPx}px ${wm.fontFamily || 'Arial'}`;
+          ctx.font = fontStringFor(wm, fontPx);
           ctx.fillStyle = wm.color || '#ffffff';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.shadowColor = 'rgba(0,0,0,0.3)';
           ctx.shadowBlur = fontPx * 0.05;
-          ctx.fillText(wm.text || '', 0, 0);
+          const text = wm.text || '';
+          ctx.fillText(text, 0, 0);
+          if (wm.underline) {
+            const m = ctx.measureText(text);
+            const w = m.width;
+            const yOff = fontPx * 0.55;
+            ctx.shadowBlur = 0;
+            ctx.fillRect(-w / 2, yOff, w, Math.max(1, fontPx * 0.06));
+          }
         } else if (wm.imgEl) {
           const w = baseUnit * wm.scale;
           const h = w * (wm.imgEl.naturalHeight / wm.imgEl.naturalWidth);
@@ -371,31 +321,23 @@ export default function WatermarkGeneratorPage() {
       };
 
       if (wm.mode === 'mosaic') {
-        // compute tile size
-        let tileW: number;
-        let tileH: number;
+        let tileW: number, tileH: number;
         if (wm.type === 'text') {
           const fontPx = Math.max(8, baseUnit * wm.scale);
-          ctx.font = `bold ${fontPx}px ${wm.fontFamily || 'Arial'}`;
+          ctx.font = fontStringFor(wm, fontPx);
           const m = ctx.measureText(wm.text || '');
-          tileW = m.width;
-          tileH = fontPx * 1.2;
+          tileW = m.width; tileH = fontPx * 1.2;
         } else if (wm.imgEl) {
           tileW = baseUnit * wm.scale;
           tileH = tileW * (wm.imgEl.naturalHeight / wm.imgEl.naturalWidth);
         } else { ctx.restore(); continue; }
 
-        const gap = (1 + wm.tileGap);
-        const stepX = tileW * gap;
-        const stepY = tileH * gap;
-        // expand bounds to cover rotation
+        const stepX = tileW * (1 + wm.tileGapX);
+        const stepY = tileH * (1 + wm.tileGapY);
         const diag = Math.sqrt(src.width ** 2 + src.height ** 2);
         for (let y = -diag; y < diag; y += stepY) {
           for (let x = -diag; x < diag; x += stepX) {
-            // rotate-aware: draw in a rotated coord around image center
-            const cx = src.width / 2 + x;
-            const cy = src.height / 2 + y;
-            drawOne(cx, cy);
+            drawOne(src.width / 2 + x, src.height / 2 + y);
           }
         }
       } else {
@@ -405,7 +347,6 @@ export default function WatermarkGeneratorPage() {
     }
   }, []);
 
-  // Live preview
   useEffect(() => {
     const canvas = previewCanvasRef.current;
     if (!canvas || !current) return;
@@ -429,7 +370,14 @@ export default function WatermarkGeneratorPage() {
   };
   const onPreviewPointerUp = () => { dragRef.current = null; };
 
-  // Export all images
+  const pickOutput = (src: SourceImage): { mime: string; ext: string } => {
+    if (outputFormat === 'png') return { mime: 'image/png', ext: 'png' };
+    if (outputFormat === 'jpg') return { mime: 'image/jpeg', ext: 'jpg' };
+    // original: preserve format. PNG/WebP/GIF -> PNG (alpha-safe). JPEG -> JPEG.
+    if (/jpeg|jpg/.test(src.type)) return { mime: 'image/jpeg', ext: 'jpg' };
+    return { mime: 'image/png', ext: 'png' };
+  };
+
   const exportAll = async (opts?: { forceAuto?: boolean }) => {
     if (!images.length) { toast.error(L.noImages); return; }
     setProcessing(true);
@@ -437,42 +385,52 @@ export default function WatermarkGeneratorPage() {
     const loadingToast = needsAuto ? toast.loading(L.removingBg) : null;
     try {
       let activeWatermarks = opts?.forceAuto ? [] : watermarks;
-      // If no watermark added, auto-create one by removing background from the first uploaded image
       if (!activeWatermarks.length) {
         const baseSrc = images[0];
         const transparent = await removeBgFromDataUrl(baseSrc.src);
         const imgEl = await loadImage(transparent);
-        const pos = POS_MAP[autoPos];
         const wm: Watermark = {
           id: uid(), type: 'image', imgSrc: transparent, imgEl,
-          xRel: pos.xRel, yRel: pos.yRel,
-          scale: Math.max(0.05, Math.min(1, autoSize / 100)),
-          rotation: autoRotation,
-          opacity: Math.max(0.05, Math.min(1, autoOpacity / 100)),
-          mode: 'single', tileGap: 0.5,
+          xRel: 0.5, yRel: 0.5, scale: 0.4, rotation: 0, opacity: 0.85,
+          mode: 'single', tileGapX: 0.5, tileGapY: 0.5,
         };
         activeWatermarks = [wm];
         setWatermarks([wm]);
         setSelectedWmId(wm.id);
         if (loadingToast) toast.success(L.bgRemoved, { id: loadingToast });
       }
-      for (const src of images) {
+
+      // If multiple images, zip them; if single, direct download.
+      if (images.length === 1) {
+        const src = images[0];
+        const { mime, ext } = pickOutput(src);
         const c = document.createElement('canvas');
         renderToCanvas(c, src, activeWatermarks);
-        // Always export as PNG to preserve transparency (alpha channel).
-        // JPEG has no alpha and would bake a white/checker background into
-        // images that originally had transparent regions.
         const blob: Blob = await new Promise(res =>
-          c.toBlob(b => res(b!), 'image/png')!
+          c.toBlob(b => res(b!), mime, mime === 'image/jpeg' ? 0.95 : undefined)!
         );
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        const base = src.name.replace(/\.[^.]+$/, '');
-        a.download = `${base}_watermarked.png`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        a.download = `${src.name.replace(/\.[^.]+$/, '')}_watermarked.${ext}`;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      } else {
+        const zip = new JSZip();
+        for (const src of images) {
+          const { mime, ext } = pickOutput(src);
+          const c = document.createElement('canvas');
+          renderToCanvas(c, src, activeWatermarks);
+          const blob: Blob = await new Promise(res =>
+            c.toBlob(b => res(b!), mime, mime === 'image/jpeg' ? 0.95 : undefined)!
+          );
+          zip.file(`${src.name.replace(/\.[^.]+$/, '')}_watermarked.${ext}`, blob);
+        }
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'watermarked_images.zip';
+        document.body.appendChild(a); a.click(); a.remove();
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
       toast.success('Done');
@@ -485,7 +443,6 @@ export default function WatermarkGeneratorPage() {
     }
   };
 
-  // Drag-drop on dropzone
   const [dragOver, setDragOver] = useState(false);
 
   return (
@@ -565,12 +522,8 @@ export default function WatermarkGeneratorPage() {
               />
             </div>
             <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={useOrigAsWm}
-                onChange={(e) => setUseOrigAsWm(e.target.checked)}
-                className="rounded"
-              />
+              <input type="checkbox" checked={useOrigAsWm}
+                onChange={(e) => setUseOrigAsWm(e.target.checked)} className="rounded" />
               {L.removeBg}
             </label>
             <Button variant="secondary" className="w-full" onClick={useCurrentAsWatermark}
@@ -580,22 +533,17 @@ export default function WatermarkGeneratorPage() {
                 : <><Eraser className="w-4 h-4 mr-2" />{L.useOriginal}</>}
             </Button>
 
-            <div className="space-y-2 max-h-[40vh] overflow-y-auto">
+            <div className="space-y-2 max-h-[28vh] overflow-y-auto">
               <Label className="text-xs uppercase tracking-wide">{L.watermarks}</Label>
-              {!watermarks.length && (
-                <p className="text-sm text-muted-foreground">—</p>
-              )}
+              {!watermarks.length && <p className="text-sm text-muted-foreground">—</p>}
               {watermarks.map(wm => (
                 <div key={wm.id}
                   onClick={() => setSelectedWmId(wm.id)}
                   className={`p-2 rounded border cursor-pointer flex items-center justify-between ${
                     selectedWmId === wm.id ? 'border-primary bg-primary/5' : 'border-border'
-                  }`}
-                >
+                  }`}>
                   <div className="flex items-center gap-2 min-w-0">
-                    {wm.type === 'text'
-                      ? <Type className="w-4 h-4 shrink-0" />
-                      : <ImageIcon className="w-4 h-4 shrink-0" />}
+                    {wm.type === 'text' ? <Type className="w-4 h-4 shrink-0" /> : <ImageIcon className="w-4 h-4 shrink-0" />}
                     <span className="text-sm truncate">
                       {wm.type === 'text' ? (wm.text || L.textWM) : L.imageWM}
                     </span>
@@ -634,6 +582,23 @@ export default function WatermarkGeneratorPage() {
                           className="h-10 p-1" />
                       </div>
                     </div>
+                    <div>
+                      <Label className="text-xs">{L.style}</Label>
+                      <div className="flex gap-1 mt-1">
+                        <Button type="button" size="sm" variant={selectedWm.bold ? 'default' : 'outline'}
+                          onClick={() => updateWm(selectedWm.id, { bold: !selectedWm.bold })}>
+                          <Bold className="w-4 h-4" />
+                        </Button>
+                        <Button type="button" size="sm" variant={selectedWm.italic ? 'default' : 'outline'}
+                          onClick={() => updateWm(selectedWm.id, { italic: !selectedWm.italic })}>
+                          <Italic className="w-4 h-4" />
+                        </Button>
+                        <Button type="button" size="sm" variant={selectedWm.underline ? 'default' : 'outline'}
+                          onClick={() => updateWm(selectedWm.id, { underline: !selectedWm.underline })}>
+                          <Underline className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </>
                 )}
 
@@ -659,6 +624,26 @@ export default function WatermarkGeneratorPage() {
                   </Select>
                 </div>
 
+                {selectedWm.mode === 'single' && (
+                  <div>
+                    <Label className="text-xs">{L.position}</Label>
+                    <div className="grid grid-cols-3 gap-1 mt-1">
+                      {(['tl','tc','tr','cl','cc','cr','bl','bc','br'] as Pos[]).map(p => {
+                        const pos = POS_MAP[p];
+                        const active = Math.abs(selectedWm.xRel - pos.xRel) < 0.02 && Math.abs(selectedWm.yRel - pos.yRel) < 0.02;
+                        return (
+                          <button key={p} type="button" onClick={() => setPosForSelected(p)}
+                            className={`h-8 rounded border transition ${
+                              active ? 'bg-primary border-primary' : 'bg-background border-border hover:bg-muted'
+                            }`} aria-label={p}>
+                            <span className={`block w-1.5 h-1.5 rounded-full mx-auto ${active ? 'bg-primary-foreground' : 'bg-muted-foreground'}`} />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <Label className="text-xs">{L.size} · {Math.round(selectedWm.scale * 100)}%</Label>
                   <Slider min={2} max={100} step={1} value={[selectedWm.scale * 100]}
@@ -675,85 +660,45 @@ export default function WatermarkGeneratorPage() {
                     onValueChange={([v]) => updateWm(selectedWm.id, { rotation: v })} />
                 </div>
                 {selectedWm.mode === 'mosaic' && (
-                  <div>
-                    <Label className="text-xs">{L.gap} · {Math.round(selectedWm.tileGap * 100)}%</Label>
-                    <Slider min={0} max={300} step={5} value={[selectedWm.tileGap * 100]}
-                      onValueChange={([v]) => updateWm(selectedWm.id, { tileGap: v / 100 })} />
-                  </div>
+                  <>
+                    <div>
+                      <Label className="text-xs">{L.gapX} · {Math.round(selectedWm.tileGapX * 100)}%</Label>
+                      <Slider min={0} max={300} step={5} value={[selectedWm.tileGapX * 100]}
+                        onValueChange={([v]) => updateWm(selectedWm.id, { tileGapX: v / 100 })} />
+                    </div>
+                    <div>
+                      <Label className="text-xs">{L.gapY} · {Math.round(selectedWm.tileGapY * 100)}%</Label>
+                      <Slider min={0} max={300} step={5} value={[selectedWm.tileGapY * 100]}
+                        onValueChange={([v]) => updateWm(selectedWm.id, { tileGapY: v / 100 })} />
+                    </div>
+                  </>
                 )}
               </div>
             )}
+
+            <div className="border-t pt-3">
+              <Label className="text-xs">{L.output}</Label>
+              <Select value={outputFormat} onValueChange={(v: OutputFormat) => setOutputFormat(v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="original">{L.outOriginal}</SelectItem>
+                  <SelectItem value="png">{L.outPng}</SelectItem>
+                  <SelectItem value="jpg">{L.outJpg}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
             <Button className="w-full" size="lg" onClick={() => exportAll()} disabled={processing}>
               {processing
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
                 : <><Download className="w-4 h-4 mr-2" />{L.apply}</>}
             </Button>
-            <Button
-              className="w-full"
-              size="lg"
-              variant="secondary"
-              onClick={() => exportAll({ forceAuto: true })}
-              disabled={processing}
-            >
+            <Button className="w-full" size="lg" variant="secondary"
+              onClick={() => exportAll({ forceAuto: true })} disabled={processing}>
               {processing
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
                 : <><Download className="w-4 h-4 mr-2" />{L.generate}</>}
             </Button>
-            <div className="rounded-md border border-border bg-muted/30">
-              <button
-                type="button"
-                className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium hover:bg-muted/50 transition rounded-md"
-                onClick={() => setAutoOptionsOpen(o => !o)}
-                aria-expanded={autoOptionsOpen}
-              >
-                <span>{L.autoOptions}</span>
-                <span className="text-xs text-muted-foreground">{autoOptionsOpen ? '▲' : '▼'}</span>
-              </button>
-              {autoOptionsOpen && (
-                <div className="px-3 pb-3 space-y-3">
-                  <div>
-                    <Label className="text-xs">{L.size} · {autoSize}%</Label>
-                    <Slider min={5} max={100} step={1} value={[autoSize]} onValueChange={([v]) => setAutoSize(v)} />
-                  </div>
-                  <div>
-                    <Label className="text-xs">{L.opacity} · {autoOpacity}%</Label>
-                    <Slider min={5} max={100} step={1} value={[autoOpacity]} onValueChange={([v]) => setAutoOpacity(v)} />
-                  </div>
-                  <div>
-                    <Label className="text-xs">{L.rotation} · {autoRotation}°</Label>
-                    <Slider min={-180} max={180} step={1} value={[autoRotation]} onValueChange={([v]) => setAutoRotation(v)} />
-                  </div>
-                  <div>
-                    <Label className="text-xs">{L.position}</Label>
-                    <div className="grid grid-cols-3 gap-1 mt-1">
-                      {(['tl','tc','tr','cl','cc','cr','bl','bc','br'] as Pos[]).map(p => {
-                        const labelMap: Record<Pos, string> = {
-                          tl: L.posTL, tc: L.posTC, tr: L.posTR,
-                          cl: L.posCL, cc: L.posCC, cr: L.posCR,
-                          bl: L.posBL, bc: L.posBC, br: L.posBR,
-                        };
-                        const active = autoPos === p;
-                        return (
-                          <button
-                            key={p}
-                            type="button"
-                            onClick={() => setAutoPos(p)}
-                            className={`text-xs px-2 py-1.5 rounded border transition ${
-                              active
-                                ? 'bg-primary text-primary-foreground border-primary'
-                                : 'bg-background border-border hover:bg-muted'
-                            }`}
-                          >
-                            {labelMap[p]}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
           </Card>
         </div>
       )}
