@@ -239,8 +239,10 @@ export default function WatermarkGeneratorPage() {
     // After alpha is set, DECONTAMINATE color by un-premultiplying against the
     // white background. This mathematically removes the white halo baked into
     // soft edge pixels — exactly what iloveimg does.
-    const NEAR = 24;
-    const FAR = 90;
+    // Tight band: anything within NEAR of background = fully transparent (no
+    // grey checker tint); only a narrow 1-2px rim gets anti-aliased alpha.
+    const NEAR = 32;
+    const FAR = 56;
     const RANGE = FAR - NEAR;
 
     for (let i = 0; i < data.length; i += 4) {
