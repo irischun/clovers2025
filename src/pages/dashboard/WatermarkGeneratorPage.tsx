@@ -241,8 +241,8 @@ export default function WatermarkGeneratorPage() {
     // soft edge pixels — exactly what iloveimg does.
     // Tight band: anything within NEAR of background = fully transparent (no
     // grey checker tint); only a narrow 1-2px rim gets anti-aliased alpha.
-    const NEAR = 32;
-    const FAR = 56;
+    const NEAR = 55;
+    const FAR = 78;
     const RANGE = FAR - NEAR;
 
     for (let i = 0; i < data.length; i += 4) {
