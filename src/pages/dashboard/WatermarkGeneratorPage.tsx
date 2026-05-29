@@ -146,6 +146,7 @@ export default function WatermarkGeneratorPage() {
       bgRemoved: 'Background removed', bgRemoveFailed: 'Background removal failed',
       generate: 'To Generate a Watermark', position: 'Position',
       output: 'Output format', outOriginal: 'Same as original', outPng: 'PNG (transparent)', outJpg: 'JPG',
+      needWatermark: 'Please add an image or text watermark first',
     };
   }, [language]);
 
