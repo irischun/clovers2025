@@ -102,6 +102,7 @@ export default function WatermarkGeneratorPage() {
       bgRemoved: '背景已移除', bgRemoveFailed: '背景移除失敗',
       generate: '一鍵生成浮水印', position: '位置',
       output: '輸出格式', outOriginal: '與原檔相同', outPng: 'PNG (透明)', outJpg: 'JPG',
+      needWatermark: '請先加入圖片或文字浮水印',
     };
     if (isCN) return {
       title: '水印生成器',
@@ -123,6 +124,7 @@ export default function WatermarkGeneratorPage() {
       bgRemoved: '背景已移除', bgRemoveFailed: '背景移除失败',
       generate: '一键生成水印', position: '位置',
       output: '输出格式', outOriginal: '与原档相同', outPng: 'PNG (透明)', outJpg: 'JPG',
+      needWatermark: '请先添加图片或文字水印',
     };
     return {
       title: 'Watermark Generator',
@@ -144,6 +146,7 @@ export default function WatermarkGeneratorPage() {
       bgRemoved: 'Background removed', bgRemoveFailed: 'Background removal failed',
       generate: 'To Generate a Watermark', position: 'Position',
       output: 'Output format', outOriginal: 'Same as original', outPng: 'PNG (transparent)', outJpg: 'JPG',
+      needWatermark: 'Please add an image or text watermark first',
     };
   }, [language]);
 
@@ -152,7 +155,6 @@ export default function WatermarkGeneratorPage() {
   const [watermarks, setWatermarks] = useState<Watermark[]>([]);
   const [selectedWmId, setSelectedWmId] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
-  const [processingMode, setProcessingMode] = useState<'apply' | 'auto' | null>(null);
   const [bgRemovingIds, setBgRemovingIds] = useState<Set<string>>(new Set());
   const [useOrigAsWm, setUseOrigAsWm] = useState(false);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>('original');
@@ -379,30 +381,13 @@ export default function WatermarkGeneratorPage() {
     return { mime: 'image/png', ext: 'png' };
   };
 
-  const exportAll = async (opts?: { forceAuto?: boolean }) => {
+  const exportAll = async () => {
     if (!images.length) { toast.error(L.noImages); return; }
+    if (!watermarks.length) { toast.error(L.needWatermark); return; }
     setProcessing(true);
-    setProcessingMode(opts?.forceAuto ? 'auto' : 'apply');
-    const needsAuto = opts?.forceAuto || !watermarks.length;
-    const loadingToast = needsAuto ? toast.loading(L.removingBg) : null;
     try {
-      let activeWatermarks = opts?.forceAuto ? [] : watermarks;
-      if (!activeWatermarks.length) {
-        const baseSrc = images[0];
-        const transparent = await removeBgFromDataUrl(baseSrc.src);
-        const imgEl = await loadImage(transparent);
-        const wm: Watermark = {
-          id: uid(), type: 'image', imgSrc: transparent, imgEl,
-          xRel: 0.5, yRel: 0.5, scale: 0.4, rotation: 0, opacity: 0.85,
-          mode: 'single', tileGapX: 0.5, tileGapY: 0.5,
-        };
-        activeWatermarks = [wm];
-        setWatermarks([wm]);
-        setSelectedWmId(wm.id);
-        if (loadingToast) toast.success(L.bgRemoved, { id: loadingToast });
-      }
+      const activeWatermarks = watermarks;
 
-      // If multiple images, zip them; if single, direct download.
       if (images.length === 1) {
         const src = images[0];
         const { mime, ext } = pickOutput(src);
@@ -438,11 +423,9 @@ export default function WatermarkGeneratorPage() {
       toast.success('Done');
     } catch (err) {
       console.error(err);
-      if (loadingToast) toast.error(L.bgRemoveFailed, { id: loadingToast });
-      else toast.error('Failed to export');
+      toast.error('Failed to export');
     } finally {
       setProcessing(false);
-      setProcessingMode(null);
     }
   };
 
@@ -692,15 +675,9 @@ export default function WatermarkGeneratorPage() {
             </div>
 
             <Button className="w-full" size="lg" onClick={() => exportAll()} disabled={processing}>
-              {processingMode === 'apply'
+              {processing
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
                 : <><Download className="w-4 h-4 mr-2" />{L.apply}</>}
-            </Button>
-            <Button className="w-full" size="lg" variant="secondary"
-              onClick={() => exportAll({ forceAuto: true })} disabled={processing}>
-              {processingMode === 'auto'
-                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
-                : <><Download className="w-4 h-4 mr-2" />{L.generate}</>}
             </Button>
           </Card>
         </div>
