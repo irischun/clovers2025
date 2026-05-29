@@ -152,6 +152,7 @@ export default function WatermarkGeneratorPage() {
   const [watermarks, setWatermarks] = useState<Watermark[]>([]);
   const [selectedWmId, setSelectedWmId] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [processingMode, setProcessingMode] = useState<'apply' | 'auto' | null>(null);
   const [bgRemovingIds, setBgRemovingIds] = useState<Set<string>>(new Set());
   const [useOrigAsWm, setUseOrigAsWm] = useState(false);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>('original');
