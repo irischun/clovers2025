@@ -124,6 +124,7 @@ export default function WatermarkGeneratorPage() {
       bgRemoved: '背景已移除', bgRemoveFailed: '背景移除失败',
       generate: '一键生成水印', position: '位置',
       output: '输出格式', outOriginal: '与原档相同', outPng: 'PNG (透明)', outJpg: 'JPG',
+      needWatermark: '请先添加图片或文字水印',
     };
     return {
       title: 'Watermark Generator',
