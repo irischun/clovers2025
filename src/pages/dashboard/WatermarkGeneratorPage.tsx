@@ -692,13 +692,13 @@ export default function WatermarkGeneratorPage() {
             </div>
 
             <Button className="w-full" size="lg" onClick={() => exportAll()} disabled={processing}>
-              {processing
+              {processingMode === 'apply'
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
                 : <><Download className="w-4 h-4 mr-2" />{L.apply}</>}
             </Button>
             <Button className="w-full" size="lg" variant="secondary"
               onClick={() => exportAll({ forceAuto: true })} disabled={processing}>
-              {processing
+              {processingMode === 'auto'
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
                 : <><Download className="w-4 h-4 mr-2" />{L.generate}</>}
             </Button>
