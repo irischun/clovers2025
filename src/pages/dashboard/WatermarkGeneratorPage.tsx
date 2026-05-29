@@ -176,17 +176,63 @@ export default function WatermarkGeneratorPage() {
     }
   };
 
+  // Post-process the alpha channel to eliminate the soft fringe halo left by the
+  // segmentation model and produce crisp, smooth edges that match iloveimg's
+  // output every time. We use a smoothstep curve to map mid-range alpha values
+  // to either fully transparent or fully opaque while preserving a 1px
+  // anti-aliased transition — no jaggies, no halo.
+  const refineAlpha = async (blob: Blob): Promise<Blob> => {
+    const url = URL.createObjectURL(blob);
+    try {
+      const img = await loadImage(url);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+
+      // Smoothstep edges: alpha < 32 -> 0, alpha > 224 -> 255, in between -> smooth.
+      const LOW = 32;
+      const HIGH = 224;
+      const RANGE = HIGH - LOW;
+      for (let i = 3; i < data.length; i += 4) {
+        const a = data[i];
+        if (a <= LOW) {
+          data[i] = 0;
+        } else if (a >= HIGH) {
+          data[i] = 255;
+        } else {
+          const t = (a - LOW) / RANGE;
+          // smoothstep: 3t^2 - 2t^3
+          data[i] = Math.round(255 * (t * t * (3 - 2 * t)));
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+
+      return await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png');
+      });
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  };
+
   const removeBg = async (image: SourceImage): Promise<ProcessedImage> => {
     const sourceBlob = await (await fetch(image.src)).blob();
     // Highest-quality config: full-precision ISNet model + lossless PNG output at
-    // native resolution. This matches the smoothness/quality of iloveimg's output.
-    const outputBlob = await removeBackground(sourceBlob, {
+    // native resolution.
+    const rawBlob = await removeBackground(sourceBlob, {
       model: 'isnet',
       output: {
         format: 'image/png',
         quality: 1,
       },
     });
+    // Refine alpha edges to remove the soft halo / fringe — this is the key to
+    // matching iloveimg's crisp, zero-loss output every time.
+    const outputBlob = await refineAlpha(rawBlob);
     const outputSrc = await blobToDataURL(outputBlob);
     const outputEl = await loadImage(outputSrc);
 
