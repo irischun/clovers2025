@@ -152,6 +152,7 @@ export default function WatermarkGeneratorPage() {
   const [watermarks, setWatermarks] = useState<Watermark[]>([]);
   const [selectedWmId, setSelectedWmId] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [processingMode, setProcessingMode] = useState<'apply' | 'auto' | null>(null);
   const [bgRemovingIds, setBgRemovingIds] = useState<Set<string>>(new Set());
   const [useOrigAsWm, setUseOrigAsWm] = useState(false);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>('original');
@@ -381,6 +382,7 @@ export default function WatermarkGeneratorPage() {
   const exportAll = async (opts?: { forceAuto?: boolean }) => {
     if (!images.length) { toast.error(L.noImages); return; }
     setProcessing(true);
+    setProcessingMode(opts?.forceAuto ? 'auto' : 'apply');
     const needsAuto = opts?.forceAuto || !watermarks.length;
     const loadingToast = needsAuto ? toast.loading(L.removingBg) : null;
     try {
@@ -440,6 +442,7 @@ export default function WatermarkGeneratorPage() {
       else toast.error('Failed to export');
     } finally {
       setProcessing(false);
+      setProcessingMode(null);
     }
   };
 
@@ -689,13 +692,13 @@ export default function WatermarkGeneratorPage() {
             </div>
 
             <Button className="w-full" size="lg" onClick={() => exportAll()} disabled={processing}>
-              {processing
+              {processingMode === 'apply'
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
                 : <><Download className="w-4 h-4 mr-2" />{L.apply}</>}
             </Button>
             <Button className="w-full" size="lg" variant="secondary"
               onClick={() => exportAll({ forceAuto: true })} disabled={processing}>
-              {processing
+              {processingMode === 'auto'
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{L.processing}</>
                 : <><Download className="w-4 h-4 mr-2" />{L.generate}</>}
             </Button>
