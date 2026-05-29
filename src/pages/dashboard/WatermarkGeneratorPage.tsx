@@ -382,6 +382,7 @@ export default function WatermarkGeneratorPage() {
   const exportAll = async (opts?: { forceAuto?: boolean }) => {
     if (!images.length) { toast.error(L.noImages); return; }
     setProcessing(true);
+    setProcessingMode(opts?.forceAuto ? 'auto' : 'apply');
     const needsAuto = opts?.forceAuto || !watermarks.length;
     const loadingToast = needsAuto ? toast.loading(L.removingBg) : null;
     try {
