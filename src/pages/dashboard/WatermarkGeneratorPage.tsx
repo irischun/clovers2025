@@ -379,30 +379,13 @@ export default function WatermarkGeneratorPage() {
     return { mime: 'image/png', ext: 'png' };
   };
 
-  const exportAll = async (opts?: { forceAuto?: boolean }) => {
+  const exportAll = async () => {
     if (!images.length) { toast.error(L.noImages); return; }
+    if (!watermarks.length) { toast.error(L.needWatermark); return; }
     setProcessing(true);
-    setProcessingMode(opts?.forceAuto ? 'auto' : 'apply');
-    const needsAuto = opts?.forceAuto || !watermarks.length;
-    const loadingToast = needsAuto ? toast.loading(L.removingBg) : null;
     try {
-      let activeWatermarks = opts?.forceAuto ? [] : watermarks;
-      if (!activeWatermarks.length) {
-        const baseSrc = images[0];
-        const transparent = await removeBgFromDataUrl(baseSrc.src);
-        const imgEl = await loadImage(transparent);
-        const wm: Watermark = {
-          id: uid(), type: 'image', imgSrc: transparent, imgEl,
-          xRel: 0.5, yRel: 0.5, scale: 0.4, rotation: 0, opacity: 0.85,
-          mode: 'single', tileGapX: 0.5, tileGapY: 0.5,
-        };
-        activeWatermarks = [wm];
-        setWatermarks([wm]);
-        setSelectedWmId(wm.id);
-        if (loadingToast) toast.success(L.bgRemoved, { id: loadingToast });
-      }
+      const activeWatermarks = watermarks;
 
-      // If multiple images, zip them; if single, direct download.
       if (images.length === 1) {
         const src = images[0];
         const { mime, ext } = pickOutput(src);
@@ -438,11 +421,9 @@ export default function WatermarkGeneratorPage() {
       toast.success('Done');
     } catch (err) {
       console.error(err);
-      if (loadingToast) toast.error(L.bgRemoveFailed, { id: loadingToast });
-      else toast.error('Failed to export');
+      toast.error('Failed to export');
     } finally {
       setProcessing(false);
-      setProcessingMode(null);
     }
   };
 
