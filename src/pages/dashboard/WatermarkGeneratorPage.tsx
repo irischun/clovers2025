@@ -319,6 +319,49 @@ export default function WatermarkGeneratorPage() {
     }
   };
 
+  const hasOpposingOpaqueNeighbors = (
+    alphaMap: Uint8ClampedArray,
+    width: number,
+    height: number,
+    x: number,
+    y: number,
+    radius = 3,
+    threshold = 232,
+  ) => {
+    const directions: Array<[number, number]> = [
+      [1, 0],
+      [0, 1],
+      [1, 1],
+      [1, -1],
+    ];
+
+    for (const [dx, dy] of directions) {
+      let forward = false;
+      let backward = false;
+
+      for (let step = 1; step <= radius && (!forward || !backward); step += 1) {
+        const fx = x + dx * step;
+        const fy = y + dy * step;
+        const bx = x - dx * step;
+        const by = y - dy * step;
+
+        if (!forward && fx >= 0 && fx < width && fy >= 0 && fy < height) {
+          forward = alphaMap[fy * width + fx] >= threshold;
+        }
+
+        if (!backward && bx >= 0 && bx < width && by >= 0 && by < height) {
+          backward = alphaMap[by * width + bx] >= threshold;
+        }
+      }
+
+      if (forward && backward) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
   const removeBg = async (image: SourceImage): Promise<ProcessedImage> => {
     // HYBRID strategy (matches iloveimg.com exactly):
     //   1) ML segmentation produces an "outer subject mask" — this discards
@@ -368,6 +411,8 @@ export default function WatermarkGeneratorPage() {
       const FAR = 78;
       const RANGE = FAR - NEAR;
 
+      const alphaMap = new Uint8ClampedArray(w * h);
+
       for (let i = 0; i < src.length; i += 4) {
         const r = src[i];
         const g = src[i + 1];
@@ -414,6 +459,34 @@ export default function WatermarkGeneratorPage() {
         if (isAchromaticDark || isCool) {
           finalAlpha = 0;
         }
+
+        alphaMap[i / 4] = finalAlpha;
+      }
+
+      for (let i = 0; i < src.length; i += 4) {
+        const pixelIndex = i / 4;
+        const x = pixelIndex % w;
+        const y = Math.floor(pixelIndex / w);
+        const r = src[i];
+        const g = src[i + 1];
+        const b = src[i + 2];
+        const dr = r - bgR;
+        const dg = g - bgG;
+        const db = b - bgB;
+        const dist = Math.sqrt(dr * dr + dg * dg + db * db);
+        const maxC = Math.max(r, g, b);
+        const minC = Math.min(r, g, b);
+        const chroma = maxC - minC;
+        const warm = r - b;
+
+        let finalAlpha = alphaMap[pixelIndex];
+
+        const isStrongGold = warm > 8 && chroma > 22 && maxC > 145 && r >= g - 10 && g >= b - 18;
+        const isNearBackgroundBridge = dist < FAR + 24 && chroma < 34 && maxC < 214;
+        if (finalAlpha > 0 && !isStrongGold && isNearBackgroundBridge && hasOpposingOpaqueNeighbors(alphaMap, w, h, x, y)) {
+          finalAlpha = 0;
+        }
+
         src[i + 3] = finalAlpha;
 
         // Decontaminate soft-edge color (un-premultiply white halo).
