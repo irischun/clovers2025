@@ -325,8 +325,8 @@ export default function WatermarkGeneratorPage() {
     height: number,
     x: number,
     y: number,
-    radius = 3,
-    threshold = 232,
+    radius = 5,
+    threshold = 224,
   ) => {
     const directions: Array<[number, number]> = [
       [1, 0],
@@ -360,6 +360,27 @@ export default function WatermarkGeneratorPage() {
     }
 
     return false;
+  };
+
+  const isStrongGoldPixel = (r: number, g: number, b: number) => {
+    const maxC = Math.max(r, g, b);
+    const minC = Math.min(r, g, b);
+    const chroma = maxC - minC;
+    const warm = r - b;
+    return warm > 8 && chroma > 22 && maxC > 145 && r >= g - 10 && g >= b - 18;
+  };
+
+  const isCorridorResiduePixel = (r: number, g: number, b: number, dist: number, alpha: number, far: number) => {
+    const maxC = Math.max(r, g, b);
+    const minC = Math.min(r, g, b);
+    const chroma = maxC - minC;
+    const warm = r - b;
+    const mid = (r + g + b) / 3;
+
+    const isPaleWarm = maxC < 244 && mid > 108 && chroma < 52 && warm > -12 && warm < 44;
+    const isSoftOrNearBg = alpha < 250 || dist < far + 44;
+
+    return isPaleWarm && isSoftOrNearBg;
   };
 
   const removeBg = async (image: SourceImage): Promise<ProcessedImage> => {
@@ -463,29 +484,43 @@ export default function WatermarkGeneratorPage() {
         alphaMap[i / 4] = finalAlpha;
       }
 
+      let refinedAlphaMap = alphaMap.slice();
+      for (let pass = 0; pass < 3; pass += 1) {
+        const nextAlphaMap = refinedAlphaMap.slice();
+
+        for (let i = 0; i < src.length; i += 4) {
+          const pixelIndex = i / 4;
+          const currentAlpha = refinedAlphaMap[pixelIndex];
+          if (currentAlpha === 0) continue;
+
+          const x = pixelIndex % w;
+          const y = Math.floor(pixelIndex / w);
+          const r = src[i];
+          const g = src[i + 1];
+          const b = src[i + 2];
+          const dr = r - bgR;
+          const dg = g - bgG;
+          const db = b - bgB;
+          const dist = Math.sqrt(dr * dr + dg * dg + db * db);
+
+          if (
+            !isStrongGoldPixel(r, g, b) &&
+            isCorridorResiduePixel(r, g, b, dist, currentAlpha, FAR) &&
+            hasOpposingOpaqueNeighbors(refinedAlphaMap, w, h, x, y)
+          ) {
+            nextAlphaMap[pixelIndex] = 0;
+          }
+        }
+
+        refinedAlphaMap = nextAlphaMap;
+      }
+
       for (let i = 0; i < src.length; i += 4) {
         const pixelIndex = i / 4;
-        const x = pixelIndex % w;
-        const y = Math.floor(pixelIndex / w);
         const r = src[i];
         const g = src[i + 1];
         const b = src[i + 2];
-        const dr = r - bgR;
-        const dg = g - bgG;
-        const db = b - bgB;
-        const dist = Math.sqrt(dr * dr + dg * dg + db * db);
-        const maxC = Math.max(r, g, b);
-        const minC = Math.min(r, g, b);
-        const chroma = maxC - minC;
-        const warm = r - b;
-
-        let finalAlpha = alphaMap[pixelIndex];
-
-        const isStrongGold = warm > 8 && chroma > 22 && maxC > 145 && r >= g - 10 && g >= b - 18;
-        const isNearBackgroundBridge = dist < FAR + 24 && chroma < 34 && maxC < 214;
-        if (finalAlpha > 0 && !isStrongGold && isNearBackgroundBridge && hasOpposingOpaqueNeighbors(alphaMap, w, h, x, y)) {
-          finalAlpha = 0;
-        }
+        const finalAlpha = refinedAlphaMap[pixelIndex];
 
         src[i + 3] = finalAlpha;
 
