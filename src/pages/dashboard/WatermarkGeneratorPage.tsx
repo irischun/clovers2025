@@ -397,7 +397,23 @@ export default function WatermarkGeneratorPage() {
         }
 
         // AND-combine: keep only if both passes agree it's foreground.
-        const finalAlpha = Math.min(chromaAlpha, mlAlpha);
+        let finalAlpha = Math.min(chromaAlpha, mlAlpha);
+
+        // GOLD-AFFINITY GATE (kills the thin black arc between the rings).
+        // The true subject is warm gold (R >= G >= B, with meaningful chroma).
+        // Any pixel that is dark AND achromatic (low chroma) — i.e. black,
+        // grey, or scanner-shadow — is NOT part of the logo and must be
+        // forced fully transparent, even if ML+chroma both voted "keep".
+        // Gold pixels easily clear these thresholds (chroma 40-120, R>B by 30+).
+        const maxC = Math.max(r, g, b);
+        const minC = Math.min(r, g, b);
+        const chroma = maxC - minC;
+        const warm = r - b; // positive for gold, ~0 for grey/black
+        const isAchromaticDark = maxC < 170 && chroma < 35;
+        const isCool = warm < -5; // bluish — not gold
+        if (isAchromaticDark || isCool) {
+          finalAlpha = 0;
+        }
         src[i + 3] = finalAlpha;
 
         // Decontaminate soft-edge color (un-premultiply white halo).
@@ -411,6 +427,7 @@ export default function WatermarkGeneratorPage() {
           src[i + 1] = Math.max(0, Math.min(255, Math.round(ng)));
           src[i + 2] = Math.max(0, Math.min(255, Math.round(nb)));
         }
+
       }
       ctx.putImageData(srcData, 0, 0);
 
