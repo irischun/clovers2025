@@ -320,17 +320,103 @@ export default function WatermarkGeneratorPage() {
   };
 
   const removeBg = async (image: SourceImage): Promise<ProcessedImage> => {
-    // Strategy: if the source has a uniform light background (the iloveimg
-    // case — and 95% of logo/product uploads), use chroma-key removal. This
-    // matches iloveimg's behaviour exactly: every pixel close to the bg color
-    // — including the thin gap between concentric rings — becomes 100%
-    // transparent, with smooth anti-aliased edges and zero halo. Falls back to
-    // the ML segmentation model only when the background is busy / non-uniform.
+    // HYBRID strategy (matches iloveimg.com exactly):
+    //   1) ML segmentation produces an "outer subject mask" — this discards
+    //      stray dark artifacts (scanner noise, faint black arcs) that lie
+    //      OUTSIDE the actual logo subject. Chroma-key alone keeps them
+    //      because they're far from white.
+    //   2) Chroma-key punches transparent holes in interior light regions
+    //      (e.g. the thin gap between two concentric rings) that ML would
+    //      incorrectly fill in as solid foreground.
+    //   3) AND-combine the two alphas (min) so a pixel is kept only when
+    //      BOTH passes agree it's foreground.
+    //   4) Decontaminate rim color (un-premultiply white) to remove halos.
     const { isLightBg, bgR, bgG, bgB } = analyzeBackground(image.el);
 
     let outputBlob: Blob;
     if (isLightBg) {
-      outputBlob = await chromaKeyRemoveWhite(image.el, bgR, bgG, bgB);
+      const sourceBlob = await (await fetch(image.src)).blob();
+      const mlBlob = await removeBackground(sourceBlob, {
+        model: 'isnet',
+        output: { format: 'image/png', quality: 1 },
+      });
+      const mlImg = await loadImage(await blobToDataURL(mlBlob));
+
+      const w = image.el.naturalWidth;
+      const h = image.el.naturalHeight;
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+      ctx.drawImage(image.el, 0, 0);
+      const srcData = ctx.getImageData(0, 0, w, h);
+      const src = srcData.data;
+
+      const maskCanvas = document.createElement('canvas');
+      maskCanvas.width = w;
+      maskCanvas.height = h;
+      const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true })!;
+      maskCtx.drawImage(mlImg, 0, 0, w, h);
+      const maskData = maskCtx.getImageData(0, 0, w, h).data;
+
+      // Soften ML mask boundary so its edges contribute anti-aliasing too.
+      const ML_LOW = 32;
+      const ML_HIGH = 224;
+      const ML_RANGE = ML_HIGH - ML_LOW;
+
+      const NEAR = 55;
+      const FAR = 78;
+      const RANGE = FAR - NEAR;
+
+      for (let i = 0; i < src.length; i += 4) {
+        const r = src[i];
+        const g = src[i + 1];
+        const b = src[i + 2];
+        const dr = r - bgR;
+        const dg = g - bgG;
+        const db = b - bgB;
+        const dist = Math.sqrt(dr * dr + dg * dg + db * db);
+
+        // Chroma-key alpha (clears bg + interior holes between rings).
+        let chromaAlpha: number;
+        if (dist <= NEAR) chromaAlpha = 0;
+        else if (dist >= FAR) chromaAlpha = 255;
+        else {
+          const t = (dist - NEAR) / RANGE;
+          chromaAlpha = Math.round(255 * (t * t * (3 - 2 * t)));
+        }
+
+        // ML mask alpha, smoothstepped (kills outside-subject artifacts).
+        const rawMl = maskData[i + 3];
+        let mlAlpha: number;
+        if (rawMl <= ML_LOW) mlAlpha = 0;
+        else if (rawMl >= ML_HIGH) mlAlpha = 255;
+        else {
+          const t = (rawMl - ML_LOW) / ML_RANGE;
+          mlAlpha = Math.round(255 * (t * t * (3 - 2 * t)));
+        }
+
+        // AND-combine: keep only if both passes agree it's foreground.
+        const finalAlpha = Math.min(chromaAlpha, mlAlpha);
+        src[i + 3] = finalAlpha;
+
+        // Decontaminate soft-edge color (un-premultiply white halo).
+        if (finalAlpha > 0 && finalAlpha < 255) {
+          const a = finalAlpha / 255;
+          const inv = 1 - a;
+          const nr = (r - bgR * inv) / a;
+          const ng = (g - bgG * inv) / a;
+          const nb = (b - bgB * inv) / a;
+          src[i] = Math.max(0, Math.min(255, Math.round(nr)));
+          src[i + 1] = Math.max(0, Math.min(255, Math.round(ng)));
+          src[i + 2] = Math.max(0, Math.min(255, Math.round(nb)));
+        }
+      }
+      ctx.putImageData(srcData, 0, 0);
+
+      outputBlob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png');
+      });
     } else {
       const sourceBlob = await (await fetch(image.src)).blob();
       const rawBlob = await removeBackground(sourceBlob, {
