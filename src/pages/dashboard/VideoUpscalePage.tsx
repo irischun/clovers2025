@@ -19,7 +19,7 @@ const MODEL_OPTIONS: { id: ModelId; label: string; description: string; points: 
   { id: "topaz-video", label: "Topaz Video", description: "Industry-grade sharpness and denoise", points: 25 },
 ];
 
-const MAX_FILE_MB = 200;
+const MAX_FILE_MB = 100;
 
 const VideoUpscalePage = () => {
   const { toast } = useToast();
