@@ -31,6 +31,7 @@ const zhTW = {
   'nav.item.aiCopywriting': 'AI 文案創作',
   'nav.item.imageGen': '圖片生成',
   'nav.item.imageResize': '圖片尺寸調整與縮放',
+  'nav.item.videoResize': '影片尺寸調整與縮放',
   'nav.item.stickerMaker': '貼圖製作圖書館',
   'nav.item.watermarkGenerator': '浮水印生成器',
   'nav.item.imageLayerSplit': '圖片自動分層神器',

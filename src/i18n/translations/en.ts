@@ -31,6 +31,7 @@ const en = {
   'nav.item.aiCopywriting': 'AI Copywriting',
   'nav.item.imageGen': 'Image Generation',
   'nav.item.imageResize': 'Image Resizing & Rescaling',
+  'nav.item.videoResize': 'Video Resizing & Rescaling',
   'nav.item.stickerMaker': 'Sticker Maker Library',
   'nav.item.watermarkGenerator': 'Watermark Generator',
   'nav.item.imageLayerSplit': 'Image Layer Splitter',

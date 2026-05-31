@@ -31,6 +31,7 @@ const zhCN = {
   'nav.item.aiCopywriting': 'AI 文案创作',
   'nav.item.imageGen': '图片生成',
   'nav.item.imageResize': '图片尺寸调整与缩放',
+  'nav.item.videoResize': '视频尺寸调整与缩放',
   'nav.item.stickerMaker': '贴图制作图书馆',
   'nav.item.watermarkGenerator': '水印生成器',
   'nav.item.imageLayerSplit': '图片自动分层神器',
