@@ -61,7 +61,7 @@ async function demuxVideo(file: File): Promise<{
 
       // Extract avcC / hvcC description for VideoDecoder
       const trak = mp4.getTrackById(vt.id);
-      const entry = trak.mdia.minf.stbl.stsd.entries[0];
+      const entry: any = trak.mdia.minf.stbl.stsd.entries[0];
       const box = entry.avcC || entry.hvcC || entry.vpcC || entry.av1C;
       if (box) {
         const stream = new (MP4Box as any).DataStream(undefined, 0, (MP4Box as any).DataStream.BIG_ENDIAN);
