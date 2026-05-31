@@ -8,6 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Upload, Sparkles, RefreshCw, ChevronDown, Download, X, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PointsBalanceCard from "@/components/dashboard/PointsBalanceCard";
+import { upscaleVideo } from "@/lib/videoUpscaler";
 
 type ModelId = "sora-2-enhancer" | "higgsfield-upscale" | "topaz-video";
 type ScaleFactor = "480p" | "720p" | "1080p" | "2K" | "4K";
