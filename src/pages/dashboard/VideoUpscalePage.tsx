@@ -8,6 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Upload, Sparkles, RefreshCw, ChevronDown, Download, X, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PointsBalanceCard from "@/components/dashboard/PointsBalanceCard";
+import { upscaleVideo } from "@/lib/videoUpscaler";
 
 type ModelId = "sora-2-enhancer" | "higgsfield-upscale" | "topaz-video";
 type ScaleFactor = "480p" | "720p" | "1080p" | "2K" | "4K";
@@ -85,8 +86,6 @@ const VideoUpscalePage = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const isProcessingRef = useRef(false);
-
   const handleUpscale = async () => {
     if (!file) {
       toast({ title: "Upload a video first", description: "Select or drop a video to upscale.", variant: "destructive" });
@@ -96,31 +95,28 @@ const VideoUpscalePage = () => {
     setProgress(0);
     setResultUrl("");
 
-    const start = Date.now();
-    const duration = 6000;
-    isProcessingRef.current = true;
-    const tick = () => {
-      const elapsed = Date.now() - start;
-      const pct = Math.min(99, Math.round((elapsed / duration) * 100));
-      setProgress(pct);
-      if (elapsed < duration && isProcessingRef.current) {
-        requestAnimationFrame(tick);
-      }
-    };
-    requestAnimationFrame(tick);
-
     try {
-      await new Promise((r) => setTimeout(r, duration));
-      setResultUrl(previewUrl);
+      const blob = await upscaleVideo(file, {
+        target: scaleFactor,
+        creativity,
+        frameInterpolation,
+        onProgress: (p) => setProgress(p),
+      });
+      const url = URL.createObjectURL(blob);
+      setResultUrl(url);
       setProgress(100);
       toast({
         title: "Upscale complete",
-        description: `${selectedModel.label} → ${scaleFactor}${frameInterpolation ? " · Frame Interpolation" : ""} · ${creativity === "bold" ? "Bold" : "Subtle"} creativity`,
+        description: `${selectedModel.label} → ${scaleFactor} · ${creativity === "bold" ? "Bold" : "Subtle"} sharpening`,
       });
     } catch (err) {
-      toast({ title: "Upscale failed", description: err instanceof Error ? err.message : "Unknown error", variant: "destructive" });
+      console.error("[Upscale] failed", err);
+      toast({
+        title: "Upscale failed",
+        description: err instanceof Error ? err.message : "Unknown error",
+        variant: "destructive",
+      });
     } finally {
-      isProcessingRef.current = false;
       setIsProcessing(false);
     }
   };
