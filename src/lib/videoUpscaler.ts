@@ -2,7 +2,7 @@
 // High-quality Lanczos-like resampling via stepped bilinear + unsharp mask.
 import { Muxer, ArrayBufferTarget } from "mp4-muxer";
 // @ts-ignore - mp4box has no types bundled
-import MP4Box from "mp4box";
+import * as MP4Box from "mp4box";
 
 export type UpscaleTarget = "480p" | "720p" | "1080p" | "2K" | "4K";
 export type Creativity = "subtle" | "bold";
