@@ -1,9 +1,11 @@
 // Application version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "82.0.0";
-// Version 82.0.0: Video Resizing & Rescaling page now enforces a 100MB max
-// upload size (previously 200MB). Upload validation and the helper text in
-// the dropzone are updated accordingly; no other behaviour changes.
+export const APP_VERSION = "83.0.0";
+// Version 83.0.0: Added Facebook Video Downloader at
+// /dashboard/facebook_video_downloader. Paste any public Facebook video URL
+// (facebook.com/watch, /reel, /videos, /share, fb.watch) to fetch HD and SD
+// MP4 download links via a server-side extractor edge function. No impact on
+// existing pages.
 export const VERSION_NAME = "Version";
 export const VERSION_DATE = "2026-05-31";
