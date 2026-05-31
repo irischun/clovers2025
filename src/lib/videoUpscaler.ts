@@ -2,7 +2,7 @@
 // High-quality Lanczos-like resampling via stepped bilinear + unsharp mask.
 import { Muxer, ArrayBufferTarget } from "mp4-muxer";
 // @ts-ignore - mp4box has no types bundled
-import MP4Box from "mp4box";
+import * as MP4Box from "mp4box";
 
 export type UpscaleTarget = "480p" | "720p" | "1080p" | "2K" | "4K";
 export type Creativity = "subtle" | "bold";
@@ -61,7 +61,7 @@ async function demuxVideo(file: File): Promise<{
 
       // Extract avcC / hvcC description for VideoDecoder
       const trak = mp4.getTrackById(vt.id);
-      const entry = trak.mdia.minf.stbl.stsd.entries[0];
+      const entry: any = trak.mdia.minf.stbl.stsd.entries[0];
       const box = entry.avcC || entry.hvcC || entry.vpcC || entry.av1C;
       if (box) {
         const stream = new (MP4Box as any).DataStream(undefined, 0, (MP4Box as any).DataStream.BIG_ENDIAN);
@@ -85,7 +85,7 @@ async function demuxVideo(file: File): Promise<{
       }
     };
 
-    mp4.appendBuffer(buf);
+    mp4.appendBuffer(buf as any);
     mp4.flush();
 
     // wait a tick for callbacks to settle, then resolve
