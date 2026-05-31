@@ -9,7 +9,7 @@ import {
 import { 
   LayoutDashboard, FileText, Image, Sparkles, Settings, LogOut, ChevronDown, ChevronRight,
   ImagePlus, Mic, AudioLines, Video, Tv, Youtube, GalleryHorizontalEnd, BookOpen, Rss,
-  FolderEdit, Sticker, Rocket, Send, CreditCard, Coins, History, Home, Maximize2, ArrowUpToLine, Layers, Stamp
+  FolderEdit, Sticker, Rocket, Send, CreditCard, Coins, History, Home, Maximize2, ArrowUpToLine, Layers, Stamp, Facebook
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -42,6 +42,7 @@ const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
     { title: t('nav.item.imageGen'), icon: ImagePlus, path: '/dashboard/image-generating-and-editing' },
     { title: t('nav.item.imageResize'), icon: Maximize2, path: '/dashboard/image-resizing_image-rescaling' },
     { title: t('nav.item.videoResize'), icon: Maximize2, path: '/dashboard/video-resizing_video-rescaling' },
+    { title: t('nav.item.fbVideoDownloader'), icon: Facebook, path: '/dashboard/facebook_video_downloader' },
     { title: t('nav.item.stickerMaker'), icon: Sticker, path: '/dashboard/sticker-maker-library' },
     { title: t('nav.item.watermarkGenerator'), icon: Stamp, path: '/dashboard/watermark_generator' },
     { title: t('nav.item.imageLayerSplit'), icon: Layers, path: '/dashboard/image_layers_splitting' },
