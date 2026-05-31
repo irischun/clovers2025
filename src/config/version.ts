@@ -1,11 +1,12 @@
 // Application version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "83.0.1";
-// Version 83.0.0: Added Facebook Video Downloader at
-// /dashboard/facebook_video_downloader. Paste any public Facebook video URL
-// (facebook.com/watch, /reel, /videos, /share, fb.watch) to fetch HD and SD
-// MP4 download links via a server-side extractor edge function. No impact on
-// existing pages.
+export const APP_VERSION = "83.0.2";
+// Version 83.0.2: Re-trigger GitHub Pages deploy so the previously-shipped
+// Facebook Video Downloader entry (sidebar item + route + page +
+// facebook-video-download edge function) and the 480p/2K scale buttons on
+// the Video Resizing page become visible on the live site. No code changes
+// to existing functionality.
 export const VERSION_NAME = "Version";
 export const VERSION_DATE = "2026-05-31";
+
