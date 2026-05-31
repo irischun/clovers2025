@@ -239,13 +239,14 @@ const VideoUpscalePage = () => {
 
             <div className="space-y-2">
               <Label>Scale factor</Label>
-              <div className="grid grid-cols-3 gap-2">
-                {(["720p", "1080p", "4K"] as ScaleFactor[]).map((s) => (
+              <div className="grid grid-cols-5 gap-2">
+                {(["480p", "720p", "1080p", "2K", "4K"] as ScaleFactor[]).map((s) => (
                   <Button
                     key={s}
                     type="button"
                     variant={scaleFactor === s ? "default" : "outline"}
                     onClick={() => setScaleFactor(s)}
+                    className="px-2"
                   >
                     {s}
                   </Button>
