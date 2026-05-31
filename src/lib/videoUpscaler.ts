@@ -85,7 +85,7 @@ async function demuxVideo(file: File): Promise<{
       }
     };
 
-    mp4.appendBuffer(buf);
+    mp4.appendBuffer(buf as any);
     mp4.flush();
 
     // wait a tick for callbacks to settle, then resolve
