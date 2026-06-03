@@ -71,6 +71,7 @@ type ClientSpec = {
   ua: string;
   headerName: string;
   headerVersion: string;
+  apiKey: string;
   context: Record<string, unknown>;
 };
 
@@ -83,6 +84,7 @@ const CLIENTS: ClientSpec[] = [
     ua: 'com.google.android.apps.youtube.vr.oculus/1.62.27 (Linux; U; Android 12L; eureka-user Build/SQ3A.220605.009.A1) gzip',
     headerName: '28',
     headerVersion: '1.62.27',
+    apiKey: 'AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w',
     context: {
       client: {
         clientName: 'ANDROID_VR',
@@ -103,6 +105,7 @@ const CLIENTS: ClientSpec[] = [
     ua: 'com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X;)',
     headerName: '5',
     headerVersion: '19.45.4',
+    apiKey: 'AIzaSyB-63vPrdThhKuerbB2N_l7Kwwcxj6yUAc',
     context: {
       client: {
         clientName: 'IOS',
@@ -123,6 +126,7 @@ const CLIENTS: ClientSpec[] = [
     ua: 'Mozilla/5.0 (PlayStation; PlayStation 4/12.00) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15',
     headerName: '85',
     headerVersion: '2.0',
+    apiKey: 'AIzaSyDCU8hByM-4DrUqRUYnGn-3llEO78bcxq8',
     context: {
       client: {
         clientName: 'TVHTML5_SIMPLY_EMBEDDED_PLAYER',
@@ -144,7 +148,7 @@ async function tryClient(videoId: string, spec: ClientSpec): Promise<any> {
     racyCheckOk: true,
   };
   const res = await fetch(
-    'https://www.youtube.com/youtubei/v1/player?prettyPrint=false',
+    `https://www.youtube.com/youtubei/v1/player?key=${spec.apiKey}&prettyPrint=false`,
     {
       method: 'POST',
       headers: {
