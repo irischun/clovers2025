@@ -575,9 +575,16 @@ Deno.serve(async (req) => {
     const errors: string[] = [];
 
     try {
-      result = await tryYtdlpProxy(videoId);
+      result = await tryApify(videoId);
     } catch (e) {
-      errors.push(`ytdlp-proxy:${e instanceof Error ? e.message : String(e)}`);
+      errors.push(`apify:${e instanceof Error ? e.message : String(e)}`);
+    }
+    if (!result) {
+      try {
+        result = await tryYtdlpProxy(videoId);
+      } catch (e) {
+        errors.push(`ytdlp-proxy:${e instanceof Error ? e.message : String(e)}`);
+      }
     }
     if (!result) {
       try {
