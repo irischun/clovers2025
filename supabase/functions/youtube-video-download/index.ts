@@ -68,6 +68,57 @@ function extractVideoId(input: string): string | null {
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// 0) Self-hosted yt-dlp proxy (preferred when configured)
+// ---------------------------------------------------------------------------
+async function tryYtdlpProxy(videoId: string): Promise<YTResult | null> {
+  const base = (Deno.env.get('YTDLP_PROXY_URL') || '').trim().replace(/\/+$/, '');
+  const token = (Deno.env.get('YTDLP_PROXY_TOKEN') || '').trim();
+  if (!base) return null;
+
+  // Two attempts in case of cold-start (Render free tier sleeps after 15min).
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await fetchWithTimeout(
+        `${base}/extract?url=${encodeURIComponent(`https://www.youtube.com/watch?v=${videoId}`)}`,
+        {
+          headers: token
+            ? { 'X-Auth-Token': token, Accept: 'application/json' }
+            : { Accept: 'application/json' },
+        },
+        attempt === 0 ? 12000 : 35000, // 2nd attempt waits longer for cold-start
+      );
+      if (!res.ok) {
+        if (attempt === 0 && (res.status === 502 || res.status === 503 || res.status === 504)) {
+          // Likely cold-start; retry once with longer timeout.
+          await new Promise((r) => setTimeout(r, 1500));
+          continue;
+        }
+        return null;
+      }
+      const data: any = await res.json();
+      if (!data || !Array.isArray(data.formats) || data.formats.length === 0) {
+        return null;
+      }
+      return {
+        title: data.title || 'YouTube Video',
+        author: data.author || null,
+        duration: typeof data.duration === 'number' ? data.duration : null,
+        thumbnail: data.thumbnail || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+        formats: data.formats as YTFormat[],
+        source: `https://www.youtube.com/watch?v=${videoId}`,
+      };
+    } catch {
+      if (attempt === 0) {
+        await new Promise((r) => setTimeout(r, 1500));
+        continue;
+      }
+      return null;
+    }
+  }
+  return null;
+}
+
 async function fetchWithTimeout(url: string, init: RequestInit = {}, ms = 8000): Promise<Response> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), ms);
@@ -394,9 +445,16 @@ Deno.serve(async (req) => {
     const errors: string[] = [];
 
     try {
-      result = await tryPiped(videoId);
+      result = await tryYtdlpProxy(videoId);
     } catch (e) {
-      errors.push(`piped:${e instanceof Error ? e.message : String(e)}`);
+      errors.push(`ytdlp-proxy:${e instanceof Error ? e.message : String(e)}`);
+    }
+    if (!result) {
+      try {
+        result = await tryPiped(videoId);
+      } catch (e) {
+        errors.push(`piped:${e instanceof Error ? e.message : String(e)}`);
+      }
     }
     if (!result) {
       try {
