@@ -147,8 +147,10 @@ async function tryClient(videoId: string, spec: ClientSpec): Promise<any> {
     contentCheckOk: true,
     racyCheckOk: true,
   };
+  // music.youtube.com seems less likely to flag datacenter IPs with a
+  // "Precondition check failed" than www.youtube.com.
   const res = await fetch(
-    `https://www.youtube.com/youtubei/v1/player?key=${spec.apiKey}&prettyPrint=false`,
+    `https://music.youtube.com/youtubei/v1/player?key=${spec.apiKey}&prettyPrint=false`,
     {
       method: 'POST',
       headers: {
