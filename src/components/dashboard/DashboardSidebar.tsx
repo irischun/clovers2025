@@ -43,6 +43,7 @@ const DashboardSidebar = ({ user }: DashboardSidebarProps) => {
     { title: t('nav.item.imageResize'), icon: Maximize2, path: '/dashboard/image-resizing_image-rescaling' },
     { title: t('nav.item.videoResize'), icon: Maximize2, path: '/dashboard/video-resizing_video-rescaling' },
     { title: t('nav.item.fbVideoDownloader'), icon: Facebook, path: '/dashboard/facebook_video_downloader' },
+    { title: t('nav.item.ytVideoDownloader'), icon: Youtube, path: '/dashboard/youtube_video_downloader' },
     { title: t('nav.item.stickerMaker'), icon: Sticker, path: '/dashboard/sticker-maker-library' },
     { title: t('nav.item.watermarkGenerator'), icon: Stamp, path: '/dashboard/watermark_generator' },
     { title: t('nav.item.imageLayerSplit'), icon: Layers, path: '/dashboard/image_layers_splitting' },
