@@ -157,8 +157,6 @@ async function tryClient(videoId: string, spec: ClientSpec): Promise<any> {
         'X-YouTube-Client-Name': spec.headerName,
         'X-YouTube-Client-Version': spec.headerVersion,
         'Accept-Language': 'en-US,en;q=0.9',
-        Origin: 'https://www.youtube.com',
-        Referer: 'https://www.youtube.com/',
       },
       body: JSON.stringify(body),
     },
