@@ -119,6 +119,84 @@ async function tryYtdlpProxy(videoId: string): Promise<YTResult | null> {
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// 0b) Apify actor (preferred when APIFY_API_TOKEN is configured)
+//    Default actor: streamers/youtube-video-downloader (override via APIFY_ACTOR_ID)
+// ---------------------------------------------------------------------------
+async function tryApify(videoId: string): Promise<YTResult | null> {
+  const token = (Deno.env.get('APIFY_API_TOKEN') || '').trim();
+  if (!token) return null;
+  const actorId = (Deno.env.get('APIFY_ACTOR_ID') || 'streamers/youtube-video-downloader').trim();
+  const actorPath = actorId.replace('/', '~');
+  const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+  try {
+    const res = await fetchWithTimeout(
+      `https://api.apify.com/v2/acts/${actorPath}/run-sync-get-dataset-items?token=${encodeURIComponent(token)}&timeout=90`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          startUrls: [{ url: videoUrl }],
+          videoUrls: [videoUrl],
+          urls: [videoUrl],
+          maxItems: 1,
+          proxy: { useApifyProxy: true },
+        }),
+      },
+      90000,
+    );
+    if (!res.ok) return null;
+    const items: any = await res.json();
+    const item = Array.isArray(items) ? items[0] : items;
+    if (!item) return null;
+
+    const rawFormats: any[] =
+      (Array.isArray(item.formats) && item.formats) ||
+      (Array.isArray(item.downloadUrls) && item.downloadUrls) ||
+      (Array.isArray(item.videos) && item.videos) ||
+      [];
+
+    const formats: YTFormat[] = [];
+    for (const f of rawFormats) {
+      const url = f?.url || f?.downloadUrl || f?.src;
+      if (!url || typeof url !== 'string') continue;
+      const mime: string = f.mimeType || f.mime || (f.ext === 'mp4' ? 'video/mp4' : 'video/mp4');
+      const height = f.height || (typeof f.quality === 'string' ? parseInt(f.quality) : undefined);
+      formats.push({
+        quality: f.quality || (height ? `${height}p` : f.label || 'unknown'),
+        mime,
+        hasVideo: f.hasVideo !== false,
+        hasAudio: f.hasAudio !== false,
+        url,
+        contentLength: f.contentLength?.toString?.() || f.filesize?.toString?.(),
+      });
+    }
+    // Single top-level url fallback
+    if (formats.length === 0 && typeof item.url === 'string' && /^https?:\/\//.test(item.url) && item.url !== videoUrl) {
+      formats.push({
+        quality: item.quality || 'best',
+        mime: 'video/mp4',
+        hasVideo: true,
+        hasAudio: true,
+        url: item.url,
+      });
+    }
+    if (formats.length === 0) return null;
+
+    return {
+      title: item.title || item.name || 'YouTube Video',
+      author: item.author || item.channelName || item.uploader || null,
+      duration: typeof item.duration === 'number' ? item.duration : null,
+      thumbnail: item.thumbnail || item.thumbnailUrl || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+      formats,
+      source: videoUrl,
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function fetchWithTimeout(url: string, init: RequestInit = {}, ms = 8000): Promise<Response> {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), ms);
