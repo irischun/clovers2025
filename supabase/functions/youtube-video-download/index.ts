@@ -159,7 +159,10 @@ async function tryClient(videoId: string, spec: ClientSpec): Promise<any> {
       body: JSON.stringify(body),
     },
   );
-  if (!res.ok) throw new Error(`${spec.name} responded ${res.status}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`${spec.name} responded ${res.status}: ${body.slice(0, 200)}`);
+  }
   return await res.json();
 }
 
