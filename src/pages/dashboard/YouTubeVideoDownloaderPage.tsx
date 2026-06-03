@@ -92,25 +92,24 @@ const YouTubeVideoDownloaderPage = () => {
     }
   };
 
-  const handleDownload = async (fmt: YTFormat) => {
+  const handleDownload = (fmt: YTFormat) => {
     setDownloadingItag(fmt.itag);
     try {
-      const res = await fetch(fmt.url);
-      if (!res.ok) throw new Error("Network error");
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = blobUrl;
       const safeTitle = (result?.title || "youtube-video").replace(/[^\w\-]+/g, "_").slice(0, 80);
-      a.download = `${safeTitle}-${fmt.quality}.mp4`;
+      const filename = `${safeTitle}-${fmt.quality}.mp4`;
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const proxyUrl =
+        `https://${projectId}.supabase.co/functions/v1/youtube-video-download` +
+        `?stream=${encodeURIComponent(fmt.url)}&filename=${encodeURIComponent(filename)}`;
+      const a = document.createElement("a");
+      a.href = proxyUrl;
+      a.download = filename;
+      a.rel = "noopener noreferrer";
       document.body.appendChild(a);
       a.click();
       a.remove();
-      URL.revokeObjectURL(blobUrl);
-    } catch {
-      window.open(fmt.url, "_blank", "noopener,noreferrer");
     } finally {
-      setDownloadingItag(null);
+      setTimeout(() => setDownloadingItag(null), 800);
     }
   };
 

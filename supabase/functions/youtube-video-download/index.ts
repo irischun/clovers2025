@@ -412,11 +412,63 @@ async function tryInnerTube(videoId: string): Promise<YTResult | null> {
 }
 
 // ---------------------------------------------------------------------------
+// GET ?stream=<googlevideo url>&filename=...
+//   Streams the upstream video back with Content-Disposition: attachment so a
+//   plain <a href> click gives the user a real download with no CORS issue.
+// ---------------------------------------------------------------------------
+async function handleStreamProxy(req: Request): Promise<Response> {
+  const u = new URL(req.url);
+  const target = u.searchParams.get('stream') || '';
+  const filename = (u.searchParams.get('filename') || 'youtube-video.mp4')
+    .replace(/[^\w.\-]+/g, '_')
+    .slice(0, 120);
+  if (!target) return jsonResponse({ error: 'Missing stream param' }, 400);
+
+  let parsed: URL;
+  try { parsed = new URL(target); }
+  catch { return jsonResponse({ error: 'Invalid stream URL' }, 400); }
+
+  // SSRF guard: only allow Google's video CDN hosts.
+  if (!/(^|\.)googlevideo\.com$|(^|\.)youtube\.com$/i.test(parsed.hostname)) {
+    return jsonResponse({ error: 'Disallowed host' }, 400);
+  }
+
+  const upstream = await fetch(parsed.toString(), {
+    headers: {
+      ...(req.headers.get('range') ? { Range: req.headers.get('range')! } : {}),
+      'User-Agent': 'Mozilla/5.0',
+    },
+  });
+
+  const headers = new Headers(corsHeaders);
+  headers.set('Content-Type', upstream.headers.get('content-type') || 'video/mp4');
+  const len = upstream.headers.get('content-length');
+  if (len) headers.set('Content-Length', len);
+  const range = upstream.headers.get('content-range');
+  if (range) headers.set('Content-Range', range);
+  headers.set('Accept-Ranges', 'bytes');
+  headers.set('Content-Disposition', `attachment; filename="${filename}"`);
+  headers.set('Cache-Control', 'no-store');
+  return new Response(upstream.body, { status: upstream.status, headers });
+}
+
+// ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
+  }
+
+  if (req.method === 'GET' && new URL(req.url).searchParams.has('stream')) {
+    try {
+      return await handleStreamProxy(req);
+    } catch (err) {
+      return jsonResponse({
+        error: 'Stream proxy failed',
+        detail: err instanceof Error ? err.message : String(err),
+      }, 502);
+    }
   }
 
   try {
