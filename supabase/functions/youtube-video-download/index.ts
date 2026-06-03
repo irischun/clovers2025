@@ -74,7 +74,30 @@ type ClientSpec = {
   context: Record<string, unknown>;
 };
 
+// Primary: ANDROID_VR — currently returns progressive + adaptive MP4 streams
+// with direct (un-ciphered) googlevideo URLs and bypasses most PoToken/age
+// checks. Fallbacks kept for resilience.
 const CLIENTS: ClientSpec[] = [
+  {
+    name: 'ANDROID_VR',
+    ua: 'com.google.android.apps.youtube.vr.oculus/1.62.27 (Linux; U; Android 12L; eureka-user Build/SQ3A.220605.009.A1) gzip',
+    headerName: '28',
+    headerVersion: '1.62.27',
+    context: {
+      client: {
+        clientName: 'ANDROID_VR',
+        clientVersion: '1.62.27',
+        deviceMake: 'Oculus',
+        deviceModel: 'Quest 3',
+        androidSdkVersion: 32,
+        osName: 'Android',
+        osVersion: '12L',
+        hl: 'en',
+        gl: 'US',
+        utcOffsetMinutes: 0,
+      },
+    },
+  },
   {
     name: 'IOS',
     ua: 'com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X;)',
@@ -89,22 +112,6 @@ const CLIENTS: ClientSpec[] = [
         platform: 'MOBILE',
         osName: 'iPhone',
         osVersion: '18.1.0.22B83',
-        hl: 'en',
-        gl: 'US',
-        utcOffsetMinutes: 0,
-      },
-    },
-  },
-  {
-    name: 'ANDROID_TESTSUITE',
-    ua: 'com.google.android.youtube/1.9 (Linux; U; Android 14) gzip',
-    headerName: '30',
-    headerVersion: '1.9',
-    context: {
-      client: {
-        clientName: 'ANDROID_TESTSUITE',
-        clientVersion: '1.9',
-        androidSdkVersion: 34,
         hl: 'en',
         gl: 'US',
         utcOffsetMinutes: 0,
@@ -158,22 +165,27 @@ async function tryClient(videoId: string, spec: ClientSpec): Promise<any> {
 
 async function fetchPlayer(videoId: string): Promise<any> {
   let lastErr: unknown;
+  let lastReason: string | null = null;
   for (const spec of CLIENTS) {
     try {
       const data = await tryClient(videoId, spec);
       const status = data?.playabilityStatus?.status;
-      if (status && status !== 'OK' && status !== 'LOGIN_REQUIRED') {
-        // Hard failure unique to this video; keep result for reporting
-        lastErr = new Error(data?.playabilityStatus?.reason || status);
-        continue;
-      }
-      const hasUrls = (data?.streamingData?.formats || []).some((f: any) => f?.url)
-        || (data?.streamingData?.adaptiveFormats || []).some((f: any) => f?.url);
+      const hasUrls =
+        (data?.streamingData?.formats || []).some((f: any) => f?.url) ||
+        (data?.streamingData?.adaptiveFormats || []).some((f: any) => f?.url);
       if (hasUrls) return data;
-      lastErr = new Error(`${spec.name}: no direct URLs`);
+      if (status && status !== 'OK') {
+        lastReason = data?.playabilityStatus?.reason || status;
+      }
+      lastErr = new Error(`${spec.name}: no direct URLs (status=${status || 'unknown'})`);
     } catch (e) {
       lastErr = e;
     }
+  }
+  if (lastReason) {
+    const err: any = new Error(lastReason);
+    err.playabilityReason = lastReason;
+    throw err;
   }
   throw lastErr instanceof Error ? lastErr : new Error('All InnerTube clients failed');
 }
