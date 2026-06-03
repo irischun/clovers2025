@@ -164,7 +164,7 @@ async function tryClient(videoId: string, spec: ClientSpec): Promise<any> {
 }
 
 async function fetchPlayer(videoId: string): Promise<any> {
-  let lastErr: unknown;
+  const errors: string[] = [];
   let lastReason: string | null = null;
   for (const spec of CLIENTS) {
     try {
@@ -177,17 +177,14 @@ async function fetchPlayer(videoId: string): Promise<any> {
       if (status && status !== 'OK') {
         lastReason = data?.playabilityStatus?.reason || status;
       }
-      lastErr = new Error(`${spec.name}: no direct URLs (status=${status || 'unknown'})`);
+      errors.push(`${spec.name}: no direct URLs (status=${status || 'unknown'})`);
     } catch (e) {
-      lastErr = e;
+      errors.push(`${spec.name}: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
-  if (lastReason) {
-    const err: any = new Error(lastReason);
-    err.playabilityReason = lastReason;
-    throw err;
-  }
-  throw lastErr instanceof Error ? lastErr : new Error('All InnerTube clients failed');
+  const err: any = new Error(lastReason || errors.join(' | '));
+  if (lastReason) err.playabilityReason = lastReason;
+  throw err;
 }
 
 function qualityLabel(f: any): string {
