@@ -1,7 +1,10 @@
 // Application version configuration
 // Update this file when releasing new versions
 
-export const APP_VERSION = "84.3.0";
+export const APP_VERSION = "84.4.0";
+// Version 84.4.0: Apify actor `streamers/youtube-video-downloader` wired in as
+// the primary extraction strategy (uses APIFY_API_TOKEN, residential proxy).
+// Falls back to self-hosted yt-dlp → Piped → Invidious → InnerTube.
 // Version 84.3.0: YouTube downloader rewritten for zero-setup operation.
 // Edge function now exposes a streaming proxy (?stream=...) that pipes
 // googlevideo URLs through with Content-Disposition: attachment, so the
