@@ -24,6 +24,7 @@ import VideoGenerationPage from "./pages/dashboard/VideoGenerationPage";
 import VideoGeneration2Page from "./pages/dashboard/VideoGeneration2Page";
 import VideoUpscalePage from "./pages/dashboard/VideoUpscalePage";
 import FacebookVideoDownloaderPage from "./pages/dashboard/FacebookVideoDownloaderPage";
+import YouTubeVideoDownloaderPage from "./pages/dashboard/YouTubeVideoDownloaderPage";
 import LipSyncPage from "./pages/dashboard/LipSyncPage";
 import YouTubeSearchPage from "./pages/dashboard/YouTubeSearchPage";
 import XiaohongshuSearchPage from "./pages/dashboard/XiaohongshuSearchPage";
@@ -78,6 +79,8 @@ const App = () => (
                 <Route path="video-resizing" element={<Navigate to="/dashboard/video-resizing_video-rescaling" replace />} />
                 <Route path="facebook_video_downloader" element={<FacebookVideoDownloaderPage />} />
                 <Route path="facebook-video-downloader" element={<Navigate to="/dashboard/facebook_video_downloader" replace />} />
+                <Route path="youtube_video_downloader" element={<YouTubeVideoDownloaderPage />} />
+                <Route path="youtube-video-downloader" element={<Navigate to="/dashboard/youtube_video_downloader" replace />} />
                 <Route path="lip-sync" element={<LipSyncPage />} />
                 <Route path="youtube-search" element={<YouTubeSearchPage />} />
                 <Route path="xiaohongshu-search" element={<XiaohongshuSearchPage />} />
