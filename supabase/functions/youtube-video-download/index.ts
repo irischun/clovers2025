@@ -66,41 +66,116 @@ function extractVideoId(input: string): string | null {
   return null;
 }
 
-async function fetchPlayer(videoId: string): Promise<any> {
-  // Use InnerTube ANDROID client — progressive formats come back with plain
-  // `url` (no signatureCipher) so they're directly downloadable.
-  const body = {
+type ClientSpec = {
+  name: string;
+  ua: string;
+  headerName: string;
+  headerVersion: string;
+  context: Record<string, unknown>;
+};
+
+const CLIENTS: ClientSpec[] = [
+  {
+    name: 'IOS',
+    ua: 'com.google.ios.youtube/19.45.4 (iPhone16,2; U; CPU iOS 18_1_0 like Mac OS X;)',
+    headerName: '5',
+    headerVersion: '19.45.4',
     context: {
       client: {
-        clientName: 'ANDROID',
-        clientVersion: '19.09.37',
-        androidSdkVersion: 30,
+        clientName: 'IOS',
+        clientVersion: '19.45.4',
+        deviceMake: 'Apple',
+        deviceModel: 'iPhone16,2',
+        platform: 'MOBILE',
+        osName: 'iPhone',
+        osVersion: '18.1.0.22B83',
         hl: 'en',
         gl: 'US',
         utcOffsetMinutes: 0,
       },
     },
+  },
+  {
+    name: 'ANDROID_TESTSUITE',
+    ua: 'com.google.android.youtube/1.9 (Linux; U; Android 14) gzip',
+    headerName: '30',
+    headerVersion: '1.9',
+    context: {
+      client: {
+        clientName: 'ANDROID_TESTSUITE',
+        clientVersion: '1.9',
+        androidSdkVersion: 34,
+        hl: 'en',
+        gl: 'US',
+        utcOffsetMinutes: 0,
+      },
+    },
+  },
+  {
+    name: 'TVHTML5_SIMPLY_EMBEDDED_PLAYER',
+    ua: 'Mozilla/5.0 (PlayStation; PlayStation 4/12.00) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15',
+    headerName: '85',
+    headerVersion: '2.0',
+    context: {
+      client: {
+        clientName: 'TVHTML5_SIMPLY_EMBEDDED_PLAYER',
+        clientVersion: '2.0',
+        hl: 'en',
+        gl: 'US',
+        utcOffsetMinutes: 0,
+      },
+      thirdParty: { embedUrl: 'https://www.youtube.com/' },
+    },
+  },
+];
+
+async function tryClient(videoId: string, spec: ClientSpec): Promise<any> {
+  const body = {
+    ...spec.context,
     videoId,
     contentCheckOk: true,
     racyCheckOk: true,
   };
   const res = await fetch(
-    'https://www.youtube.com/youtubei/v1/player?key=AIzaSyA8eiZmM1FaDVjRy-df2KTyQ_vz_yYM39w',
+    'https://www.youtube.com/youtubei/v1/player?prettyPrint=false',
     {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'User-Agent':
-          'com.google.android.youtube/19.09.37 (Linux; U; Android 11) gzip',
-        'X-YouTube-Client-Name': '3',
-        'X-YouTube-Client-Version': '19.09.37',
+        'User-Agent': spec.ua,
+        'X-YouTube-Client-Name': spec.headerName,
+        'X-YouTube-Client-Version': spec.headerVersion,
         'Accept-Language': 'en-US,en;q=0.9',
+        Origin: 'https://www.youtube.com',
+        Referer: 'https://www.youtube.com/',
       },
       body: JSON.stringify(body),
     },
   );
-  if (!res.ok) throw new Error(`InnerTube responded ${res.status}`);
+  if (!res.ok) throw new Error(`${spec.name} responded ${res.status}`);
   return await res.json();
+}
+
+async function fetchPlayer(videoId: string): Promise<any> {
+  let lastErr: unknown;
+  for (const spec of CLIENTS) {
+    try {
+      const data = await tryClient(videoId, spec);
+      const status = data?.playabilityStatus?.status;
+      if (status && status !== 'OK' && status !== 'LOGIN_REQUIRED') {
+        // Hard failure unique to this video; keep result for reporting
+        lastErr = new Error(data?.playabilityStatus?.reason || status);
+        continue;
+      }
+      const hasUrls = (data?.streamingData?.formats || []).some((f: any) => f?.url)
+        || (data?.streamingData?.adaptiveFormats || []).some((f: any) => f?.url);
+      if (hasUrls) return data;
+      lastErr = new Error(`${spec.name}: no direct URLs`);
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error('All InnerTube clients failed');
 }
 
 function qualityLabel(f: any): string {
