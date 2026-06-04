@@ -274,7 +274,7 @@ async function tryApify(videoId: string): Promise<YTResult | ApifyPending | null
   try {
     console.log(`[apify] calling actor=${actorId} videoId=${videoId}`);
     const startRes = await fetchWithTimeout(
-      `https://api.apify.com/v2/acts/${actorPath}/runs?token=${encodeURIComponent(token)}`,
+      `https://api.apify.com/v2/acts/${actorPath}/runs?token=${encodeURIComponent(token)}&memory=1024&timeout=180`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
