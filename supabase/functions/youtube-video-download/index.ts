@@ -378,8 +378,8 @@ async function tryPiped(videoId: string): Promise<YTResult | null> {
       const formats: YTFormat[] = [];
       for (const v of video) {
         if (!v?.url) continue;
-        const mime: string = v.mimeType || (v.format === 'MPEG_4' ? 'video/mp4' : '');
-        if (!/^video\/mp4/i.test(mime)) continue;
+        const mime: string = v.mimeType || (v.format === 'MPEG_4' ? 'video/mp4' : 'video/webm');
+        if (!/^video\/(mp4|webm)/i.test(mime)) continue;
         formats.push({
           quality: normalizePipedQuality(v.quality, v.height),
           mime,
@@ -439,7 +439,7 @@ async function tryInvidious(videoId: string): Promise<YTResult | null> {
       for (const f of all) {
         if (!f?.url) continue;
         const type: string = f.type || '';
-        if (!/^video\/mp4/i.test(type)) continue;
+        if (!/^video\/(mp4|webm)/i.test(type)) continue;
         // Invidious format streams contain both audio+video; adaptive video-only are videoOnly:true-ish
         const isProgressive = Array.isArray(data.formatStreams) && data.formatStreams.includes(f);
         formats.push({
