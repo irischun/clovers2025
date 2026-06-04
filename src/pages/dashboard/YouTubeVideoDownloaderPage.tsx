@@ -154,7 +154,8 @@ const YouTubeVideoDownloaderPage = () => {
     setDownloadingKey(key);
     try {
       const safeTitle = (result?.title || "youtube-video").replace(/[^\w\-]+/g, "_").slice(0, 80);
-      const filename = `${safeTitle}-${fmt.quality}.mp4`;
+      const extension = /webm/i.test(fmt.mime) || /\.webm(?:$|\?)/i.test(fmt.url) ? "webm" : "mp4";
+      const filename = `${safeTitle}-${fmt.quality}.${extension}`;
       const baseUrl = import.meta.env.VITE_SUPABASE_URL;
       const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const proxyUrl =
