@@ -276,7 +276,7 @@ const YouTubeVideoDownloaderPage = () => {
                       ) : (
                         <Download className="w-4 h-4" />
                       )}
-                      MP4 {f.quality}
+                      {(/webm/i.test(f.mime) || /\.webm(?:$|\?)/i.test(f.url)) ? "WEBM" : "MP4"} {f.quality}
                       {f.hasAudio ? (
                         <Volume2 className="w-3 h-3 opacity-70" />
                       ) : (
