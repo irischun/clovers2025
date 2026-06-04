@@ -319,6 +319,14 @@ const PIPED_INSTANCES = [
   'https://pipedapi.nosebs.ru',
 ];
 
+async function firstSuccessful<T>(tasks: Array<() => Promise<T | null>>): Promise<T | null> {
+  const settled = await Promise.allSettled(tasks.map((task) => task()));
+  for (const entry of settled) {
+    if (entry.status === 'fulfilled' && entry.value) return entry.value;
+  }
+  return null;
+}
+
 function normalizePipedQuality(q: string | undefined, height?: number): string {
   if (q) return q;
   if (height) return `${height}p`;
@@ -326,18 +334,18 @@ function normalizePipedQuality(q: string | undefined, height?: number): string {
 }
 
 async function tryPiped(videoId: string): Promise<YTResult | null> {
-  for (const base of PIPED_INSTANCES) {
+  return await firstSuccessful(PIPED_INSTANCES.map((base) => async () => {
     try {
       const res = await fetchWithTimeout(
         `${base}/streams/${videoId}`,
         { headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json' } },
-        7000,
+        3500,
       );
-      if (!res.ok) continue;
+      if (!res.ok) return null;
       const data: any = await res.json();
-      if (!data || data.error) continue;
+      if (!data || data.error) return null;
       const video: any[] = Array.isArray(data.videoStreams) ? data.videoStreams : [];
-      if (video.length === 0) continue;
+      if (video.length === 0) return null;
 
       const formats: YTFormat[] = [];
       for (const v of video) {
@@ -353,7 +361,7 @@ async function tryPiped(videoId: string): Promise<YTResult | null> {
           contentLength: v.contentLength?.toString?.(),
         });
       }
-      if (formats.length === 0) continue;
+      if (formats.length === 0) return null;
 
       // Sort progressive (av) first, then by height desc
       const score = (x: YTFormat) =>
@@ -379,10 +387,9 @@ async function tryPiped(videoId: string): Promise<YTResult | null> {
         source: `https://www.youtube.com/watch?v=${videoId}`,
       };
     } catch {
-      // try next instance
+      return null;
     }
-  }
-  return null;
+  }));
 }
 
 // ---------------------------------------------------------------------------
@@ -398,16 +405,16 @@ const INVIDIOUS_INSTANCES = [
 ];
 
 async function tryInvidious(videoId: string): Promise<YTResult | null> {
-  for (const base of INVIDIOUS_INSTANCES) {
+  return await firstSuccessful(INVIDIOUS_INSTANCES.map((base) => async () => {
     try {
       const res = await fetchWithTimeout(
         `${base}/api/v1/videos/${videoId}?fields=title,author,lengthSeconds,videoThumbnails,formatStreams,adaptiveFormats`,
         { headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json' } },
-        7000,
+        3500,
       );
-      if (!res.ok) continue;
+      if (!res.ok) return null;
       const data: any = await res.json();
-      if (!data || data.error) continue;
+      if (!data || data.error) return null;
 
       const formats: YTFormat[] = [];
       const all: any[] = [
@@ -430,7 +437,7 @@ async function tryInvidious(videoId: string): Promise<YTResult | null> {
           contentLength: f.clen?.toString?.(),
         });
       }
-      if (formats.length === 0) continue;
+      if (formats.length === 0) return null;
       const score = (x: YTFormat) =>
         (x.hasAudio ? 100000 : 0) + (parseInt(x.quality, 10) || 0);
       formats.sort((a, b) => score(b) - score(a));
@@ -457,10 +464,9 @@ async function tryInvidious(videoId: string): Promise<YTResult | null> {
         source: `https://www.youtube.com/watch?v=${videoId}`,
       };
     } catch {
-      // try next
+      return null;
     }
-  }
-  return null;
+  }));
 }
 
 // ---------------------------------------------------------------------------
