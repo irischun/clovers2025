@@ -132,7 +132,83 @@ async function tryYtdlpProxy(videoId: string): Promise<YTResult | null> {
 // 0b) Apify actor (preferred when APIFY_API_TOKEN is configured)
 //    Default actor: streamers/youtube-video-downloader (override via APIFY_ACTOR_ID)
 // ---------------------------------------------------------------------------
-async function tryApify(videoId: string): Promise<YTResult | null> {
+function parseApifyItem(item: any, videoId: string): YTResult | null {
+  if (!item) return null;
+
+  const rawFormats: any[] =
+    (Array.isArray(item.formats) && item.formats) ||
+    (Array.isArray(item.downloadUrls) && item.downloadUrls) ||
+    (Array.isArray(item.videos) && item.videos) ||
+    (Array.isArray(item.qualities) && item.qualities) ||
+    [];
+
+  const formats: YTFormat[] = [];
+  for (const f of rawFormats) {
+    const url = f?.url || f?.downloadUrl || f?.src || f?.link;
+    if (!url || typeof url !== 'string') continue;
+    const mime: string = f.mimeType || f.mime || 'video/mp4';
+    const height = f.height || (typeof f.quality === 'string' ? parseInt(f.quality) : undefined);
+    formats.push({
+      quality: f.quality || (height ? `${height}p` : f.label || 'best'),
+      mime,
+      hasVideo: f.hasVideo !== false,
+      hasAudio: f.hasAudio !== false,
+      url,
+      contentLength: f.contentLength?.toString?.() || f.filesize?.toString?.(),
+    });
+  }
+
+  const inferredQuality = (input: unknown, fallback = 'unknown') => {
+    if (typeof input === 'string' && /\d{3,4}p/i.test(input)) return input.match(/\d{3,4}p/i)?.[0] || fallback;
+    const n = typeof input === 'number' ? input : parseInt(String(input || ''), 10);
+    return Number.isFinite(n) && n > 0 ? `${n}p` : fallback;
+  };
+
+  if (formats.length === 0) {
+    const downloadedFileUrl = item.downloadedFileUrl;
+    const videoOnlyUrl = item.videoOnlyUrl;
+    const audioOnlyUrl = item.audioOnlyUrl;
+
+    if (typeof downloadedFileUrl === 'string' && /^https?:\/\//.test(downloadedFileUrl)) {
+      formats.push({ quality: inferredQuality(item.quality || item.height, '720p'), mime: 'video/mp4', hasVideo: true, hasAudio: true, url: downloadedFileUrl, contentLength: item.contentLength?.toString?.() || item.filesize?.toString?.() });
+    }
+    if (typeof videoOnlyUrl === 'string' && /^https?:\/\//.test(videoOnlyUrl)) {
+      formats.push({ quality: inferredQuality(item.videoQuality || item.quality || item.height, '1080p'), mime: 'video/mp4', hasVideo: true, hasAudio: false, url: videoOnlyUrl, contentLength: item.videoContentLength?.toString?.() || item.contentLength?.toString?.() });
+    }
+    if (typeof downloadedFileUrl === 'string' && /^https?:\/\//.test(downloadedFileUrl) && !formats.some((f) => f.quality === '720p')) {
+      formats.push({ quality: '720p', mime: 'video/mp4', hasVideo: true, hasAudio: true, url: downloadedFileUrl });
+    }
+    if (typeof videoOnlyUrl === 'string' && /^https?:\/\//.test(videoOnlyUrl) && !formats.some((f) => f.quality === '1080p')) {
+      formats.push({ quality: '1080p', mime: 'video/mp4', hasVideo: true, hasAudio: typeof audioOnlyUrl !== 'string', url: videoOnlyUrl });
+    }
+  }
+
+  if (formats.length === 0) {
+    const single = item.url || item.downloadUrl || item.videoUrl || item.link;
+    if (typeof single === 'string' && /^https?:\/\//.test(single)) {
+      formats.push({ quality: item.quality || (item.height ? `${item.height}p` : '1080p'), mime: 'video/mp4', hasVideo: true, hasAudio: true, url: single });
+    }
+  }
+
+  if (formats.length === 0) return null;
+
+  const rank = (q: string) => {
+    const n = parseInt(q, 10) || 0;
+    return n === 1080 ? 10000 : n === 720 ? 9000 : n;
+  };
+  formats.sort((a, b) => rank(b.quality) - rank(a.quality));
+
+  return {
+    title: item.title || item.name || 'YouTube Video',
+    author: item.author || item.channelName || item.uploader || null,
+    duration: typeof item.duration === 'number' ? item.duration : (typeof item.durationSeconds === 'number' ? item.durationSeconds : null),
+    thumbnail: item.thumbnail || item.thumbnailUrl || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+    formats,
+    source: `https://www.youtube.com/watch?v=${videoId}`,
+  };
+}
+
+async function tryApify(videoId: string): Promise<YTResult | ApifyPending | null> {
   const token = (Deno.env.get('APIFY_API_TOKEN') || '').trim();
   if (!token) {
     console.log('[apify] APIFY_API_TOKEN not set — skipping');
@@ -144,8 +220,8 @@ async function tryApify(videoId: string): Promise<YTResult | null> {
 
   try {
     console.log(`[apify] calling actor=${actorId} videoId=${videoId}`);
-    const res = await fetchWithTimeout(
-      `https://api.apify.com/v2/acts/${actorPath}/run-sync-get-dataset-items?token=${encodeURIComponent(token)}&timeout=120`,
+    const startRes = await fetchWithTimeout(
+      `https://api.apify.com/v2/acts/${actorPath}/runs?token=${encodeURIComponent(token)}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -163,138 +239,28 @@ async function tryApify(videoId: string): Promise<YTResult | null> {
           proxy: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
         }),
       },
-      120000,
+      20000,
     );
-    if (!res.ok) {
-      const txt = await res.text().catch(() => '');
-      console.error(`[apify] HTTP ${res.status}: ${txt.slice(0, 300)}`);
-      return null;
-    }
-    const items: any = await res.json();
-    const item = Array.isArray(items) ? items[0] : items;
-    if (!item) {
-      console.warn('[apify] empty dataset');
+    if (!startRes.ok) {
+      const txt = await startRes.text().catch(() => '');
+      console.error(`[apify] HTTP ${startRes.status}: ${txt.slice(0, 300)}`);
       return null;
     }
 
-    const rawFormats: any[] =
-      (Array.isArray(item.formats) && item.formats) ||
-      (Array.isArray(item.downloadUrls) && item.downloadUrls) ||
-      (Array.isArray(item.videos) && item.videos) ||
-      (Array.isArray(item.qualities) && item.qualities) ||
-      [];
-
-    const formats: YTFormat[] = [];
-    for (const f of rawFormats) {
-      const url = f?.url || f?.downloadUrl || f?.src || f?.link;
-      if (!url || typeof url !== 'string') continue;
-      const mime: string = f.mimeType || f.mime || 'video/mp4';
-      const height = f.height || (typeof f.quality === 'string' ? parseInt(f.quality) : undefined);
-      formats.push({
-        quality: f.quality || (height ? `${height}p` : f.label || 'best'),
-        mime,
-        hasVideo: f.hasVideo !== false,
-        hasAudio: f.hasAudio !== false,
-        url,
-        contentLength: f.contentLength?.toString?.() || f.filesize?.toString?.(),
-      });
-    }
-    const inferredQuality = (input: unknown, fallback = 'unknown') => {
-      if (typeof input === 'string' && /\d{3,4}p/i.test(input)) return input.match(/\d{3,4}p/i)?.[0] || fallback;
-      const n = typeof input === 'number' ? input : parseInt(String(input || ''), 10);
-      return Number.isFinite(n) && n > 0 ? `${n}p` : fallback;
-    };
-
-    // Field-shape fallback for streamers/youtube-video-downloader.
-    // Typical result keys seen in logs:
-    // downloadedFileUrl, videoOnlyUrl, audioOnlyUrl, durationSeconds, fileKey
-    if (formats.length === 0) {
-      const downloadedFileUrl = item.downloadedFileUrl;
-      const videoOnlyUrl = item.videoOnlyUrl;
-      const audioOnlyUrl = item.audioOnlyUrl;
-
-      if (typeof downloadedFileUrl === 'string' && /^https?:\/\//.test(downloadedFileUrl)) {
-        formats.push({
-          quality: inferredQuality(item.quality || item.height, '720p'),
-          mime: 'video/mp4',
-          hasVideo: true,
-          hasAudio: true,
-          url: downloadedFileUrl,
-          contentLength: item.contentLength?.toString?.() || item.filesize?.toString?.(),
-        });
-      }
-
-      if (typeof videoOnlyUrl === 'string' && /^https?:\/\//.test(videoOnlyUrl)) {
-        formats.push({
-          quality: inferredQuality(item.videoQuality || item.quality || item.height, '1080p'),
-          mime: 'video/mp4',
-          hasVideo: true,
-          hasAudio: false,
-          url: videoOnlyUrl,
-          contentLength: item.videoContentLength?.toString?.() || item.contentLength?.toString?.(),
-        });
-      }
-
-      if (
-        typeof downloadedFileUrl === 'string' && /^https?:\/\//.test(downloadedFileUrl) &&
-        !formats.some((f) => f.quality === '720p')
-      ) {
-        formats.push({
-          quality: '720p',
-          mime: 'video/mp4',
-          hasVideo: true,
-          hasAudio: true,
-          url: downloadedFileUrl,
-        });
-      }
-
-      if (
-        typeof videoOnlyUrl === 'string' && /^https?:\/\//.test(videoOnlyUrl) &&
-        !formats.some((f) => f.quality === '1080p')
-      ) {
-        formats.push({
-          quality: '1080p',
-          mime: 'video/mp4',
-          hasVideo: true,
-          hasAudio: typeof audioOnlyUrl !== 'string',
-          url: videoOnlyUrl,
-        });
-      }
-    }
-
-    // Single top-level url fallback (common output of this actor)
-    if (formats.length === 0) {
-      const single = item.url || item.downloadUrl || item.videoUrl || item.link;
-      if (typeof single === 'string' && /^https?:\/\//.test(single) && single !== videoUrl) {
-        formats.push({
-          quality: item.quality || (item.height ? `${item.height}p` : '1080p'),
-          mime: 'video/mp4',
-          hasVideo: true,
-          hasAudio: true,
-          url: single,
-        });
-      }
-    }
-    if (formats.length === 0) {
-      console.warn('[apify] no usable formats; keys=', Object.keys(item).join(','));
+    const started: any = await startRes.json();
+    const runId = started?.data?.id;
+    const datasetId = started?.data?.defaultDatasetId;
+    if (!runId) {
+      console.warn('[apify] run start missing runId');
       return null;
     }
-
-    // Prefer 1080p then 720p at the top of the list
-    const rank = (q: string) => {
-      const n = parseInt(q, 10) || 0;
-      return n === 1080 ? 10000 : n === 720 ? 9000 : n;
-    };
-    formats.sort((a, b) => rank(b.quality) - rank(a.quality));
-
-    console.log(`[apify] success: ${formats.length} format(s)`);
     return {
-      title: item.title || item.name || 'YouTube Video',
-      author: item.author || item.channelName || item.uploader || null,
-      duration: typeof item.duration === 'number' ? item.duration : null,
-      thumbnail: item.thumbnail || item.thumbnailUrl || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-      formats,
-      source: videoUrl,
+      status: 'processing',
+      provider: 'apify',
+      runId,
+      datasetId,
+      videoId,
+      pollAfterMs: 4000,
     };
   } catch (e) {
     console.error('[apify] threw:', e instanceof Error ? e.message : String(e));
