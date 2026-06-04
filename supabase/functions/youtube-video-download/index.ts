@@ -190,6 +190,69 @@ async function tryApify(videoId: string): Promise<YTResult | null> {
         contentLength: f.contentLength?.toString?.() || f.filesize?.toString?.(),
       });
     }
+    const inferredQuality = (input: unknown, fallback = 'unknown') => {
+      if (typeof input === 'string' && /\d{3,4}p/i.test(input)) return input.match(/\d{3,4}p/i)?.[0] || fallback;
+      const n = typeof input === 'number' ? input : parseInt(String(input || ''), 10);
+      return Number.isFinite(n) && n > 0 ? `${n}p` : fallback;
+    };
+
+    // Field-shape fallback for streamers/youtube-video-downloader.
+    // Typical result keys seen in logs:
+    // downloadedFileUrl, videoOnlyUrl, audioOnlyUrl, durationSeconds, fileKey
+    if (formats.length === 0) {
+      const downloadedFileUrl = item.downloadedFileUrl;
+      const videoOnlyUrl = item.videoOnlyUrl;
+      const audioOnlyUrl = item.audioOnlyUrl;
+
+      if (typeof downloadedFileUrl === 'string' && /^https?:\/\//.test(downloadedFileUrl)) {
+        formats.push({
+          quality: inferredQuality(item.quality || item.height, '720p'),
+          mime: 'video/mp4',
+          hasVideo: true,
+          hasAudio: true,
+          url: downloadedFileUrl,
+          contentLength: item.contentLength?.toString?.() || item.filesize?.toString?.(),
+        });
+      }
+
+      if (typeof videoOnlyUrl === 'string' && /^https?:\/\//.test(videoOnlyUrl)) {
+        formats.push({
+          quality: inferredQuality(item.videoQuality || item.quality || item.height, '1080p'),
+          mime: 'video/mp4',
+          hasVideo: true,
+          hasAudio: false,
+          url: videoOnlyUrl,
+          contentLength: item.videoContentLength?.toString?.() || item.contentLength?.toString?.(),
+        });
+      }
+
+      if (
+        typeof downloadedFileUrl === 'string' && /^https?:\/\//.test(downloadedFileUrl) &&
+        !formats.some((f) => f.quality === '720p')
+      ) {
+        formats.push({
+          quality: '720p',
+          mime: 'video/mp4',
+          hasVideo: true,
+          hasAudio: true,
+          url: downloadedFileUrl,
+        });
+      }
+
+      if (
+        typeof videoOnlyUrl === 'string' && /^https?:\/\//.test(videoOnlyUrl) &&
+        !formats.some((f) => f.quality === '1080p')
+      ) {
+        formats.push({
+          quality: '1080p',
+          mime: 'video/mp4',
+          hasVideo: true,
+          hasAudio: typeof audioOnlyUrl !== 'string',
+          url: videoOnlyUrl,
+        });
+      }
+    }
+
     // Single top-level url fallback (common output of this actor)
     if (formats.length === 0) {
       const single = item.url || item.downloadUrl || item.videoUrl || item.link;
@@ -539,8 +602,8 @@ async function handleStreamProxy(req: Request): Promise<Response> {
   try { parsed = new URL(target); }
   catch { return jsonResponse({ error: 'Invalid stream URL' }, 400); }
 
-  // SSRF guard: only allow Google's video CDN hosts.
-  if (!/(^|\.)googlevideo\.com$|(^|\.)youtube\.com$/i.test(parsed.hostname)) {
+  // SSRF guard: allow trusted video/file hosts used by extraction providers.
+  if (!/(^|\.)googlevideo\.com$|(^|\.)youtube\.com$|(^|\.)apifyusercontent\.com$|(^|\.)apify\.com$/i.test(parsed.hostname)) {
     return jsonResponse({ error: 'Disallowed host' }, 400);
   }
 
@@ -549,7 +612,12 @@ async function handleStreamProxy(req: Request): Promise<Response> {
       ...(req.headers.get('range') ? { Range: req.headers.get('range')! } : {}),
       'User-Agent': 'Mozilla/5.0',
     },
+    redirect: 'follow',
   });
+
+  if (!upstream.ok) {
+    return jsonResponse({ error: `Upstream download failed (${upstream.status})` }, 502);
+  }
 
   const headers = new Headers(corsHeaders);
   headers.set('Content-Type', upstream.headers.get('content-type') || 'video/mp4');
