@@ -247,18 +247,16 @@ function parseApifyItem(item: any, videoId: string): YTResult | null {
 
   if (formats.length === 0) return null;
 
-  const rank = (q: string) => {
-    const n = parseInt(q, 10) || 0;
-    return n === 1080 ? 10000 : n === 720 ? 9000 : n;
-  };
-  formats.sort((a, b) => rank(b.quality) - rank(a.quality));
+  const normalized = normalizeFormats(formats);
+
+  if (normalized.length === 0) return null;
 
   return {
     title: item.title || item.name || 'YouTube Video',
     author: item.author || item.channelName || item.uploader || null,
     duration: typeof item.duration === 'number' ? item.duration : (typeof item.durationSeconds === 'number' ? item.durationSeconds : null),
     thumbnail: item.thumbnail || item.thumbnailUrl || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-    formats,
+    formats: normalized,
     source: `https://www.youtube.com/watch?v=${videoId}`,
   };
 }
@@ -391,21 +389,8 @@ async function tryPiped(videoId: string): Promise<YTResult | null> {
           contentLength: v.contentLength?.toString?.(),
         });
       }
-      if (formats.length === 0) return null;
-
-      // Sort progressive (av) first, then by height desc
-      const score = (x: YTFormat) =>
-        (x.hasAudio ? 100000 : 0) + (parseInt(x.quality, 10) || 0);
-      formats.sort((a, b) => score(b) - score(a));
-
-      // Dedupe
-      const seen = new Set<string>();
-      const deduped = formats.filter((f) => {
-        const k = `${f.hasAudio ? 'av' : 'v'}-${f.quality}`;
-        if (seen.has(k)) return false;
-        seen.add(k);
-        return true;
-      });
+      const deduped = normalizeFormats(formats);
+      if (deduped.length === 0) return null;
 
       return {
         title: data.title || 'YouTube Video',
@@ -467,17 +452,8 @@ async function tryInvidious(videoId: string): Promise<YTResult | null> {
           contentLength: f.clen?.toString?.(),
         });
       }
-      if (formats.length === 0) return null;
-      const score = (x: YTFormat) =>
-        (x.hasAudio ? 100000 : 0) + (parseInt(x.quality, 10) || 0);
-      formats.sort((a, b) => score(b) - score(a));
-      const seen = new Set<string>();
-      const deduped = formats.filter((f) => {
-        const k = `${f.hasAudio ? 'av' : 'v'}-${f.quality}`;
-        if (seen.has(k)) return false;
-        seen.add(k);
-        return true;
-      });
+      const deduped = normalizeFormats(formats);
+      if (deduped.length === 0) return null;
 
       const thumbs = Array.isArray(data.videoThumbnails) ? data.videoThumbnails : [];
       const thumb =
@@ -590,17 +566,8 @@ async function tryInnerTube(videoId: string): Promise<YTResult | null> {
           contentLength: f.contentLength,
         });
       }
-      if (formats.length === 0) continue;
-      const score = (x: YTFormat) =>
-        (x.hasAudio ? 100000 : 0) + (parseInt(x.quality, 10) || 0);
-      formats.sort((a, b) => score(b) - score(a));
-      const seen = new Set<string>();
-      const deduped = formats.filter((f) => {
-        const k = `${f.hasAudio ? 'av' : 'v'}-${f.quality}`;
-        if (seen.has(k)) return false;
-        seen.add(k);
-        return true;
-      });
+      const deduped = normalizeFormats(formats);
+      if (deduped.length === 0) continue;
       const thumbs = data?.videoDetails?.thumbnail?.thumbnails;
       return {
         title: data?.videoDetails?.title || 'YouTube Video',
