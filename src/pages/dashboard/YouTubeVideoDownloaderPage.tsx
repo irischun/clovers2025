@@ -131,9 +131,11 @@ const YouTubeVideoDownloaderPage = () => {
         await pollApifyResult(data as YTPendingResult);
       } else {
         setResult(data as YTResult);
+        setStatusText("");
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : t("ytdl.toast.failedDesc");
+      setStatusText("");
       toast({ title: t("ytdl.toast.failedTitle"), description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
@@ -180,6 +182,13 @@ const YouTubeVideoDownloaderPage = () => {
       a.click();
       a.remove();
       URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t("ytdl.toast.failedDesc");
+      toast({
+        title: t("ytdl.toast.failedTitle"),
+        description: message,
+        variant: "destructive",
+      });
     } finally {
       setTimeout(() => setDownloadingKey(null), 800);
     }
@@ -267,7 +276,7 @@ const YouTubeVideoDownloaderPage = () => {
                       ) : (
                         <Download className="w-4 h-4" />
                       )}
-                      MP4 {f.quality}
+                      {(/webm/i.test(f.mime) || /\.webm(?:$|\?)/i.test(f.url)) ? "WEBM" : "MP4"} {f.quality}
                       {f.hasAudio ? (
                         <Volume2 className="w-3 h-3 opacity-70" />
                       ) : (

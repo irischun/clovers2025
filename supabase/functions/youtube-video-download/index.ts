@@ -49,6 +49,61 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
+function qualityNumber(input: string | number | undefined | null): number {
+  if (typeof input === 'number' && Number.isFinite(input)) return input;
+  const match = String(input || '').match(/(\d{3,4})/);
+  return match ? Number(match[1]) : 0;
+}
+
+function normalizeQualityLabel(input: string | number | undefined | null): string | null {
+  const value = qualityNumber(input);
+  return value > 0 ? `${value}p` : null;
+}
+
+function normalizeFormats(formats: YTFormat[]): YTFormat[] {
+  const seen = new Set<string>();
+  return formats
+    .map((format) => {
+      const quality = normalizeQualityLabel(format.quality || format.itag);
+      if (!quality || !format.url || !/^https?:\/\//i.test(format.url)) return null;
+      return {
+        ...format,
+        quality,
+        hasVideo: format.hasVideo !== false,
+        hasAudio: format.hasAudio === true,
+      } satisfies YTFormat;
+    })
+    .filter((format): format is YTFormat => !!format)
+    .sort((a, b) => {
+      const qualityDiff = qualityNumber(b.quality) - qualityNumber(a.quality);
+      if (qualityDiff !== 0) return qualityDiff;
+      if (a.hasAudio === b.hasAudio) return 0;
+      return a.hasAudio ? -1 : 1;
+    })
+    .filter((format) => {
+      const key = `${format.quality}-${format.hasAudio ? 'av' : 'v'}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
+function normalizeResult(result: YTResult | null): YTResult | null {
+  if (!result) return null;
+  return {
+    ...result,
+    formats: normalizeFormats(result.formats || []),
+  };
+}
+
+function mergeFormats(primary: YTFormat[], secondary: YTFormat[]): YTFormat[] {
+  return normalizeFormats([...primary, ...secondary]);
+}
+
+function hasFormatQuality(formats: YTFormat[], quality: string): boolean {
+  return formats.some((format) => format.quality === quality);
+}
+
 function extractVideoId(input: string): string | null {
   const raw = (input || '').trim();
   if (!raw) return null;
@@ -192,18 +247,16 @@ function parseApifyItem(item: any, videoId: string): YTResult | null {
 
   if (formats.length === 0) return null;
 
-  const rank = (q: string) => {
-    const n = parseInt(q, 10) || 0;
-    return n === 1080 ? 10000 : n === 720 ? 9000 : n;
-  };
-  formats.sort((a, b) => rank(b.quality) - rank(a.quality));
+  const normalized = normalizeFormats(formats);
+
+  if (normalized.length === 0) return null;
 
   return {
     title: item.title || item.name || 'YouTube Video',
     author: item.author || item.channelName || item.uploader || null,
     duration: typeof item.duration === 'number' ? item.duration : (typeof item.durationSeconds === 'number' ? item.durationSeconds : null),
     thumbnail: item.thumbnail || item.thumbnailUrl || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-    formats,
+    formats: normalized,
     source: `https://www.youtube.com/watch?v=${videoId}`,
   };
 }
@@ -221,7 +274,7 @@ async function tryApify(videoId: string): Promise<YTResult | ApifyPending | null
   try {
     console.log(`[apify] calling actor=${actorId} videoId=${videoId}`);
     const startRes = await fetchWithTimeout(
-      `https://api.apify.com/v2/acts/${actorPath}/runs?token=${encodeURIComponent(token)}`,
+      `https://api.apify.com/v2/acts/${actorPath}/runs?token=${encodeURIComponent(token)}&memory=1024&timeout=180`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -325,8 +378,8 @@ async function tryPiped(videoId: string): Promise<YTResult | null> {
       const formats: YTFormat[] = [];
       for (const v of video) {
         if (!v?.url) continue;
-        const mime: string = v.mimeType || (v.format === 'MPEG_4' ? 'video/mp4' : '');
-        if (!/^video\/mp4/i.test(mime)) continue;
+        const mime: string = v.mimeType || (v.format === 'MPEG_4' ? 'video/mp4' : 'video/webm');
+        if (!/^video\/(mp4|webm)/i.test(mime)) continue;
         formats.push({
           quality: normalizePipedQuality(v.quality, v.height),
           mime,
@@ -336,21 +389,8 @@ async function tryPiped(videoId: string): Promise<YTResult | null> {
           contentLength: v.contentLength?.toString?.(),
         });
       }
-      if (formats.length === 0) return null;
-
-      // Sort progressive (av) first, then by height desc
-      const score = (x: YTFormat) =>
-        (x.hasAudio ? 100000 : 0) + (parseInt(x.quality, 10) || 0);
-      formats.sort((a, b) => score(b) - score(a));
-
-      // Dedupe
-      const seen = new Set<string>();
-      const deduped = formats.filter((f) => {
-        const k = `${f.hasAudio ? 'av' : 'v'}-${f.quality}`;
-        if (seen.has(k)) return false;
-        seen.add(k);
-        return true;
-      });
+      const deduped = normalizeFormats(formats);
+      if (deduped.length === 0) return null;
 
       return {
         title: data.title || 'YouTube Video',
@@ -399,7 +439,7 @@ async function tryInvidious(videoId: string): Promise<YTResult | null> {
       for (const f of all) {
         if (!f?.url) continue;
         const type: string = f.type || '';
-        if (!/^video\/mp4/i.test(type)) continue;
+        if (!/^video\/(mp4|webm)/i.test(type)) continue;
         // Invidious format streams contain both audio+video; adaptive video-only are videoOnly:true-ish
         const isProgressive = Array.isArray(data.formatStreams) && data.formatStreams.includes(f);
         formats.push({
@@ -412,17 +452,8 @@ async function tryInvidious(videoId: string): Promise<YTResult | null> {
           contentLength: f.clen?.toString?.(),
         });
       }
-      if (formats.length === 0) return null;
-      const score = (x: YTFormat) =>
-        (x.hasAudio ? 100000 : 0) + (parseInt(x.quality, 10) || 0);
-      formats.sort((a, b) => score(b) - score(a));
-      const seen = new Set<string>();
-      const deduped = formats.filter((f) => {
-        const k = `${f.hasAudio ? 'av' : 'v'}-${f.quality}`;
-        if (seen.has(k)) return false;
-        seen.add(k);
-        return true;
-      });
+      const deduped = normalizeFormats(formats);
+      if (deduped.length === 0) return null;
 
       const thumbs = Array.isArray(data.videoThumbnails) ? data.videoThumbnails : [];
       const thumb =
@@ -486,12 +517,31 @@ const INNERTUBE_CLIENTS: ClientSpec[] = [
       },
     },
   },
+  {
+    name: 'TVHTML5_SIMPLY_EMBEDDED_PLAYER',
+    ua: 'Mozilla/5.0 (ChromiumStylePlatform) Cobalt/Version',
+    headerName: '85',
+    headerVersion: '2.0',
+    apiKey: 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8',
+    context: {
+      client: {
+        clientName: 'TVHTML5_SIMPLY_EMBEDDED_PLAYER',
+        clientVersion: '2.0',
+        hl: 'en',
+        gl: 'US',
+        utcOffsetMinutes: 0,
+      },
+      thirdParty: {
+        embedUrl: 'https://www.youtube.com/',
+      },
+    },
+  },
 ];
 
 async function tryInnerTubeClient(videoId: string, spec: ClientSpec): Promise<any> {
   const body = { ...spec.context, videoId, contentCheckOk: true, racyCheckOk: true };
   const res = await fetchWithTimeout(
-    `https://music.youtube.com/youtubei/v1/player?key=${spec.apiKey}&prettyPrint=false`,
+    `https://www.youtube.com/youtubei/v1/player?key=${spec.apiKey}&prettyPrint=false`,
     {
       method: 'POST',
       headers: {
@@ -523,7 +573,7 @@ async function tryInnerTube(videoId: string): Promise<YTResult | null> {
       for (const f of all) {
         if (!f?.url) continue;
         const mime: string = f.mimeType || '';
-        if (!/^video\/mp4/i.test(mime)) continue;
+        if (!/^video\/(mp4|webm)/i.test(mime)) continue;
         const codecs = /codecs="([^"]+)"/.exec(mime)?.[1] || '';
         const hasVideo = !!f.width || /avc1|av01|vp9|h264|hev1|hvc1/i.test(codecs);
         const hasAudio = !!f.audioQuality || /mp4a|opus|ac-3/i.test(codecs);
@@ -535,17 +585,8 @@ async function tryInnerTube(videoId: string): Promise<YTResult | null> {
           contentLength: f.contentLength,
         });
       }
-      if (formats.length === 0) continue;
-      const score = (x: YTFormat) =>
-        (x.hasAudio ? 100000 : 0) + (parseInt(x.quality, 10) || 0);
-      formats.sort((a, b) => score(b) - score(a));
-      const seen = new Set<string>();
-      const deduped = formats.filter((f) => {
-        const k = `${f.hasAudio ? 'av' : 'v'}-${f.quality}`;
-        if (seen.has(k)) return false;
-        seen.add(k);
-        return true;
-      });
+      const deduped = normalizeFormats(formats);
+      if (deduped.length === 0) continue;
       const thumbs = data?.videoDetails?.thumbnail?.thumbnails;
       return {
         title: data?.videoDetails?.title || 'YouTube Video',
@@ -584,7 +625,7 @@ async function handleStreamProxy(req: Request): Promise<Response> {
   catch { return jsonResponse({ error: 'Invalid stream URL' }, 400); }
 
   // SSRF guard: allow trusted video/file hosts used by extraction providers.
-  if (!/(^|\.)googlevideo\.com$|(^|\.)youtube\.com$|(^|\.)apifyusercontent\.com$|(^|\.)apify\.com$/i.test(parsed.hostname)) {
+  if (!/(^|\.)googlevideo\.com$|(^|\.)youtube\.com$|(^|\.)apifyusercontent\.com$|(^|\.)apify\.com$|(^|\.)odycdn\.com$|(^|\.)lbryplayer\.xyz$|(^|\.)piped\.private\.coffee$/i.test(parsed.hostname)) {
     return jsonResponse({ error: 'Disallowed host' }, 400);
   }
 
@@ -727,38 +768,48 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Try each strategy in order. First non-null wins.
-    // Order: fast free mirrors first (sub-second), Apify last (30-120s).
+    // Try each strategy in order, but keep looking if early mirrors only return
+    // low-quality results. The goal is to surface 360p/720p/1080p whenever available.
     let result: YTResult | ApifyPending | null = null;
     const errors: string[] = [];
 
     try {
-      result = await tryYtdlpProxy(videoId);
+      const proxyResult = normalizeResult(await tryYtdlpProxy(videoId));
+      if (proxyResult) result = proxyResult;
     } catch (e) {
       errors.push(`ytdlp-proxy:${e instanceof Error ? e.message : String(e)}`);
     }
-    if (!result) {
+    if (!result || !('status' in result) && !hasFormatQuality(result.formats, '720p')) {
       try {
-        result = await tryPiped(videoId);
+        const pipedResult = normalizeResult(await tryPiped(videoId));
+        if (pipedResult) {
+          result = !result || 'status' in result ? pipedResult : { ...result, formats: mergeFormats(result.formats, pipedResult.formats), thumbnail: result.thumbnail || pipedResult.thumbnail, title: result.title || pipedResult.title, author: result.author || pipedResult.author, duration: result.duration || pipedResult.duration, source: result.source || pipedResult.source };
+        }
       } catch (e) {
         errors.push(`piped:${e instanceof Error ? e.message : String(e)}`);
       }
     }
-    if (!result) {
+    if (!result || !('status' in result) && (!hasFormatQuality(result.formats, '720p') || !hasFormatQuality(result.formats, '1080p'))) {
       try {
-        result = await tryInvidious(videoId);
+        const invidiousResult = normalizeResult(await tryInvidious(videoId));
+        if (invidiousResult) {
+          result = !result || 'status' in result ? invidiousResult : { ...result, formats: mergeFormats(result.formats, invidiousResult.formats), thumbnail: result.thumbnail || invidiousResult.thumbnail, title: result.title || invidiousResult.title, author: result.author || invidiousResult.author, duration: result.duration || invidiousResult.duration, source: result.source || invidiousResult.source };
+        }
       } catch (e) {
         errors.push(`invidious:${e instanceof Error ? e.message : String(e)}`);
       }
     }
-    if (!result) {
+    if (!result || !('status' in result) && (!hasFormatQuality(result.formats, '720p') || !hasFormatQuality(result.formats, '1080p'))) {
       try {
-        result = await tryInnerTube(videoId);
+        const innerTubeResult = normalizeResult(await tryInnerTube(videoId));
+        if (innerTubeResult) {
+          result = !result || 'status' in result ? innerTubeResult : { ...result, formats: mergeFormats(result.formats, innerTubeResult.formats), thumbnail: result.thumbnail || innerTubeResult.thumbnail, title: result.title || innerTubeResult.title, author: result.author || innerTubeResult.author, duration: result.duration || innerTubeResult.duration, source: result.source || innerTubeResult.source };
+        }
       } catch (e) {
         errors.push(`innertube:${e instanceof Error ? e.message : String(e)}`);
       }
     }
-    if (!result) {
+    if (!result || !('status' in result) && (!hasFormatQuality(result.formats, '720p') || !hasFormatQuality(result.formats, '1080p'))) {
       // Last resort: Apify (slow but very reliable)
       try {
         result = await tryApify(videoId);
@@ -779,14 +830,15 @@ Deno.serve(async (req) => {
       return jsonResponse(result);
     }
 
-    if (result.formats.length === 0) {
+    const normalizedResult = normalizeResult(result);
+    if (!normalizedResult || normalizedResult.formats.length === 0) {
       return jsonResponse({
         error:
-          'No downloadable MP4 streams were found for this video. It may be a live stream or use protected streams only.',
+          'No downloadable video streams were found for this video. It may be a live stream or use protected streams only.',
       });
     }
 
-    return jsonResponse(result);
+    return jsonResponse(normalizedResult);
   } catch (err) {
     return jsonResponse({
       error: 'Unexpected server error. Please try again with a different public YouTube URL.',
