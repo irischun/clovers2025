@@ -49,6 +49,61 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
+function qualityNumber(input: string | number | undefined | null): number {
+  if (typeof input === 'number' && Number.isFinite(input)) return input;
+  const match = String(input || '').match(/(\d{3,4})/);
+  return match ? Number(match[1]) : 0;
+}
+
+function normalizeQualityLabel(input: string | number | undefined | null): string | null {
+  const value = qualityNumber(input);
+  return value > 0 ? `${value}p` : null;
+}
+
+function normalizeFormats(formats: YTFormat[]): YTFormat[] {
+  const seen = new Set<string>();
+  return formats
+    .map((format) => {
+      const quality = normalizeQualityLabel(format.quality || format.itag);
+      if (!quality || !format.url || !/^https?:\/\//i.test(format.url)) return null;
+      return {
+        ...format,
+        quality,
+        hasVideo: format.hasVideo !== false,
+        hasAudio: format.hasAudio === true,
+      } satisfies YTFormat;
+    })
+    .filter((format): format is YTFormat => !!format)
+    .sort((a, b) => {
+      const qualityDiff = qualityNumber(b.quality) - qualityNumber(a.quality);
+      if (qualityDiff !== 0) return qualityDiff;
+      if (a.hasAudio === b.hasAudio) return 0;
+      return a.hasAudio ? -1 : 1;
+    })
+    .filter((format) => {
+      const key = `${format.quality}-${format.hasAudio ? 'av' : 'v'}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
+function normalizeResult(result: YTResult | null): YTResult | null {
+  if (!result) return null;
+  return {
+    ...result,
+    formats: normalizeFormats(result.formats || []),
+  };
+}
+
+function mergeFormats(primary: YTFormat[], secondary: YTFormat[]): YTFormat[] {
+  return normalizeFormats([...primary, ...secondary]);
+}
+
+function hasFormatQuality(formats: YTFormat[], quality: string): boolean {
+  return formats.some((format) => format.quality === quality);
+}
+
 function extractVideoId(input: string): string | null {
   const raw = (input || '').trim();
   if (!raw) return null;
