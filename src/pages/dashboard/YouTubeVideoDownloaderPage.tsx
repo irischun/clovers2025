@@ -27,6 +27,15 @@ interface YTResult {
   source: string;
 }
 
+interface YTPendingResult {
+  status: "processing";
+  provider: "apify";
+  runId: string;
+  datasetId?: string;
+  videoId: string;
+  pollAfterMs: number;
+}
+
 function formatBytes(bytes?: string) {
   if (!bytes) return null;
   const n = Number(bytes);
@@ -55,6 +64,41 @@ const YouTubeVideoDownloaderPage = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<YTResult | null>(null);
   const [downloadingItag, setDownloadingItag] = useState<number | null>(null);
+  const [statusText, setStatusText] = useState<string>("");
+
+  const pollApifyResult = async (pending: YTPendingResult) => {
+    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+
+    for (let attempt = 0; attempt < 18; attempt++) {
+      await new Promise((resolve) => window.setTimeout(resolve, pending.pollAfterMs || 4000));
+
+      const endpoint = new URL(`https://${projectId}.supabase.co/functions/v1/youtube-video-download`);
+      endpoint.searchParams.set("action", "apify-status");
+      endpoint.searchParams.set("runId", pending.runId);
+      endpoint.searchParams.set("videoId", pending.videoId);
+      if (pending.datasetId) endpoint.searchParams.set("datasetId", pending.datasetId);
+
+      const session = await supabase.auth.getSession();
+      const accessToken = session.data.session?.access_token;
+
+      const res = await fetch(endpoint.toString(), {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      });
+      const data = await res.json();
+
+      if (data?.status === "processing") {
+        setStatusText("Still preparing the video qualities. Please wait a few more seconds…");
+        continue;
+      }
+
+      if (data?.error) throw new Error(data.error);
+      setResult(data as YTResult);
+      setStatusText("");
+      return;
+    }
+
+    throw new Error("Video analysis took too long. Please try again.");
+  };
 
   const handleFetch = async () => {
     const trimmed = url.trim();
@@ -68,13 +112,20 @@ const YouTubeVideoDownloaderPage = () => {
     }
     setLoading(true);
     setResult(null);
+    setStatusText("");
     try {
       const { data, error } = await supabase.functions.invoke("youtube-video-download", {
         body: { url: trimmed },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
-      setResult(data as YTResult);
+
+      if ((data as any)?.status === "processing") {
+        setStatusText("Analyzing video and preparing 360p / 720p / 1080p options…");
+        await pollApifyResult(data as YTPendingResult);
+      } else {
+        setResult(data as YTResult);
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : t("ytdl.toast.failedDesc");
       toast({ title: t("ytdl.toast.failedTitle"), description: msg, variant: "destructive" });
@@ -150,9 +201,9 @@ const YouTubeVideoDownloaderPage = () => {
                 <span className="ml-2">{loading ? t("ytdl.btn.fetching") : t("ytdl.btn.download")}</span>
               </Button>
             </div>
-            {loading && (
+            {(loading || statusText) && (
               <p className="text-xs text-primary/80 animate-pulse">
-                Analyzing video via residential proxy — this usually takes 5–15 seconds. Please wait…
+                {statusText || "Analyzing video via residential proxy — this usually takes 5–15 seconds. Please wait…"}
               </p>
             )}
           </div>
