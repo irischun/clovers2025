@@ -612,6 +612,70 @@ async function handleStreamProxy(req: Request): Promise<Response> {
   return new Response(upstream.body, { status: upstream.status, headers });
 }
 
+async function handleApifyStatus(req: Request): Promise<Response> {
+  const token = (Deno.env.get('APIFY_API_TOKEN') || '').trim();
+  if (!token) return jsonResponse({ error: 'APIFY_API_TOKEN not configured' }, 500);
+
+  const u = new URL(req.url);
+  const runId = (u.searchParams.get('runId') || '').trim();
+  const datasetId = (u.searchParams.get('datasetId') || '').trim();
+  const videoId = (u.searchParams.get('videoId') || '').trim();
+
+  if (!runId || !videoId) {
+    return jsonResponse({ error: 'Missing runId or videoId' }, 400);
+  }
+
+  const runRes = await fetchWithTimeout(
+    `https://api.apify.com/v2/actor-runs/${encodeURIComponent(runId)}?token=${encodeURIComponent(token)}`,
+    { headers: { Accept: 'application/json' } },
+    15000,
+  );
+  if (!runRes.ok) {
+    return jsonResponse({ error: `Could not check job status (${runRes.status})` }, 502);
+  }
+
+  const runData: any = await runRes.json();
+  const run = runData?.data;
+  const status = run?.status;
+  const resolvedDatasetId = datasetId || run?.defaultDatasetId;
+
+  if (status === 'RUNNING' || status === 'READY' || status === 'RUNNING_SUCCEEDED') {
+    return jsonResponse({ status: 'processing', provider: 'apify', runId, datasetId: resolvedDatasetId, videoId, pollAfterMs: 4000 });
+  }
+
+  if (status !== 'SUCCEEDED') {
+    return jsonResponse({ error: `Video analysis failed (${status || 'unknown'})` });
+  }
+
+  if (!resolvedDatasetId) {
+    return jsonResponse({ error: 'Video analysis completed but no result dataset was returned.' });
+  }
+
+  const itemsRes = await fetchWithTimeout(
+    `https://api.apify.com/v2/datasets/${encodeURIComponent(resolvedDatasetId)}/items?token=${encodeURIComponent(token)}&limit=1&clean=true&format=json`,
+    { headers: { Accept: 'application/json' } },
+    20000,
+  );
+  if (!itemsRes.ok) {
+    return jsonResponse({ error: `Could not load analyzed formats (${itemsRes.status})` }, 502);
+  }
+
+  const items: any = await itemsRes.json();
+  const item = Array.isArray(items) ? items[0] : items;
+  if (!item) {
+    return jsonResponse({ error: 'Analysis finished but no downloadable result was produced.' });
+  }
+
+  const parsed = parseApifyItem(item, videoId);
+  if (!parsed) {
+    console.warn('[apify] no usable formats; keys=', Object.keys(item).join(','));
+    return jsonResponse({ error: 'Analysis finished but no usable MP4 format was found.' });
+  }
+
+  console.log(`[apify] success: ${parsed.formats.length} format(s)`);
+  return jsonResponse(parsed);
+}
+
 // ---------------------------------------------------------------------------
 // Handler
 // ---------------------------------------------------------------------------
@@ -626,6 +690,17 @@ Deno.serve(async (req) => {
     } catch (err) {
       return jsonResponse({
         error: 'Stream proxy failed',
+        detail: err instanceof Error ? err.message : String(err),
+      }, 502);
+    }
+  }
+
+  if (req.method === 'GET' && new URL(req.url).searchParams.get('action') === 'apify-status') {
+    try {
+      return await handleApifyStatus(req);
+    } catch (err) {
+      return jsonResponse({
+        error: 'Could not check video analysis status',
         detail: err instanceof Error ? err.message : String(err),
       }, 502);
     }
@@ -654,7 +729,7 @@ Deno.serve(async (req) => {
 
     // Try each strategy in order. First non-null wins.
     // Order: fast free mirrors first (sub-second), Apify last (30-120s).
-    let result: YTResult | null = null;
+    let result: YTResult | ApifyPending | null = null;
     const errors: string[] = [];
 
     try {
@@ -698,6 +773,10 @@ Deno.serve(async (req) => {
           'Could not retrieve this video right now. All extraction mirrors failed. Please try again in a moment or use a different video.',
         detail: errors.join(' | ').slice(0, 500),
       });
+    }
+
+    if ('status' in result && result.status === 'processing') {
+      return jsonResponse(result);
     }
 
     if (result.formats.length === 0) {
