@@ -606,7 +606,7 @@ async function handleStreamProxy(req: Request): Promise<Response> {
   catch { return jsonResponse({ error: 'Invalid stream URL' }, 400); }
 
   // SSRF guard: allow trusted video/file hosts used by extraction providers.
-  if (!/(^|\.)googlevideo\.com$|(^|\.)youtube\.com$|(^|\.)apifyusercontent\.com$|(^|\.)apify\.com$/i.test(parsed.hostname)) {
+  if (!/(^|\.)googlevideo\.com$|(^|\.)youtube\.com$|(^|\.)apifyusercontent\.com$|(^|\.)apify\.com$|(^|\.)odycdn\.com$|(^|\.)lbryplayer\.xyz$|(^|\.)piped\.private\.coffee$/i.test(parsed.hostname)) {
     return jsonResponse({ error: 'Disallowed host' }, 400);
   }
 
@@ -749,38 +749,48 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Try each strategy in order. First non-null wins.
-    // Order: fast free mirrors first (sub-second), Apify last (30-120s).
+    // Try each strategy in order, but keep looking if early mirrors only return
+    // low-quality results. The goal is to surface 360p/720p/1080p whenever available.
     let result: YTResult | ApifyPending | null = null;
     const errors: string[] = [];
 
     try {
-      result = await tryYtdlpProxy(videoId);
+      const proxyResult = normalizeResult(await tryYtdlpProxy(videoId));
+      if (proxyResult) result = proxyResult;
     } catch (e) {
       errors.push(`ytdlp-proxy:${e instanceof Error ? e.message : String(e)}`);
     }
-    if (!result) {
+    if (!result || !('status' in result) && !hasFormatQuality(result.formats, '720p')) {
       try {
-        result = await tryPiped(videoId);
+        const pipedResult = normalizeResult(await tryPiped(videoId));
+        if (pipedResult) {
+          result = !result || 'status' in result ? pipedResult : { ...result, formats: mergeFormats(result.formats, pipedResult.formats), thumbnail: result.thumbnail || pipedResult.thumbnail, title: result.title || pipedResult.title, author: result.author || pipedResult.author, duration: result.duration || pipedResult.duration, source: result.source || pipedResult.source };
+        }
       } catch (e) {
         errors.push(`piped:${e instanceof Error ? e.message : String(e)}`);
       }
     }
-    if (!result) {
+    if (!result || !('status' in result) && (!hasFormatQuality(result.formats, '720p') || !hasFormatQuality(result.formats, '1080p'))) {
       try {
-        result = await tryInvidious(videoId);
+        const invidiousResult = normalizeResult(await tryInvidious(videoId));
+        if (invidiousResult) {
+          result = !result || 'status' in result ? invidiousResult : { ...result, formats: mergeFormats(result.formats, invidiousResult.formats), thumbnail: result.thumbnail || invidiousResult.thumbnail, title: result.title || invidiousResult.title, author: result.author || invidiousResult.author, duration: result.duration || invidiousResult.duration, source: result.source || invidiousResult.source };
+        }
       } catch (e) {
         errors.push(`invidious:${e instanceof Error ? e.message : String(e)}`);
       }
     }
-    if (!result) {
+    if (!result || !('status' in result) && (!hasFormatQuality(result.formats, '720p') || !hasFormatQuality(result.formats, '1080p'))) {
       try {
-        result = await tryInnerTube(videoId);
+        const innerTubeResult = normalizeResult(await tryInnerTube(videoId));
+        if (innerTubeResult) {
+          result = !result || 'status' in result ? innerTubeResult : { ...result, formats: mergeFormats(result.formats, innerTubeResult.formats), thumbnail: result.thumbnail || innerTubeResult.thumbnail, title: result.title || innerTubeResult.title, author: result.author || innerTubeResult.author, duration: result.duration || innerTubeResult.duration, source: result.source || innerTubeResult.source };
+        }
       } catch (e) {
         errors.push(`innertube:${e instanceof Error ? e.message : String(e)}`);
       }
     }
-    if (!result) {
+    if (!result || !('status' in result) && (!hasFormatQuality(result.formats, '720p') || !hasFormatQuality(result.formats, '1080p'))) {
       // Last resort: Apify (slow but very reliable)
       try {
         result = await tryApify(videoId);
@@ -801,14 +811,15 @@ Deno.serve(async (req) => {
       return jsonResponse(result);
     }
 
-    if (result.formats.length === 0) {
+    const normalizedResult = normalizeResult(result);
+    if (!normalizedResult || normalizedResult.formats.length === 0) {
       return jsonResponse({
         error:
           'No downloadable MP4 streams were found for this video. It may be a live stream or use protected streams only.',
       });
     }
 
-    return jsonResponse(result);
+    return jsonResponse(normalizedResult);
   } catch (err) {
     return jsonResponse({
       error: 'Unexpected server error. Please try again with a different public YouTube URL.',
