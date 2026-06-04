@@ -33,6 +33,15 @@ type YTResult = {
   source: string;
 };
 
+type ApifyPending = {
+  status: 'processing';
+  provider: 'apify';
+  runId: string;
+  datasetId?: string;
+  videoId: string;
+  pollAfterMs: number;
+};
+
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
