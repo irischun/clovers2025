@@ -61,7 +61,7 @@ const zhTW = {
   'ytdl.btn.paste': '從剪貼簿貼上',
   'ytdl.btn.download': '擷取',
   'ytdl.btn.fetching': '擷取中...',
-  'ytdl.note': '支援 youtube.com/watch、/shorts、/embed、/live 以及 youtu.be 連結。年齡限制、會員專屬、私人及直播影片無法處理。',
+  'ytdl.note': '支援 youtube.com/watch、/shorts、/embed、/live 以及 youtu.be 連結。',
   'ytdl.noLinks': '找不到可下載的影片串流。',
   'ytdl.tip': '若瀏覽器直接播放而非下載，請於播放器按右鍵選擇「影片另存為」。',
   'ytdl.tag.videoAudio': '影片 + 音訊',
