@@ -131,9 +131,11 @@ const YouTubeVideoDownloaderPage = () => {
         await pollApifyResult(data as YTPendingResult);
       } else {
         setResult(data as YTResult);
+        setStatusText("");
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : t("ytdl.toast.failedDesc");
+      setStatusText("");
       toast({ title: t("ytdl.toast.failedTitle"), description: msg, variant: "destructive" });
     } finally {
       setLoading(false);
