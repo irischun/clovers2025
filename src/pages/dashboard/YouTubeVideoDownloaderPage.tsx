@@ -150,6 +150,11 @@ const YouTubeVideoDownloaderPage = () => {
                 <span className="ml-2">{loading ? t("ytdl.btn.fetching") : t("ytdl.btn.download")}</span>
               </Button>
             </div>
+            {loading && (
+              <p className="text-xs text-primary/80 animate-pulse">
+                Analyzing video via residential proxy — this usually takes 5–15 seconds. Please wait…
+              </p>
+            )}
           </div>
           <p className="text-xs text-muted-foreground">{t("ytdl.note")}</p>
         </CardContent>

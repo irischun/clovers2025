@@ -125,46 +125,64 @@ async function tryYtdlpProxy(videoId: string): Promise<YTResult | null> {
 // ---------------------------------------------------------------------------
 async function tryApify(videoId: string): Promise<YTResult | null> {
   const token = (Deno.env.get('APIFY_API_TOKEN') || '').trim();
-  if (!token) return null;
+  if (!token) {
+    console.log('[apify] APIFY_API_TOKEN not set — skipping');
+    return null;
+  }
   const actorId = (Deno.env.get('APIFY_ACTOR_ID') || 'streamers/youtube-video-downloader').trim();
   const actorPath = actorId.replace('/', '~');
   const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
   try {
+    console.log(`[apify] calling actor=${actorId} videoId=${videoId}`);
     const res = await fetchWithTimeout(
-      `https://api.apify.com/v2/acts/${actorPath}/run-sync-get-dataset-items?token=${encodeURIComponent(token)}&timeout=90`,
+      `https://api.apify.com/v2/acts/${actorPath}/run-sync-get-dataset-items?token=${encodeURIComponent(token)}&timeout=120`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
+          // streamers/youtube-video-downloader REQUIRES `videos: [{ url }]`
+          videos: [{ url: videoUrl }],
+          // Keep alternate keys for compatibility with sibling actors
           startUrls: [{ url: videoUrl }],
           videoUrls: [videoUrl],
           urls: [videoUrl],
+          videoUrl,
+          url: videoUrl,
+          quality: 'best',
           maxItems: 1,
-          proxy: { useApifyProxy: true },
+          proxy: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
         }),
       },
-      90000,
+      120000,
     );
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const txt = await res.text().catch(() => '');
+      console.error(`[apify] HTTP ${res.status}: ${txt.slice(0, 300)}`);
+      return null;
+    }
     const items: any = await res.json();
     const item = Array.isArray(items) ? items[0] : items;
-    if (!item) return null;
+    if (!item) {
+      console.warn('[apify] empty dataset');
+      return null;
+    }
 
     const rawFormats: any[] =
       (Array.isArray(item.formats) && item.formats) ||
       (Array.isArray(item.downloadUrls) && item.downloadUrls) ||
       (Array.isArray(item.videos) && item.videos) ||
+      (Array.isArray(item.qualities) && item.qualities) ||
       [];
 
     const formats: YTFormat[] = [];
     for (const f of rawFormats) {
-      const url = f?.url || f?.downloadUrl || f?.src;
+      const url = f?.url || f?.downloadUrl || f?.src || f?.link;
       if (!url || typeof url !== 'string') continue;
-      const mime: string = f.mimeType || f.mime || (f.ext === 'mp4' ? 'video/mp4' : 'video/mp4');
+      const mime: string = f.mimeType || f.mime || 'video/mp4';
       const height = f.height || (typeof f.quality === 'string' ? parseInt(f.quality) : undefined);
       formats.push({
-        quality: f.quality || (height ? `${height}p` : f.label || 'unknown'),
+        quality: f.quality || (height ? `${height}p` : f.label || 'best'),
         mime,
         hasVideo: f.hasVideo !== false,
         hasAudio: f.hasAudio !== false,
@@ -172,18 +190,32 @@ async function tryApify(videoId: string): Promise<YTResult | null> {
         contentLength: f.contentLength?.toString?.() || f.filesize?.toString?.(),
       });
     }
-    // Single top-level url fallback
-    if (formats.length === 0 && typeof item.url === 'string' && /^https?:\/\//.test(item.url) && item.url !== videoUrl) {
-      formats.push({
-        quality: item.quality || 'best',
-        mime: 'video/mp4',
-        hasVideo: true,
-        hasAudio: true,
-        url: item.url,
-      });
+    // Single top-level url fallback (common output of this actor)
+    if (formats.length === 0) {
+      const single = item.url || item.downloadUrl || item.videoUrl || item.link;
+      if (typeof single === 'string' && /^https?:\/\//.test(single) && single !== videoUrl) {
+        formats.push({
+          quality: item.quality || (item.height ? `${item.height}p` : '1080p'),
+          mime: 'video/mp4',
+          hasVideo: true,
+          hasAudio: true,
+          url: single,
+        });
+      }
     }
-    if (formats.length === 0) return null;
+    if (formats.length === 0) {
+      console.warn('[apify] no usable formats; keys=', Object.keys(item).join(','));
+      return null;
+    }
 
+    // Prefer 1080p then 720p at the top of the list
+    const rank = (q: string) => {
+      const n = parseInt(q, 10) || 0;
+      return n === 1080 ? 10000 : n === 720 ? 9000 : n;
+    };
+    formats.sort((a, b) => rank(b.quality) - rank(a.quality));
+
+    console.log(`[apify] success: ${formats.length} format(s)`);
     return {
       title: item.title || item.name || 'YouTube Video',
       author: item.author || item.channelName || item.uploader || null,
@@ -192,7 +224,8 @@ async function tryApify(videoId: string): Promise<YTResult | null> {
       formats,
       source: videoUrl,
     };
-  } catch {
+  } catch (e) {
+    console.error('[apify] threw:', e instanceof Error ? e.message : String(e));
     return null;
   }
 }
@@ -571,20 +604,14 @@ Deno.serve(async (req) => {
     }
 
     // Try each strategy in order. First non-null wins.
+    // Order: fast free mirrors first (sub-second), Apify last (30-120s).
     let result: YTResult | null = null;
     const errors: string[] = [];
 
     try {
-      result = await tryApify(videoId);
+      result = await tryYtdlpProxy(videoId);
     } catch (e) {
-      errors.push(`apify:${e instanceof Error ? e.message : String(e)}`);
-    }
-    if (!result) {
-      try {
-        result = await tryYtdlpProxy(videoId);
-      } catch (e) {
-        errors.push(`ytdlp-proxy:${e instanceof Error ? e.message : String(e)}`);
-      }
+      errors.push(`ytdlp-proxy:${e instanceof Error ? e.message : String(e)}`);
     }
     if (!result) {
       try {
@@ -605,6 +632,14 @@ Deno.serve(async (req) => {
         result = await tryInnerTube(videoId);
       } catch (e) {
         errors.push(`innertube:${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+    if (!result) {
+      // Last resort: Apify (slow but very reliable)
+      try {
+        result = await tryApify(videoId);
+      } catch (e) {
+        errors.push(`apify:${e instanceof Error ? e.message : String(e)}`);
       }
     }
 
