@@ -180,6 +180,13 @@ const YouTubeVideoDownloaderPage = () => {
       a.click();
       a.remove();
       URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : t("ytdl.toast.failedDesc");
+      toast({
+        title: t("ytdl.toast.failedTitle"),
+        description: message,
+        variant: "destructive",
+      });
     } finally {
       setTimeout(() => setDownloadingKey(null), 800);
     }
