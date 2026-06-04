@@ -604,20 +604,14 @@ Deno.serve(async (req) => {
     }
 
     // Try each strategy in order. First non-null wins.
+    // Order: fast free mirrors first (sub-second), Apify last (30-120s).
     let result: YTResult | null = null;
     const errors: string[] = [];
 
     try {
-      result = await tryApify(videoId);
+      result = await tryYtdlpProxy(videoId);
     } catch (e) {
-      errors.push(`apify:${e instanceof Error ? e.message : String(e)}`);
-    }
-    if (!result) {
-      try {
-        result = await tryYtdlpProxy(videoId);
-      } catch (e) {
-        errors.push(`ytdlp-proxy:${e instanceof Error ? e.message : String(e)}`);
-      }
+      errors.push(`ytdlp-proxy:${e instanceof Error ? e.message : String(e)}`);
     }
     if (!result) {
       try {
@@ -638,6 +632,14 @@ Deno.serve(async (req) => {
         result = await tryInnerTube(videoId);
       } catch (e) {
         errors.push(`innertube:${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+    if (!result) {
+      // Last resort: Apify (slow but very reliable)
+      try {
+        result = await tryApify(videoId);
+      } catch (e) {
+        errors.push(`apify:${e instanceof Error ? e.message : String(e)}`);
       }
     }
 
