@@ -33,6 +33,15 @@ type YTResult = {
   source: string;
 };
 
+type ApifyPending = {
+  status: 'processing';
+  provider: 'apify';
+  runId: string;
+  datasetId?: string;
+  videoId: string;
+  pollAfterMs: number;
+};
+
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -123,7 +132,83 @@ async function tryYtdlpProxy(videoId: string): Promise<YTResult | null> {
 // 0b) Apify actor (preferred when APIFY_API_TOKEN is configured)
 //    Default actor: streamers/youtube-video-downloader (override via APIFY_ACTOR_ID)
 // ---------------------------------------------------------------------------
-async function tryApify(videoId: string): Promise<YTResult | null> {
+function parseApifyItem(item: any, videoId: string): YTResult | null {
+  if (!item) return null;
+
+  const rawFormats: any[] =
+    (Array.isArray(item.formats) && item.formats) ||
+    (Array.isArray(item.downloadUrls) && item.downloadUrls) ||
+    (Array.isArray(item.videos) && item.videos) ||
+    (Array.isArray(item.qualities) && item.qualities) ||
+    [];
+
+  const formats: YTFormat[] = [];
+  for (const f of rawFormats) {
+    const url = f?.url || f?.downloadUrl || f?.src || f?.link;
+    if (!url || typeof url !== 'string') continue;
+    const mime: string = f.mimeType || f.mime || 'video/mp4';
+    const height = f.height || (typeof f.quality === 'string' ? parseInt(f.quality) : undefined);
+    formats.push({
+      quality: f.quality || (height ? `${height}p` : f.label || 'best'),
+      mime,
+      hasVideo: f.hasVideo !== false,
+      hasAudio: f.hasAudio !== false,
+      url,
+      contentLength: f.contentLength?.toString?.() || f.filesize?.toString?.(),
+    });
+  }
+
+  const inferredQuality = (input: unknown, fallback = 'unknown') => {
+    if (typeof input === 'string' && /\d{3,4}p/i.test(input)) return input.match(/\d{3,4}p/i)?.[0] || fallback;
+    const n = typeof input === 'number' ? input : parseInt(String(input || ''), 10);
+    return Number.isFinite(n) && n > 0 ? `${n}p` : fallback;
+  };
+
+  if (formats.length === 0) {
+    const downloadedFileUrl = item.downloadedFileUrl;
+    const videoOnlyUrl = item.videoOnlyUrl;
+    const audioOnlyUrl = item.audioOnlyUrl;
+
+    if (typeof downloadedFileUrl === 'string' && /^https?:\/\//.test(downloadedFileUrl)) {
+      formats.push({ quality: inferredQuality(item.quality || item.height, '720p'), mime: 'video/mp4', hasVideo: true, hasAudio: true, url: downloadedFileUrl, contentLength: item.contentLength?.toString?.() || item.filesize?.toString?.() });
+    }
+    if (typeof videoOnlyUrl === 'string' && /^https?:\/\//.test(videoOnlyUrl)) {
+      formats.push({ quality: inferredQuality(item.videoQuality || item.quality || item.height, '1080p'), mime: 'video/mp4', hasVideo: true, hasAudio: false, url: videoOnlyUrl, contentLength: item.videoContentLength?.toString?.() || item.contentLength?.toString?.() });
+    }
+    if (typeof downloadedFileUrl === 'string' && /^https?:\/\//.test(downloadedFileUrl) && !formats.some((f) => f.quality === '720p')) {
+      formats.push({ quality: '720p', mime: 'video/mp4', hasVideo: true, hasAudio: true, url: downloadedFileUrl });
+    }
+    if (typeof videoOnlyUrl === 'string' && /^https?:\/\//.test(videoOnlyUrl) && !formats.some((f) => f.quality === '1080p')) {
+      formats.push({ quality: '1080p', mime: 'video/mp4', hasVideo: true, hasAudio: typeof audioOnlyUrl !== 'string', url: videoOnlyUrl });
+    }
+  }
+
+  if (formats.length === 0) {
+    const single = item.url || item.downloadUrl || item.videoUrl || item.link;
+    if (typeof single === 'string' && /^https?:\/\//.test(single)) {
+      formats.push({ quality: item.quality || (item.height ? `${item.height}p` : '1080p'), mime: 'video/mp4', hasVideo: true, hasAudio: true, url: single });
+    }
+  }
+
+  if (formats.length === 0) return null;
+
+  const rank = (q: string) => {
+    const n = parseInt(q, 10) || 0;
+    return n === 1080 ? 10000 : n === 720 ? 9000 : n;
+  };
+  formats.sort((a, b) => rank(b.quality) - rank(a.quality));
+
+  return {
+    title: item.title || item.name || 'YouTube Video',
+    author: item.author || item.channelName || item.uploader || null,
+    duration: typeof item.duration === 'number' ? item.duration : (typeof item.durationSeconds === 'number' ? item.durationSeconds : null),
+    thumbnail: item.thumbnail || item.thumbnailUrl || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+    formats,
+    source: `https://www.youtube.com/watch?v=${videoId}`,
+  };
+}
+
+async function tryApify(videoId: string): Promise<YTResult | ApifyPending | null> {
   const token = (Deno.env.get('APIFY_API_TOKEN') || '').trim();
   if (!token) {
     console.log('[apify] APIFY_API_TOKEN not set — skipping');
@@ -135,8 +220,8 @@ async function tryApify(videoId: string): Promise<YTResult | null> {
 
   try {
     console.log(`[apify] calling actor=${actorId} videoId=${videoId}`);
-    const res = await fetchWithTimeout(
-      `https://api.apify.com/v2/acts/${actorPath}/run-sync-get-dataset-items?token=${encodeURIComponent(token)}&timeout=120`,
+    const startRes = await fetchWithTimeout(
+      `https://api.apify.com/v2/acts/${actorPath}/runs?token=${encodeURIComponent(token)}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -154,75 +239,28 @@ async function tryApify(videoId: string): Promise<YTResult | null> {
           proxy: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
         }),
       },
-      120000,
+      20000,
     );
-    if (!res.ok) {
-      const txt = await res.text().catch(() => '');
-      console.error(`[apify] HTTP ${res.status}: ${txt.slice(0, 300)}`);
-      return null;
-    }
-    const items: any = await res.json();
-    const item = Array.isArray(items) ? items[0] : items;
-    if (!item) {
-      console.warn('[apify] empty dataset');
+    if (!startRes.ok) {
+      const txt = await startRes.text().catch(() => '');
+      console.error(`[apify] HTTP ${startRes.status}: ${txt.slice(0, 300)}`);
       return null;
     }
 
-    const rawFormats: any[] =
-      (Array.isArray(item.formats) && item.formats) ||
-      (Array.isArray(item.downloadUrls) && item.downloadUrls) ||
-      (Array.isArray(item.videos) && item.videos) ||
-      (Array.isArray(item.qualities) && item.qualities) ||
-      [];
-
-    const formats: YTFormat[] = [];
-    for (const f of rawFormats) {
-      const url = f?.url || f?.downloadUrl || f?.src || f?.link;
-      if (!url || typeof url !== 'string') continue;
-      const mime: string = f.mimeType || f.mime || 'video/mp4';
-      const height = f.height || (typeof f.quality === 'string' ? parseInt(f.quality) : undefined);
-      formats.push({
-        quality: f.quality || (height ? `${height}p` : f.label || 'best'),
-        mime,
-        hasVideo: f.hasVideo !== false,
-        hasAudio: f.hasAudio !== false,
-        url,
-        contentLength: f.contentLength?.toString?.() || f.filesize?.toString?.(),
-      });
-    }
-    // Single top-level url fallback (common output of this actor)
-    if (formats.length === 0) {
-      const single = item.url || item.downloadUrl || item.videoUrl || item.link;
-      if (typeof single === 'string' && /^https?:\/\//.test(single) && single !== videoUrl) {
-        formats.push({
-          quality: item.quality || (item.height ? `${item.height}p` : '1080p'),
-          mime: 'video/mp4',
-          hasVideo: true,
-          hasAudio: true,
-          url: single,
-        });
-      }
-    }
-    if (formats.length === 0) {
-      console.warn('[apify] no usable formats; keys=', Object.keys(item).join(','));
+    const started: any = await startRes.json();
+    const runId = started?.data?.id;
+    const datasetId = started?.data?.defaultDatasetId;
+    if (!runId) {
+      console.warn('[apify] run start missing runId');
       return null;
     }
-
-    // Prefer 1080p then 720p at the top of the list
-    const rank = (q: string) => {
-      const n = parseInt(q, 10) || 0;
-      return n === 1080 ? 10000 : n === 720 ? 9000 : n;
-    };
-    formats.sort((a, b) => rank(b.quality) - rank(a.quality));
-
-    console.log(`[apify] success: ${formats.length} format(s)`);
     return {
-      title: item.title || item.name || 'YouTube Video',
-      author: item.author || item.channelName || item.uploader || null,
-      duration: typeof item.duration === 'number' ? item.duration : null,
-      thumbnail: item.thumbnail || item.thumbnailUrl || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-      formats,
-      source: videoUrl,
+      status: 'processing',
+      provider: 'apify',
+      runId,
+      datasetId,
+      videoId,
+      pollAfterMs: 4000,
     };
   } catch (e) {
     console.error('[apify] threw:', e instanceof Error ? e.message : String(e));
@@ -256,6 +294,14 @@ const PIPED_INSTANCES = [
   'https://pipedapi.nosebs.ru',
 ];
 
+async function firstSuccessful<T>(tasks: Array<() => Promise<T | null>>): Promise<T | null> {
+  const settled = await Promise.allSettled(tasks.map((task) => task()));
+  for (const entry of settled) {
+    if (entry.status === 'fulfilled' && entry.value) return entry.value;
+  }
+  return null;
+}
+
 function normalizePipedQuality(q: string | undefined, height?: number): string {
   if (q) return q;
   if (height) return `${height}p`;
@@ -263,18 +309,18 @@ function normalizePipedQuality(q: string | undefined, height?: number): string {
 }
 
 async function tryPiped(videoId: string): Promise<YTResult | null> {
-  for (const base of PIPED_INSTANCES) {
+  return await firstSuccessful(PIPED_INSTANCES.map((base) => async () => {
     try {
       const res = await fetchWithTimeout(
         `${base}/streams/${videoId}`,
         { headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json' } },
-        7000,
+        3500,
       );
-      if (!res.ok) continue;
+      if (!res.ok) return null;
       const data: any = await res.json();
-      if (!data || data.error) continue;
+      if (!data || data.error) return null;
       const video: any[] = Array.isArray(data.videoStreams) ? data.videoStreams : [];
-      if (video.length === 0) continue;
+      if (video.length === 0) return null;
 
       const formats: YTFormat[] = [];
       for (const v of video) {
@@ -290,7 +336,7 @@ async function tryPiped(videoId: string): Promise<YTResult | null> {
           contentLength: v.contentLength?.toString?.(),
         });
       }
-      if (formats.length === 0) continue;
+      if (formats.length === 0) return null;
 
       // Sort progressive (av) first, then by height desc
       const score = (x: YTFormat) =>
@@ -316,10 +362,9 @@ async function tryPiped(videoId: string): Promise<YTResult | null> {
         source: `https://www.youtube.com/watch?v=${videoId}`,
       };
     } catch {
-      // try next instance
+      return null;
     }
-  }
-  return null;
+  }));
 }
 
 // ---------------------------------------------------------------------------
@@ -335,16 +380,16 @@ const INVIDIOUS_INSTANCES = [
 ];
 
 async function tryInvidious(videoId: string): Promise<YTResult | null> {
-  for (const base of INVIDIOUS_INSTANCES) {
+  return await firstSuccessful(INVIDIOUS_INSTANCES.map((base) => async () => {
     try {
       const res = await fetchWithTimeout(
         `${base}/api/v1/videos/${videoId}?fields=title,author,lengthSeconds,videoThumbnails,formatStreams,adaptiveFormats`,
         { headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json' } },
-        7000,
+        3500,
       );
-      if (!res.ok) continue;
+      if (!res.ok) return null;
       const data: any = await res.json();
-      if (!data || data.error) continue;
+      if (!data || data.error) return null;
 
       const formats: YTFormat[] = [];
       const all: any[] = [
@@ -367,7 +412,7 @@ async function tryInvidious(videoId: string): Promise<YTResult | null> {
           contentLength: f.clen?.toString?.(),
         });
       }
-      if (formats.length === 0) continue;
+      if (formats.length === 0) return null;
       const score = (x: YTFormat) =>
         (x.hasAudio ? 100000 : 0) + (parseInt(x.quality, 10) || 0);
       formats.sort((a, b) => score(b) - score(a));
@@ -394,10 +439,9 @@ async function tryInvidious(videoId: string): Promise<YTResult | null> {
         source: `https://www.youtube.com/watch?v=${videoId}`,
       };
     } catch {
-      // try next
+      return null;
     }
-  }
-  return null;
+  }));
 }
 
 // ---------------------------------------------------------------------------
@@ -539,8 +583,8 @@ async function handleStreamProxy(req: Request): Promise<Response> {
   try { parsed = new URL(target); }
   catch { return jsonResponse({ error: 'Invalid stream URL' }, 400); }
 
-  // SSRF guard: only allow Google's video CDN hosts.
-  if (!/(^|\.)googlevideo\.com$|(^|\.)youtube\.com$/i.test(parsed.hostname)) {
+  // SSRF guard: allow trusted video/file hosts used by extraction providers.
+  if (!/(^|\.)googlevideo\.com$|(^|\.)youtube\.com$|(^|\.)apifyusercontent\.com$|(^|\.)apify\.com$/i.test(parsed.hostname)) {
     return jsonResponse({ error: 'Disallowed host' }, 400);
   }
 
@@ -549,7 +593,12 @@ async function handleStreamProxy(req: Request): Promise<Response> {
       ...(req.headers.get('range') ? { Range: req.headers.get('range')! } : {}),
       'User-Agent': 'Mozilla/5.0',
     },
+    redirect: 'follow',
   });
+
+  if (!upstream.ok) {
+    return jsonResponse({ error: `Upstream download failed (${upstream.status})` }, 502);
+  }
 
   const headers = new Headers(corsHeaders);
   headers.set('Content-Type', upstream.headers.get('content-type') || 'video/mp4');
@@ -561,6 +610,70 @@ async function handleStreamProxy(req: Request): Promise<Response> {
   headers.set('Content-Disposition', `attachment; filename="${filename}"`);
   headers.set('Cache-Control', 'no-store');
   return new Response(upstream.body, { status: upstream.status, headers });
+}
+
+async function handleApifyStatus(req: Request): Promise<Response> {
+  const token = (Deno.env.get('APIFY_API_TOKEN') || '').trim();
+  if (!token) return jsonResponse({ error: 'APIFY_API_TOKEN not configured' }, 500);
+
+  const u = new URL(req.url);
+  const runId = (u.searchParams.get('runId') || '').trim();
+  const datasetId = (u.searchParams.get('datasetId') || '').trim();
+  const videoId = (u.searchParams.get('videoId') || '').trim();
+
+  if (!runId || !videoId) {
+    return jsonResponse({ error: 'Missing runId or videoId' }, 400);
+  }
+
+  const runRes = await fetchWithTimeout(
+    `https://api.apify.com/v2/actor-runs/${encodeURIComponent(runId)}?token=${encodeURIComponent(token)}`,
+    { headers: { Accept: 'application/json' } },
+    15000,
+  );
+  if (!runRes.ok) {
+    return jsonResponse({ error: `Could not check job status (${runRes.status})` }, 502);
+  }
+
+  const runData: any = await runRes.json();
+  const run = runData?.data;
+  const status = run?.status;
+  const resolvedDatasetId = datasetId || run?.defaultDatasetId;
+
+  if (status === 'RUNNING' || status === 'READY' || status === 'RUNNING_SUCCEEDED') {
+    return jsonResponse({ status: 'processing', provider: 'apify', runId, datasetId: resolvedDatasetId, videoId, pollAfterMs: 4000 });
+  }
+
+  if (status !== 'SUCCEEDED') {
+    return jsonResponse({ error: `Video analysis failed (${status || 'unknown'})` });
+  }
+
+  if (!resolvedDatasetId) {
+    return jsonResponse({ error: 'Video analysis completed but no result dataset was returned.' });
+  }
+
+  const itemsRes = await fetchWithTimeout(
+    `https://api.apify.com/v2/datasets/${encodeURIComponent(resolvedDatasetId)}/items?token=${encodeURIComponent(token)}&limit=1&clean=true&format=json`,
+    { headers: { Accept: 'application/json' } },
+    20000,
+  );
+  if (!itemsRes.ok) {
+    return jsonResponse({ error: `Could not load analyzed formats (${itemsRes.status})` }, 502);
+  }
+
+  const items: any = await itemsRes.json();
+  const item = Array.isArray(items) ? items[0] : items;
+  if (!item) {
+    return jsonResponse({ error: 'Analysis finished but no downloadable result was produced.' });
+  }
+
+  const parsed = parseApifyItem(item, videoId);
+  if (!parsed) {
+    console.warn('[apify] no usable formats; keys=', Object.keys(item).join(','));
+    return jsonResponse({ error: 'Analysis finished but no usable MP4 format was found.' });
+  }
+
+  console.log(`[apify] success: ${parsed.formats.length} format(s)`);
+  return jsonResponse(parsed);
 }
 
 // ---------------------------------------------------------------------------
@@ -577,6 +690,17 @@ Deno.serve(async (req) => {
     } catch (err) {
       return jsonResponse({
         error: 'Stream proxy failed',
+        detail: err instanceof Error ? err.message : String(err),
+      }, 502);
+    }
+  }
+
+  if (req.method === 'GET' && new URL(req.url).searchParams.get('action') === 'apify-status') {
+    try {
+      return await handleApifyStatus(req);
+    } catch (err) {
+      return jsonResponse({
+        error: 'Could not check video analysis status',
         detail: err instanceof Error ? err.message : String(err),
       }, 502);
     }
@@ -605,7 +729,7 @@ Deno.serve(async (req) => {
 
     // Try each strategy in order. First non-null wins.
     // Order: fast free mirrors first (sub-second), Apify last (30-120s).
-    let result: YTResult | null = null;
+    let result: YTResult | ApifyPending | null = null;
     const errors: string[] = [];
 
     try {
@@ -649,6 +773,10 @@ Deno.serve(async (req) => {
           'Could not retrieve this video right now. All extraction mirrors failed. Please try again in a moment or use a different video.',
         detail: errors.join(' | ').slice(0, 500),
       });
+    }
+
+    if ('status' in result && result.status === 'processing') {
+      return jsonResponse(result);
     }
 
     if (result.formats.length === 0) {

@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 interface YTFormat {
-  itag: number;
+  itag?: number;
   quality: string;
   mime: string;
   hasAudio: boolean;
@@ -25,6 +25,15 @@ interface YTResult {
   thumbnail: string | null;
   formats: YTFormat[];
   source: string;
+}
+
+interface YTPendingResult {
+  status: "processing";
+  provider: "apify";
+  runId: string;
+  datasetId?: string;
+  videoId: string;
+  pollAfterMs: number;
 }
 
 function formatBytes(bytes?: string) {
@@ -54,7 +63,48 @@ const YouTubeVideoDownloaderPage = () => {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<YTResult | null>(null);
-  const [downloadingItag, setDownloadingItag] = useState<number | null>(null);
+  const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
+  const [statusText, setStatusText] = useState<string>("");
+
+  const getFormatKey = (fmt: YTFormat) => `${fmt.itag ?? fmt.quality}-${fmt.hasAudio ? "av" : "v"}`;
+
+  const pollApifyResult = async (pending: YTPendingResult) => {
+    const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+    for (let attempt = 0; attempt < 18; attempt++) {
+      await new Promise((resolve) => window.setTimeout(resolve, pending.pollAfterMs || 4000));
+
+      const endpoint = new URL(`${baseUrl}/functions/v1/youtube-video-download`);
+      endpoint.searchParams.set("action", "apify-status");
+      endpoint.searchParams.set("runId", pending.runId);
+      endpoint.searchParams.set("videoId", pending.videoId);
+      if (pending.datasetId) endpoint.searchParams.set("datasetId", pending.datasetId);
+
+      const session = await supabase.auth.getSession();
+      const accessToken = session.data.session?.access_token;
+
+      const res = await fetch(endpoint.toString(), {
+        headers: {
+          ...(publishableKey ? { apikey: publishableKey } : {}),
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+      });
+      const data = await res.json();
+
+      if (data?.status === "processing") {
+        setStatusText("Still preparing the video qualities. Please wait a few more seconds…");
+        continue;
+      }
+
+      if (data?.error) throw new Error(data.error);
+      setResult(data as YTResult);
+      setStatusText("");
+      return;
+    }
+
+    throw new Error("Video analysis took too long. Please try again.");
+  };
 
   const handleFetch = async () => {
     const trimmed = url.trim();
@@ -68,13 +118,20 @@ const YouTubeVideoDownloaderPage = () => {
     }
     setLoading(true);
     setResult(null);
+    setStatusText("");
     try {
       const { data, error } = await supabase.functions.invoke("youtube-video-download", {
         body: { url: trimmed },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
-      setResult(data as YTResult);
+
+      if ((data as any)?.status === "processing") {
+        setStatusText("Analyzing video and preparing 360p / 720p / 1080p options…");
+        await pollApifyResult(data as YTPendingResult);
+      } else {
+        setResult(data as YTResult);
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : t("ytdl.toast.failedDesc");
       toast({ title: t("ytdl.toast.failedTitle"), description: msg, variant: "destructive" });
@@ -92,24 +149,39 @@ const YouTubeVideoDownloaderPage = () => {
     }
   };
 
-  const handleDownload = (fmt: YTFormat) => {
-    setDownloadingItag(fmt.itag);
+  const handleDownload = async (fmt: YTFormat) => {
+    const key = getFormatKey(fmt);
+    setDownloadingKey(key);
     try {
       const safeTitle = (result?.title || "youtube-video").replace(/[^\w\-]+/g, "_").slice(0, 80);
-      const filename = `${safeTitle}-${fmt.quality}.mp4`;
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const extension = /webm/i.test(fmt.mime) || /\.webm(?:$|\?)/i.test(fmt.url) ? "webm" : "mp4";
+      const filename = `${safeTitle}-${fmt.quality}.${extension}`;
+      const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const proxyUrl =
-        `https://${projectId}.supabase.co/functions/v1/youtube-video-download` +
+        `${baseUrl}/functions/v1/youtube-video-download` +
         `?stream=${encodeURIComponent(fmt.url)}&filename=${encodeURIComponent(filename)}`;
+      const session = await supabase.auth.getSession();
+      const accessToken = session.data.session?.access_token;
+      const response = await fetch(proxyUrl, {
+        headers: {
+          ...(publishableKey ? { apikey: publishableKey } : {}),
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+      });
+      if (!response.ok) throw new Error(`Download failed (${response.status})`);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = proxyUrl;
+      a.href = blobUrl;
       a.download = filename;
       a.rel = "noopener noreferrer";
       document.body.appendChild(a);
       a.click();
       a.remove();
+      URL.revokeObjectURL(blobUrl);
     } finally {
-      setTimeout(() => setDownloadingItag(null), 800);
+      setTimeout(() => setDownloadingKey(null), 800);
     }
   };
 
@@ -150,9 +222,9 @@ const YouTubeVideoDownloaderPage = () => {
                 <span className="ml-2">{loading ? t("ytdl.btn.fetching") : t("ytdl.btn.download")}</span>
               </Button>
             </div>
-            {loading && (
+            {(loading || statusText) && (
               <p className="text-xs text-primary/80 animate-pulse">
-                Analyzing video via residential proxy — this usually takes 5–15 seconds. Please wait…
+                {statusText || "Analyzing video via residential proxy — this usually takes 5–15 seconds. Please wait…"}
               </p>
             )}
           </div>
@@ -183,14 +255,14 @@ const YouTubeVideoDownloaderPage = () => {
                 )}
                 {result.formats.map((f) => (
                   <Button
-                    key={f.itag}
+                    key={getFormatKey(f)}
                     className="w-full justify-between"
                     variant={f.hasAudio ? "default" : "secondary"}
-                    disabled={downloadingItag === f.itag}
+                    disabled={downloadingKey === getFormatKey(f)}
                     onClick={() => handleDownload(f)}
                   >
                     <span className="flex items-center gap-2">
-                      {downloadingItag === f.itag ? (
+                      {downloadingKey === getFormatKey(f) ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
                         <Download className="w-4 h-4" />
