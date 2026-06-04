@@ -517,12 +517,31 @@ const INNERTUBE_CLIENTS: ClientSpec[] = [
       },
     },
   },
+  {
+    name: 'TVHTML5_SIMPLY_EMBEDDED_PLAYER',
+    ua: 'Mozilla/5.0 (ChromiumStylePlatform) Cobalt/Version',
+    headerName: '85',
+    headerVersion: '2.0',
+    apiKey: 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8',
+    context: {
+      client: {
+        clientName: 'TVHTML5_SIMPLY_EMBEDDED_PLAYER',
+        clientVersion: '2.0',
+        hl: 'en',
+        gl: 'US',
+        utcOffsetMinutes: 0,
+      },
+      thirdParty: {
+        embedUrl: 'https://www.youtube.com/',
+      },
+    },
+  },
 ];
 
 async function tryInnerTubeClient(videoId: string, spec: ClientSpec): Promise<any> {
   const body = { ...spec.context, videoId, contentCheckOk: true, racyCheckOk: true };
   const res = await fetchWithTimeout(
-    `https://music.youtube.com/youtubei/v1/player?key=${spec.apiKey}&prettyPrint=false`,
+    `https://www.youtube.com/youtubei/v1/player?key=${spec.apiKey}&prettyPrint=false`,
     {
       method: 'POST',
       headers: {
@@ -554,7 +573,7 @@ async function tryInnerTube(videoId: string): Promise<YTResult | null> {
       for (const f of all) {
         if (!f?.url) continue;
         const mime: string = f.mimeType || '';
-        if (!/^video\/mp4/i.test(mime)) continue;
+        if (!/^video\/(mp4|webm)/i.test(mime)) continue;
         const codecs = /codecs="([^"]+)"/.exec(mime)?.[1] || '';
         const hasVideo = !!f.width || /avc1|av01|vp9|h264|hev1|hvc1/i.test(codecs);
         const hasAudio = !!f.audioQuality || /mp4a|opus|ac-3/i.test(codecs);
