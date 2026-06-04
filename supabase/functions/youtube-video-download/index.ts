@@ -834,7 +834,7 @@ Deno.serve(async (req) => {
     if (!normalizedResult || normalizedResult.formats.length === 0) {
       return jsonResponse({
         error:
-          'No downloadable MP4 streams were found for this video. It may be a live stream or use protected streams only.',
+          'No downloadable video streams were found for this video. It may be a live stream or use protected streams only.',
       });
     }
 
