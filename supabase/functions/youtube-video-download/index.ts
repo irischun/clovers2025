@@ -141,7 +141,9 @@ async function tryApify(videoId: string): Promise<YTResult | null> {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
-          // Cover input-schema variants used by this actor family
+          // streamers/youtube-video-downloader REQUIRES `videos: [{ url }]`
+          videos: [{ url: videoUrl }],
+          // Keep alternate keys for compatibility with sibling actors
           startUrls: [{ url: videoUrl }],
           videoUrls: [videoUrl],
           urls: [videoUrl],
