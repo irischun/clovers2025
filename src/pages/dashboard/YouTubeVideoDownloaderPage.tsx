@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 interface YTFormat {
-  itag: number;
+  itag?: number;
   quality: string;
   mime: string;
   hasAudio: boolean;
@@ -63,8 +63,10 @@ const YouTubeVideoDownloaderPage = () => {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<YTResult | null>(null);
-  const [downloadingItag, setDownloadingItag] = useState<number | null>(null);
+  const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
   const [statusText, setStatusText] = useState<string>("");
+
+  const getFormatKey = (fmt: YTFormat) => `${fmt.itag ?? fmt.quality}-${fmt.hasAudio ? "av" : "v"}`;
 
   const pollApifyResult = async (pending: YTPendingResult) => {
     const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
@@ -144,7 +146,8 @@ const YouTubeVideoDownloaderPage = () => {
   };
 
   const handleDownload = (fmt: YTFormat) => {
-    setDownloadingItag(fmt.itag);
+    const key = getFormatKey(fmt);
+    setDownloadingKey(key);
     try {
       const safeTitle = (result?.title || "youtube-video").replace(/[^\w\-]+/g, "_").slice(0, 80);
       const filename = `${safeTitle}-${fmt.quality}.mp4`;
@@ -160,7 +163,7 @@ const YouTubeVideoDownloaderPage = () => {
       a.click();
       a.remove();
     } finally {
-      setTimeout(() => setDownloadingItag(null), 800);
+      setTimeout(() => setDownloadingKey(null), 800);
     }
   };
 
@@ -234,14 +237,14 @@ const YouTubeVideoDownloaderPage = () => {
                 )}
                 {result.formats.map((f) => (
                   <Button
-                    key={f.itag}
+                    key={getFormatKey(f)}
                     className="w-full justify-between"
                     variant={f.hasAudio ? "default" : "secondary"}
-                    disabled={downloadingItag === f.itag}
+                    disabled={downloadingKey === getFormatKey(f)}
                     onClick={() => handleDownload(f)}
                   >
                     <span className="flex items-center gap-2">
-                      {downloadingItag === f.itag ? (
+                      {downloadingKey === getFormatKey(f) ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
                         <Download className="w-4 h-4" />
