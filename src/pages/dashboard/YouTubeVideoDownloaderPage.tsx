@@ -69,12 +69,13 @@ const YouTubeVideoDownloaderPage = () => {
   const getFormatKey = (fmt: YTFormat) => `${fmt.itag ?? fmt.quality}-${fmt.hasAudio ? "av" : "v"}`;
 
   const pollApifyResult = async (pending: YTPendingResult) => {
-    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+    const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
     for (let attempt = 0; attempt < 18; attempt++) {
       await new Promise((resolve) => window.setTimeout(resolve, pending.pollAfterMs || 4000));
 
-      const endpoint = new URL(`https://${projectId}.supabase.co/functions/v1/youtube-video-download`);
+      const endpoint = new URL(`${baseUrl}/functions/v1/youtube-video-download`);
       endpoint.searchParams.set("action", "apify-status");
       endpoint.searchParams.set("runId", pending.runId);
       endpoint.searchParams.set("videoId", pending.videoId);
@@ -84,7 +85,10 @@ const YouTubeVideoDownloaderPage = () => {
       const accessToken = session.data.session?.access_token;
 
       const res = await fetch(endpoint.toString(), {
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+        headers: {
+          ...(publishableKey ? { apikey: publishableKey } : {}),
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
       });
       const data = await res.json();
 
@@ -145,23 +149,36 @@ const YouTubeVideoDownloaderPage = () => {
     }
   };
 
-  const handleDownload = (fmt: YTFormat) => {
+  const handleDownload = async (fmt: YTFormat) => {
     const key = getFormatKey(fmt);
     setDownloadingKey(key);
     try {
       const safeTitle = (result?.title || "youtube-video").replace(/[^\w\-]+/g, "_").slice(0, 80);
       const filename = `${safeTitle}-${fmt.quality}.mp4`;
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const baseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const proxyUrl =
-        `https://${projectId}.supabase.co/functions/v1/youtube-video-download` +
+        `${baseUrl}/functions/v1/youtube-video-download` +
         `?stream=${encodeURIComponent(fmt.url)}&filename=${encodeURIComponent(filename)}`;
+      const session = await supabase.auth.getSession();
+      const accessToken = session.data.session?.access_token;
+      const response = await fetch(proxyUrl, {
+        headers: {
+          ...(publishableKey ? { apikey: publishableKey } : {}),
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+      });
+      if (!response.ok) throw new Error(`Download failed (${response.status})`);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = proxyUrl;
+      a.href = blobUrl;
       a.download = filename;
       a.rel = "noopener noreferrer";
       document.body.appendChild(a);
       a.click();
       a.remove();
+      URL.revokeObjectURL(blobUrl);
     } finally {
       setTimeout(() => setDownloadingKey(null), 800);
     }
