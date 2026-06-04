@@ -61,7 +61,7 @@ const zhCN = {
   'ytdl.btn.paste': '从剪贴板粘贴',
   'ytdl.btn.download': '获取',
   'ytdl.btn.fetching': '获取中...',
-  'ytdl.note': '支持 youtube.com/watch、/shorts、/embed、/live 以及 youtu.be 链接。年龄限制、会员专属、私人及直播视频无法处理。',
+  'ytdl.note': '支持 youtube.com/watch、/shorts、/embed、/live 以及 youtu.be 链接。',
   'ytdl.noLinks': '未找到可下载的视频流。',
   'ytdl.tip': '如浏览器自动播放而非下载，请右键播放器选择"视频另存为"。',
   'ytdl.tag.videoAudio': '视频 + 音频',

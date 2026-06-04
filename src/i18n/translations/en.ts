@@ -61,7 +61,7 @@ const en = {
   'ytdl.btn.paste': 'Paste from clipboard',
   'ytdl.btn.download': 'Fetch',
   'ytdl.btn.fetching': 'Fetching...',
-  'ytdl.note': 'Supports youtube.com/watch, /shorts, /embed, /live, and youtu.be links. Age-restricted, members-only, private and live streams cannot be processed.',
+  'ytdl.note': 'Supports youtube.com/watch, /shorts, /embed, /live, and youtu.be links.',
   'ytdl.noLinks': 'No downloadable video streams were found.',
   'ytdl.tip': 'If your browser opens the file instead of downloading it, right-click the player and choose "Save video as".',
   'ytdl.tag.videoAudio': 'Video + Audio',
