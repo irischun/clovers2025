@@ -103,18 +103,26 @@ def extract(
         if not f.get("url"):
             continue
         ext = (f.get("ext") or "").lower()
-        if ext != "mp4":
-            # Restrict to mp4 for broad browser compatibility.
-            continue
         vcodec = (f.get("vcodec") or "none").lower()
         acodec = (f.get("acodec") or "none").lower()
         has_video = vcodec != "none"
         has_audio = acodec != "none"
-        if not has_video:
+        # Accept: mp4 video (with or without audio) and m4a audio-only
+        if ext == "mp4" and has_video:
+            kind = "video"
+            mime = f"video/mp4; codecs=\"{vcodec},{acodec}\""
+        elif ext in ("m4a", "mp4") and has_audio and not has_video:
+            kind = "audio"
+            mime = f"audio/mp4; codecs=\"{acodec}\""
+        else:
             continue
         height = f.get("height")
-        quality = f.get("format_note") or (f"{height}p" if height else "unknown")
-        key = f"{'av' if has_audio else 'v'}-{quality}"
+        abr = f.get("abr")
+        if kind == "video":
+            quality = f.get("format_note") or (f"{height}p" if height else "unknown")
+        else:
+            quality = f"{int(abr)}kbps" if abr else (f.get("format_note") or "audio")
+        key = f"{kind}-{'av' if has_audio else 'v'}-{quality}"
         if key in seen:
             continue
         seen.add(key)
@@ -122,8 +130,9 @@ def extract(
             {
                 "itag": f.get("format_id"),
                 "quality": quality,
-                "mime": f"video/mp4; codecs=\"{vcodec},{acodec}\"",
-                "hasVideo": True,
+                "kind": kind,
+                "mime": mime,
+                "hasVideo": has_video,
                 "hasAudio": has_audio,
                 "url": f["url"],
                 "contentLength": str(f["filesize"]) if f.get("filesize") else None,
