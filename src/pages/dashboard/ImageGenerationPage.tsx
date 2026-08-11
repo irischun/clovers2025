@@ -343,6 +343,9 @@ const scaleToResolution = (
 // Exact pixel dimension presets (mirrors the Image Resizing tool).
 // Choosing one overrides the resolution-derived output size.
 const DIMENSION_PRESETS: { label: string; w: number; h: number; group: string }[] = [
+  { group: '標準解析度', label: '1K 1920×1080', w: 1920, h: 1080 },
+  { group: '標準解析度', label: '2K 2560×1440', w: 2560, h: 1440 },
+  { group: '標準解析度', label: '4K 3840×2160', w: 3840, h: 2160 },
   { group: '正方形', label: '1:1 512×512', w: 512, h: 512 },
   { group: '正方形', label: '1:1 1080×1080', w: 1080, h: 1080 },
   { group: '正方形', label: '1:1 2048×2048', w: 2048, h: 2048 },
