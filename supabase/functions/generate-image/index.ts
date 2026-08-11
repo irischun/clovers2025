@@ -241,7 +241,8 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, style = "realistic", model, width, height, referenceImage, referenceImages, mode, preserveFace = false } = await req.json();
+    const { prompt, style = "realistic", model, width, height, referenceImage, referenceImages, mode, preserveFace = false, resolution = "2k" } = await req.json();
+    const resTier: "1k" | "2k" | "4k" = resolution === "1k" || resolution === "4k" ? resolution : "2k";
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
