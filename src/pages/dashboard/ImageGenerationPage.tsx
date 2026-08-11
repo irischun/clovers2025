@@ -1723,12 +1723,20 @@ const ImageGenerationPage = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1k">1K (標準)</SelectItem>
-                    <SelectItem value="2k">2K (推薦)</SelectItem>
-                    <SelectItem value="4k">4K (超高清)</SelectItem>
+                    <SelectItem value="1k">1K (標準) — 2 點/張</SelectItem>
+                    <SelectItem value="2k">2K (推薦) — 2 點/張</SelectItem>
+                    <SelectItem value="4k">4K (超高清) — 4 點/張</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">當前選擇: {selectedResolution.toUpperCase()}</p>
+                {(() => {
+                  const base = aspectRatio ?? aspectRatios[1];
+                  const out = scaleToResolution(base.width, base.height, selectedResolution);
+                  return (
+                    <p className="text-xs text-muted-foreground">
+                      當前選擇: {selectedResolution.toUpperCase()} · 輸出尺寸約 {out.width} × {out.height} px
+                    </p>
+                  );
+                })()}
               </div>
 
               {/* Output Format Dropdown */}
