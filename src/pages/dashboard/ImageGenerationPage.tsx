@@ -340,6 +340,64 @@ const scaleToResolution = (
   return { width: even(width * scale), height: even(height * scale) };
 };
 
+// Exact pixel dimension presets (mirrors the Image Resizing tool).
+// Choosing one overrides the resolution-derived output size.
+const DIMENSION_PRESETS: { label: string; w: number; h: number; group: string }[] = [
+  { group: '正方形', label: '1:1 512×512', w: 512, h: 512 },
+  { group: '正方形', label: '1:1 1080×1080', w: 1080, h: 1080 },
+  { group: '正方形', label: '1:1 2048×2048', w: 2048, h: 2048 },
+  { group: '正方形', label: '1:1 4096×4096', w: 4096, h: 4096 },
+  { group: '橫向 16:9', label: 'HD 1280×720', w: 1280, h: 720 },
+  { group: '橫向 16:9', label: 'FHD 1920×1080', w: 1920, h: 1080 },
+  { group: '橫向 16:9', label: '2K 2560×1440', w: 2560, h: 1440 },
+  { group: '橫向 16:9', label: '4K 3840×2160', w: 3840, h: 2160 },
+  { group: '直向 9:16', label: 'Story 720×1280', w: 720, h: 1280 },
+  { group: '直向 9:16', label: 'Story 1080×1920', w: 1080, h: 1920 },
+  { group: '直向 9:16', label: '2K 1440×2560', w: 1440, h: 2560 },
+  { group: '直向 9:16', label: '4K 2160×3840', w: 2160, h: 3840 },
+  { group: '社群', label: 'IG 貼文 1080×1080', w: 1080, h: 1080 },
+  { group: '社群', label: 'IG 直式 1080×1350', w: 1080, h: 1350 },
+  { group: '社群', label: 'IG Reels 1080×1920', w: 1080, h: 1920 },
+  { group: '社群', label: 'TikTok 1080×1920', w: 1080, h: 1920 },
+  { group: '社群', label: 'YouTube 縮圖 1280×720', w: 1280, h: 720 },
+  { group: '社群', label: 'YouTube 橫幅 2560×1440', w: 2560, h: 1440 },
+  { group: '社群', label: 'Facebook 貼文 1200×630', w: 1200, h: 630 },
+  { group: '社群', label: 'Facebook 封面 820×312', w: 820, h: 312 },
+  { group: '社群', label: 'X / Twitter 貼文 1600×900', w: 1600, h: 900 },
+  { group: '社群', label: 'X 標題圖 1500×500', w: 1500, h: 500 },
+  { group: '社群', label: 'LinkedIn 貼文 1200×627', w: 1200, h: 627 },
+  { group: '社群', label: 'LinkedIn 橫幅 1584×396', w: 1584, h: 396 },
+  { group: '社群', label: 'Pinterest 1000×1500', w: 1000, h: 1500 },
+  { group: '社群', label: '小紅書 3:4 1242×1660', w: 1242, h: 1660 },
+  { group: '相片', label: '3:2 3000×2000', w: 3000, h: 2000 },
+  { group: '相片', label: '4:3 4032×3024', w: 4032, h: 3024 },
+  { group: '相片', label: '2:3 2000×3000', w: 2000, h: 3000 },
+  { group: '電影感', label: '21:9 2560×1080', w: 2560, h: 1080 },
+  { group: '電影感', label: '21:9 3440×1440', w: 3440, h: 1440 },
+  { group: '電影感', label: '2.39:1 4096×1716', w: 4096, h: 1716 },
+  { group: '印刷 300dpi', label: 'A4 直式 2480×3508', w: 2480, h: 3508 },
+  { group: '印刷 300dpi', label: 'A4 橫式 3508×2480', w: 3508, h: 2480 },
+  { group: '印刷 300dpi', label: 'A5 直式 1748×2480', w: 1748, h: 2480 },
+  { group: '印刷 300dpi', label: 'Letter 2550×3300', w: 2550, h: 3300 },
+  { group: '印刷 300dpi', label: '5×7 相片 1500×2100', w: 1500, h: 2100 },
+  { group: '印刷 300dpi', label: '8×10 相片 2400×3000', w: 2400, h: 3000 },
+  { group: '桌布', label: '桌面 1080p 1920×1080', w: 1920, h: 1080 },
+  { group: '桌布', label: '桌面 4K 3840×2160', w: 3840, h: 2160 },
+];
+
+// Encode/decode a preset as a stable select value.
+const presetValue = (p: { w: number; h: number }) => `${p.w}x${p.h}`;
+const parsePresetValue = (v: string): { width: number; height: number } | null => {
+  const m = /^(\d+)x(\d+)$/.exec(v);
+  if (!m) return null;
+  return { width: Number(m[1]), height: Number(m[2]) };
+};
+
+// Map an explicit long edge back onto a backend resolution tier so the
+// stepped upscaler knows how far it needs to go.
+const tierForLongEdge = (longEdge: number): '1k' | '2k' | '4k' =>
+  longEdge > 2560 ? '4k' : longEdge > 1280 ? '2k' : '1k';
+
 
 
 const ImageGenerationPage = () => {
