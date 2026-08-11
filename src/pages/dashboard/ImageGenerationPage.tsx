@@ -833,8 +833,9 @@ const ImageGenerationPage = () => {
     const fullPrompt = buildFullPrompt();
     const model = models.find(m => m.id === selectedModel)?.model || 'google/gemini-2.5-flash-image-preview';
     const baseAspectRatio = aspectRatio ? { id: aspectRatio.id, width: aspectRatio.width, height: aspectRatio.height } : { id: '1:1', width: 1024, height: 1024 };
-    const capturedAspectRatio = { id: baseAspectRatio.id, ...scaleToResolution(baseAspectRatio.width, baseAspectRatio.height, selectedResolution) };
-    const capturedResolution = selectedResolution;
+    // Exact pixel preset (if chosen) overrides the aspect-ratio/resolution derived size
+    const capturedAspectRatio = { id: baseAspectRatio.id, width: outputDimensions.width, height: outputDimensions.height };
+    const capturedResolution = effectiveResolution;
     const capturedQuantity = quantity;
     const capturedPosterStyle = selectedPosterStyle;
     const capturedStyleTags = [...selectedStyleTags];
