@@ -831,6 +831,7 @@ const ImageGenerationPage = () => {
                     referenceImages,
                     mode: capturedMode,
                     preserveFace: capturedPreserveFace,
+                    resolution: capturedResolution,
                   }
                 });
                 if (error) throw error;
