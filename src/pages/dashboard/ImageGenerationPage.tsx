@@ -1796,16 +1796,40 @@ const ImageGenerationPage = () => {
                     <SelectItem value="4k">4K (超高清) — 4 點/張</SelectItem>
                   </SelectContent>
                 </Select>
-                {(() => {
-                  const base = aspectRatio ?? aspectRatios[1];
-                  const out = scaleToResolution(base.width, base.height, selectedResolution);
-                  return (
-                    <p className="text-xs text-muted-foreground">
-                      當前選擇: {selectedResolution.toUpperCase()} · 輸出尺寸約 {out.width} × {out.height} px
-                    </p>
-                  );
-                })()}
+                <p className="text-xs text-muted-foreground">
+                  當前選擇: {selectedResolution.toUpperCase()}
+                  {pixelPreset ? '（已被下方像素尺寸覆蓋）' : ` · 輸出尺寸約 ${outputDimensions.width} × ${outputDimensions.height} px`}
+                </p>
               </div>
+
+              {/* Pixel Dimension Dropdown */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">像素尺寸</label>
+                <Select value={selectedPixelDimension} onValueChange={setSelectedPixelDimension}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    <SelectItem value="auto">自動（依長寬比 + 解析度）</SelectItem>
+                    {Array.from(new Set(DIMENSION_PRESETS.map((p) => p.group))).map((group) => (
+                      <SelectGroup key={group}>
+                        <SelectLabel>{group}</SelectLabel>
+                        {DIMENSION_PRESETS.filter((p) => p.group === group).map((p) => (
+                          <SelectItem key={`${group}-${p.label}`} value={presetValue(p)}>
+                            {p.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {pixelPreset
+                    ? `輸出尺寸: ${pixelPreset.width} × ${pixelPreset.height} px · ${pointsPerImage} 點/張`
+                    : '選擇指定像素尺寸可覆蓋上方解析度與長寬比的輸出尺寸'}
+                </p>
+              </div>
+
 
               {/* Output Format Dropdown */}
               <div className="space-y-2">
