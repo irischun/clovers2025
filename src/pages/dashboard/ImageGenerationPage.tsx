@@ -474,8 +474,15 @@ const ImageGenerationPage = () => {
   const aspectRatio = aspectRatios.find(ar => ar.id === selectedAspectRatio);
   const currentModel = models.find(m => m.id === selectedModel);
   const currentUploadQuality = uploadQualityOptions.find(q => q.id === uploadQuality);
+  // Effective output size: exact pixel preset wins over aspect ratio + resolution
+  const pixelPreset = parsePresetValue(selectedPixelDimension);
+  const baseRatio = aspectRatio ?? aspectRatios[1];
+  const outputDimensions = pixelPreset ?? scaleToResolution(baseRatio.width, baseRatio.height, selectedResolution);
+  const effectiveResolution: '1k' | '2k' | '4k' = pixelPreset
+    ? tierForLongEdge(Math.max(pixelPreset.width, pixelPreset.height))
+    : selectedResolution;
   // Points: 1K/2K = 2 points, 4K = 4 points per image
-  const pointsPerImage = selectedResolution === '4k' ? 4 : 2;
+  const pointsPerImage = effectiveResolution === '4k' ? 4 : 2;
   const totalPoints = quantity * pointsPerImage;
 
   // Handle file upload with size validation
