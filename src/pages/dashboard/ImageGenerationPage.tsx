@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
@@ -340,6 +340,64 @@ const scaleToResolution = (
   return { width: even(width * scale), height: even(height * scale) };
 };
 
+// Exact pixel dimension presets (mirrors the Image Resizing tool).
+// Choosing one overrides the resolution-derived output size.
+const DIMENSION_PRESETS: { label: string; w: number; h: number; group: string }[] = [
+  { group: '正方形', label: '1:1 512×512', w: 512, h: 512 },
+  { group: '正方形', label: '1:1 1080×1080', w: 1080, h: 1080 },
+  { group: '正方形', label: '1:1 2048×2048', w: 2048, h: 2048 },
+  { group: '正方形', label: '1:1 4096×4096', w: 4096, h: 4096 },
+  { group: '橫向 16:9', label: 'HD 1280×720', w: 1280, h: 720 },
+  { group: '橫向 16:9', label: 'FHD 1920×1080', w: 1920, h: 1080 },
+  { group: '橫向 16:9', label: '2K 2560×1440', w: 2560, h: 1440 },
+  { group: '橫向 16:9', label: '4K 3840×2160', w: 3840, h: 2160 },
+  { group: '直向 9:16', label: 'Story 720×1280', w: 720, h: 1280 },
+  { group: '直向 9:16', label: 'Story 1080×1920', w: 1080, h: 1920 },
+  { group: '直向 9:16', label: '2K 1440×2560', w: 1440, h: 2560 },
+  { group: '直向 9:16', label: '4K 2160×3840', w: 2160, h: 3840 },
+  { group: '社群', label: 'IG 貼文 1080×1080', w: 1080, h: 1080 },
+  { group: '社群', label: 'IG 直式 1080×1350', w: 1080, h: 1350 },
+  { group: '社群', label: 'IG Reels 1080×1920', w: 1080, h: 1920 },
+  { group: '社群', label: 'TikTok 1080×1920', w: 1080, h: 1920 },
+  { group: '社群', label: 'YouTube 縮圖 1280×720', w: 1280, h: 720 },
+  { group: '社群', label: 'YouTube 橫幅 2560×1440', w: 2560, h: 1440 },
+  { group: '社群', label: 'Facebook 貼文 1200×630', w: 1200, h: 630 },
+  { group: '社群', label: 'Facebook 封面 820×312', w: 820, h: 312 },
+  { group: '社群', label: 'X / Twitter 貼文 1600×900', w: 1600, h: 900 },
+  { group: '社群', label: 'X 標題圖 1500×500', w: 1500, h: 500 },
+  { group: '社群', label: 'LinkedIn 貼文 1200×627', w: 1200, h: 627 },
+  { group: '社群', label: 'LinkedIn 橫幅 1584×396', w: 1584, h: 396 },
+  { group: '社群', label: 'Pinterest 1000×1500', w: 1000, h: 1500 },
+  { group: '社群', label: '小紅書 3:4 1242×1660', w: 1242, h: 1660 },
+  { group: '相片', label: '3:2 3000×2000', w: 3000, h: 2000 },
+  { group: '相片', label: '4:3 4032×3024', w: 4032, h: 3024 },
+  { group: '相片', label: '2:3 2000×3000', w: 2000, h: 3000 },
+  { group: '電影感', label: '21:9 2560×1080', w: 2560, h: 1080 },
+  { group: '電影感', label: '21:9 3440×1440', w: 3440, h: 1440 },
+  { group: '電影感', label: '2.39:1 4096×1716', w: 4096, h: 1716 },
+  { group: '印刷 300dpi', label: 'A4 直式 2480×3508', w: 2480, h: 3508 },
+  { group: '印刷 300dpi', label: 'A4 橫式 3508×2480', w: 3508, h: 2480 },
+  { group: '印刷 300dpi', label: 'A5 直式 1748×2480', w: 1748, h: 2480 },
+  { group: '印刷 300dpi', label: 'Letter 2550×3300', w: 2550, h: 3300 },
+  { group: '印刷 300dpi', label: '5×7 相片 1500×2100', w: 1500, h: 2100 },
+  { group: '印刷 300dpi', label: '8×10 相片 2400×3000', w: 2400, h: 3000 },
+  { group: '桌布', label: '桌面 1080p 1920×1080', w: 1920, h: 1080 },
+  { group: '桌布', label: '桌面 4K 3840×2160', w: 3840, h: 2160 },
+];
+
+// Encode/decode a preset as a stable select value.
+const presetValue = (p: { w: number; h: number }) => `${p.w}x${p.h}`;
+const parsePresetValue = (v: string): { width: number; height: number } | null => {
+  const m = /^(\d+)x(\d+)$/.exec(v);
+  if (!m) return null;
+  return { width: Number(m[1]), height: Number(m[2]) };
+};
+
+// Map an explicit long edge back onto a backend resolution tier so the
+// stepped upscaler knows how far it needs to go.
+const tierForLongEdge = (longEdge: number): '1k' | '2k' | '4k' =>
+  longEdge > 2560 ? '4k' : longEdge > 1280 ? '2k' : '1k';
+
 
 
 const ImageGenerationPage = () => {
@@ -389,6 +447,8 @@ const ImageGenerationPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedResolution, setSelectedResolution] = useState<'1k' | '2k' | '4k'>('2k');
   const [selectedOutputFormat, setSelectedOutputFormat] = useState<'jpg' | 'png'>('png');
+  // 'auto' = derive size from aspect ratio + resolution; otherwise an exact "WxH" preset
+  const [selectedPixelDimension, setSelectedPixelDimension] = useState<string>('auto');
   
   // Results
   const [isGenerating, setIsGenerating] = useState(false);
@@ -414,8 +474,15 @@ const ImageGenerationPage = () => {
   const aspectRatio = aspectRatios.find(ar => ar.id === selectedAspectRatio);
   const currentModel = models.find(m => m.id === selectedModel);
   const currentUploadQuality = uploadQualityOptions.find(q => q.id === uploadQuality);
+  // Effective output size: exact pixel preset wins over aspect ratio + resolution
+  const pixelPreset = parsePresetValue(selectedPixelDimension);
+  const baseRatio = aspectRatio ?? aspectRatios[1];
+  const outputDimensions = pixelPreset ?? scaleToResolution(baseRatio.width, baseRatio.height, selectedResolution);
+  const effectiveResolution: '1k' | '2k' | '4k' = pixelPreset
+    ? tierForLongEdge(Math.max(pixelPreset.width, pixelPreset.height))
+    : selectedResolution;
   // Points: 1K/2K = 2 points, 4K = 4 points per image
-  const pointsPerImage = selectedResolution === '4k' ? 4 : 2;
+  const pointsPerImage = effectiveResolution === '4k' ? 4 : 2;
   const totalPoints = quantity * pointsPerImage;
 
   // Handle file upload with size validation
@@ -766,8 +833,9 @@ const ImageGenerationPage = () => {
     const fullPrompt = buildFullPrompt();
     const model = models.find(m => m.id === selectedModel)?.model || 'google/gemini-2.5-flash-image-preview';
     const baseAspectRatio = aspectRatio ? { id: aspectRatio.id, width: aspectRatio.width, height: aspectRatio.height } : { id: '1:1', width: 1024, height: 1024 };
-    const capturedAspectRatio = { id: baseAspectRatio.id, ...scaleToResolution(baseAspectRatio.width, baseAspectRatio.height, selectedResolution) };
-    const capturedResolution = selectedResolution;
+    // Exact pixel preset (if chosen) overrides the aspect-ratio/resolution derived size
+    const capturedAspectRatio = { id: baseAspectRatio.id, width: outputDimensions.width, height: outputDimensions.height };
+    const capturedResolution = effectiveResolution;
     const capturedQuantity = quantity;
     const capturedPosterStyle = selectedPosterStyle;
     const capturedStyleTags = [...selectedStyleTags];
@@ -1728,16 +1796,40 @@ const ImageGenerationPage = () => {
                     <SelectItem value="4k">4K (超高清) — 4 點/張</SelectItem>
                   </SelectContent>
                 </Select>
-                {(() => {
-                  const base = aspectRatio ?? aspectRatios[1];
-                  const out = scaleToResolution(base.width, base.height, selectedResolution);
-                  return (
-                    <p className="text-xs text-muted-foreground">
-                      當前選擇: {selectedResolution.toUpperCase()} · 輸出尺寸約 {out.width} × {out.height} px
-                    </p>
-                  );
-                })()}
+                <p className="text-xs text-muted-foreground">
+                  當前選擇: {selectedResolution.toUpperCase()}
+                  {pixelPreset ? '（已被下方像素尺寸覆蓋）' : ` · 輸出尺寸約 ${outputDimensions.width} × ${outputDimensions.height} px`}
+                </p>
               </div>
+
+              {/* Pixel Dimension Dropdown */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">像素尺寸</label>
+                <Select value={selectedPixelDimension} onValueChange={setSelectedPixelDimension}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    <SelectItem value="auto">自動（依長寬比 + 解析度）</SelectItem>
+                    {Array.from(new Set(DIMENSION_PRESETS.map((p) => p.group))).map((group) => (
+                      <SelectGroup key={group}>
+                        <SelectLabel>{group}</SelectLabel>
+                        {DIMENSION_PRESETS.filter((p) => p.group === group).map((p) => (
+                          <SelectItem key={`${group}-${p.label}`} value={presetValue(p)}>
+                            {p.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {pixelPreset
+                    ? `輸出尺寸: ${pixelPreset.width} × ${pixelPreset.height} px · ${pointsPerImage} 點/張`
+                    : '選擇指定像素尺寸可覆蓋上方解析度與長寬比的輸出尺寸'}
+                </p>
+              </div>
+
 
               {/* Output Format Dropdown */}
               <div className="space-y-2">
