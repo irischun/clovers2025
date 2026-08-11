@@ -316,6 +316,32 @@ const aspectRatios = [
   { id: '2:3', label: '2:3 直向', description: '海報、印刷品', width: 683, height: 1024 },
 ];
 
+// Target long-edge (px) per resolution tier
+const RESOLUTION_LONG_EDGE: Record<'1k' | '2k' | '4k', number> = {
+  '1k': 1024,
+  '2k': 2048,
+  '4k': 3840,
+};
+
+// Scale an aspect-ratio pair up/down so its long edge matches the chosen tier.
+// Dimensions are forced even to keep encoders/upscalers happy.
+const scaleToResolution = (
+  width: number,
+  height: number,
+  resolution: '1k' | '2k' | '4k'
+): { width: number; height: number } => {
+  const target = RESOLUTION_LONG_EDGE[resolution];
+  const longEdge = Math.max(width, height);
+  const scale = target / longEdge;
+  const even = (n: number) => {
+    const r = Math.round(n);
+    return r % 2 === 0 ? r : r + 1;
+  };
+  return { width: even(width * scale), height: even(height * scale) };
+};
+
+
+
 const ImageGenerationPage = () => {
   const { t } = useLanguage();
   const { currentJob, startJob, clearCurrentJob } = useImageGenerationContext();
@@ -739,7 +765,9 @@ const ImageGenerationPage = () => {
     // Capture all config values for the background job
     const fullPrompt = buildFullPrompt();
     const model = models.find(m => m.id === selectedModel)?.model || 'google/gemini-2.5-flash-image-preview';
-    const capturedAspectRatio = aspectRatio ? { id: aspectRatio.id, width: aspectRatio.width, height: aspectRatio.height } : { id: '1:1', width: 1024, height: 1024 };
+    const baseAspectRatio = aspectRatio ? { id: aspectRatio.id, width: aspectRatio.width, height: aspectRatio.height } : { id: '1:1', width: 1024, height: 1024 };
+    const capturedAspectRatio = { id: baseAspectRatio.id, ...scaleToResolution(baseAspectRatio.width, baseAspectRatio.height, selectedResolution) };
+    const capturedResolution = selectedResolution;
     const capturedQuantity = quantity;
     const capturedPosterStyle = selectedPosterStyle;
     const capturedStyleTags = [...selectedStyleTags];
@@ -803,6 +831,7 @@ const ImageGenerationPage = () => {
                     referenceImages,
                     mode: capturedMode,
                     preserveFace: capturedPreserveFace,
+                    resolution: capturedResolution,
                   }
                 });
                 if (error) throw error;
@@ -1694,12 +1723,20 @@ const ImageGenerationPage = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1k">1K (標準)</SelectItem>
-                    <SelectItem value="2k">2K (推薦)</SelectItem>
-                    <SelectItem value="4k">4K (超高清)</SelectItem>
+                    <SelectItem value="1k">1K (標準) — 2 點/張</SelectItem>
+                    <SelectItem value="2k">2K (推薦) — 2 點/張</SelectItem>
+                    <SelectItem value="4k">4K (超高清) — 4 點/張</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">當前選擇: {selectedResolution.toUpperCase()}</p>
+                {(() => {
+                  const base = aspectRatio ?? aspectRatios[1];
+                  const out = scaleToResolution(base.width, base.height, selectedResolution);
+                  return (
+                    <p className="text-xs text-muted-foreground">
+                      當前選擇: {selectedResolution.toUpperCase()} · 輸出尺寸約 {out.width} × {out.height} px
+                    </p>
+                  );
+                })()}
               </div>
 
               {/* Output Format Dropdown */}
