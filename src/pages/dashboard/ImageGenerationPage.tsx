@@ -316,6 +316,32 @@ const aspectRatios = [
   { id: '2:3', label: '2:3 直向', description: '海報、印刷品', width: 683, height: 1024 },
 ];
 
+// Target long-edge (px) per resolution tier
+const RESOLUTION_LONG_EDGE: Record<'1k' | '2k' | '4k', number> = {
+  '1k': 1024,
+  '2k': 2048,
+  '4k': 3840,
+};
+
+// Scale an aspect-ratio pair up/down so its long edge matches the chosen tier.
+// Dimensions are forced even to keep encoders/upscalers happy.
+const scaleToResolution = (
+  width: number,
+  height: number,
+  resolution: '1k' | '2k' | '4k'
+): { width: number; height: number } => {
+  const target = RESOLUTION_LONG_EDGE[resolution];
+  const longEdge = Math.max(width, height);
+  const scale = target / longEdge;
+  const even = (n: number) => {
+    const r = Math.round(n);
+    return r % 2 === 0 ? r : r + 1;
+  };
+  return { width: even(width * scale), height: even(height * scale) };
+};
+
+
+
 const ImageGenerationPage = () => {
   const { t } = useLanguage();
   const { currentJob, startJob, clearCurrentJob } = useImageGenerationContext();
