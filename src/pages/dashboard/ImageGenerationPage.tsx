@@ -447,6 +447,8 @@ const ImageGenerationPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedResolution, setSelectedResolution] = useState<'1k' | '2k' | '4k'>('2k');
   const [selectedOutputFormat, setSelectedOutputFormat] = useState<'jpg' | 'png'>('png');
+  // 'auto' = derive size from aspect ratio + resolution; otherwise an exact "WxH" preset
+  const [selectedPixelDimension, setSelectedPixelDimension] = useState<string>('auto');
   
   // Results
   const [isGenerating, setIsGenerating] = useState(false);
