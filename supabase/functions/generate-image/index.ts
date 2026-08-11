@@ -501,21 +501,36 @@ ${rawPrompt || "(none — perform the swap as described above)"}`;
             const reqW = typeof width === "number" && width > 0 ? width : srcW;
             const reqH = typeof height === "number" && height > 0 ? height : srcH;
 
+            // 4K requests need more headroom than the historical 2x cap. We step the
+            // resize in <=2x hops so peak RGBA buffers stay inside the edge memory
+            // budget, and we hard-cap total pixels at 4K (3840x2160 ≈ 8.3 MP).
+            const MAX_PIXELS = resTier === "4k" ? 3840 * 2160 : 2048 * 2048;
+            const maxScale = resTier === "4k" ? 4 : 2;
             const neededScale = Math.max(reqW / srcW, reqH / srcH, 1);
-            const scale = Math.min(neededScale, 2);
+            let scale = Math.min(neededScale, maxScale);
+            const pixelCapScale = Math.sqrt(MAX_PIXELS / (srcW * srcH));
+            if (pixelCapScale > 1) scale = Math.min(scale, pixelCapScale);
 
             if (scale > 1.01) {
               const targetW = Math.round(srcW * scale);
               const targetH = Math.round(srcH * scale);
+              // Stepped upscale: at most 2x per hop for better quality + lower peak memory
+              let curW = srcW;
+              let curH = srcH;
+              while (curW * 2 < targetW || curH * 2 < targetH) {
+                curW = Math.min(curW * 2, targetW);
+                curH = Math.min(curH * 2, targetH);
+                decoded.resize(curW, curH);
+              }
               decoded.resize(targetW, targetH);
               finalWidth = targetW;
               finalHeight = targetH;
               binary = await decoded.encode(0); // PNG, lossless
               outputMime = "image/png";
               outputExt = "png";
-              console.log(`Upscaled image ${srcW}x${srcH} -> ${targetW}x${targetH} (requested ${reqW}x${reqH})`);
+              console.log(`Upscaled image ${srcW}x${srcH} -> ${targetW}x${targetH} (requested ${reqW}x${reqH}, tier ${resTier})`);
             } else {
-              console.log(`Native size ${srcW}x${srcH} kept (requested ${reqW}x${reqH})`);
+              console.log(`Native size ${srcW}x${srcH} kept (requested ${reqW}x${reqH}, tier ${resTier})`);
             }
           } catch (decodeErr) {
             console.warn("Image decode/upscale skipped:", decodeErr);
